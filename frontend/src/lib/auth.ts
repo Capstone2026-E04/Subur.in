@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import { API_URL } from "@/services/api";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  basePath: "/api/nextauth",
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
