@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Stack+Sans+Text:wght@200..700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0D530E;
+  --color-primary-light: #306D29;
+  --color-background: #FBF5DD;
+  --font-sans: "Stack Sans Text", sans-serif;
+  
+  --font-size-xs: 0.85rem;
+  --font-size-sm: 0.95rem;
+  --font-size-base: 1.05rem;
+}
+
+body {
+  background-color: var(--color-background);
+  font-family: var(--font-sans);
+  color: #1c2d1b;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

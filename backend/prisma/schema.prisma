@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  googleId  String   @unique @map("google_id") @db.VarChar(255)
+  name      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(255)
+  avatarUrl String?  @map("avatar_url") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  devices Device[]
+
+  @@map("users")
+}
+
+model Device {
+  id         String       @id @db.VarChar(50)
+  userId     String       @map("user_id") @db.Uuid
+  label      String       @db.VarChar(100)
+  plantId    String       @map("plant_id") @db.Uuid
+  polybagId  String       @map("polybag_id") @db.Uuid
+  status     DeviceStatus @default(ACTIVE)
+  lastSeenAt DateTime?    @map("last_seen_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  sensorInterval Int          @default(15) @map("sensor_interval")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plant   Plant   @relation(fields: [plantId], references: [id], onDelete: Restrict)
+  polybag Polybag @relation(fields: [polybagId], references: [id], onDelete: Restrict)
+
+  recommendations RecommendationLog[]
+  notifications   Notification[]
+
+  @@map("devices")
+}
+
+model RecommendationLog {
+  id       String @id @default(uuid()) @db.Uuid
+  deviceId String @map("device_id") @db.VarChar(50)
+
+  phValue       Float @map("ph_value")
+  moistureValue Float @map("moisture_value")
+
+  fuzzyIndex   Float  @map("fuzzy_index")
+  categoryCode String @map("category_code") @db.VarChar(5)
+  actionText   String @map("action_text") @db.Text
+
+  waterVolumeLiter Float   @default(0) @map("water_volume_liter")
+  limeDosageGram   Float   @default(0) @map("lime_dosage_gram")
+  sulfurDosageGram Float   @default(0) @map("sulfur_dosage_gram")
+  reduceWatering   Boolean @default(false) @map("reduce_watering")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@map("recommendation_logs")
+}
+
+model RawSensorLog {
+  id        Int      @default(autoincrement())
+  timestamp DateTime @default(now()) @db.Timestamptz(6)
+  deviceId  String   @map("device_id") @db.VarChar(50)
+  ph        Float    @db.DoublePrecision
+  moisture  Float    @db.DoublePrecision
+
+  @@id([timestamp, id])
+  @@map("raw_sensor_logs")
+}
+
+model Plant {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String   @db.VarChar(100)
+  scientificName String?  @map("scientific_name") @db.VarChar(150)
+  description    String?  @db.Text
+  minPh          Float    @map("min_ph")
+  maxPh          Float    @map("max_ph")
+  phTarget       Float    @map("ph_target")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  devices Device[]
+
+  @@map("plants")
+}
+
+model PolybagType {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(100)
+  diameter  Float
+  height    Float
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  polybags  Polybag[]
+
+  @@map("polybag_types")
+}
+
+model Polybag {
+  id              String      @id @default(uuid()) @db.Uuid
+  polybagTypeId   String      @map("polybag_type_id") @db.Uuid
+  soilVolumeLiter Float       @map("soil_volume_liter")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  polybagType PolybagType @relation(fields: [polybagTypeId], references: [id], onDelete: Restrict)
+  devices     Device[]
+
+  @@map("polybags")
+}
+
+enum DeviceStatus {
+  ACTIVE
+  INACTIVE
+  OFFLINE
+
+  @@map("device_status")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  deviceId  String   @map("device_id") @db.VarChar(50)
+  title     String   @db.VarChar(100)
+  message   String   @db.Text
+  type      String   @db.VarChar(20) // "warning", "success", "info"
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
