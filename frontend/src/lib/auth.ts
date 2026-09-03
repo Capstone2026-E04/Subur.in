@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import { API_URL } from "@/services/api";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   basePath: "/api/nextauth",
   providers: [
     Google({
