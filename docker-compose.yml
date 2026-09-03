@@ -10,7 +10,7 @@ services:
 
   frontend:
     image: ghcr.io/capstone2026-e04/subur-in-frontend:latest
-    env_file: ./frontend/.env
+    env_file: ./frontend/.env.local
     environment:
       PORT: 3000
     ports:
