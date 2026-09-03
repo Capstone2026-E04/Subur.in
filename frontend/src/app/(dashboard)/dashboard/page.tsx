@@ -266,7 +266,7 @@ export default function DashboardPage() {
             </h3>
           </div>
           <button
-            onClick={loadRecommendation}
+            onClick={() => loadRecommendation()}
             disabled={isRecLoading}
             className="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center gap-1"
           >
