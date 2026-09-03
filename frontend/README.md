@@ -47,6 +47,10 @@ Komponen halaman dashboard dibuat modular dan fleksibel:
 - **`src/components/dashboard/Sidebar.tsx`**: Navigasi sidebar dinamis yang mendeteksi rute aktif.
 - **`src/components/dashboard/StatCard.tsx`**: Widget kartu indikator (kelembaban, suhu, jumlah tanaman) yang reusable.
 
+## Dokumentasi Lengkap
+
+Design system, struktur routing, dan pola state management ada di [`../docs/frontend/`](../docs/frontend); untuk kontrak API backend lihat [`../docs/api/`](../docs/api).
+
 ## Author
 
 Capstone2026-E04

@@ -101,6 +101,10 @@ Berikut adalah daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
   }
   ```
 
+## Dokumentasi Lengkap
+
+Dokumentasi arsitektur, referensi API penuh, environment variable, dan konvensi kode ada di [`../docs`](../docs) — mulai dari [`docs/api/`](../docs/api) untuk semua endpoint dan [`docs/backend/`](../docs/backend) untuk konvensi coding.
+
 ## Author
 
 Capstone2026-E04
