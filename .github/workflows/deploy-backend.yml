@@ -43,3 +43,4 @@ jobs:
             git pull
             docker compose pull backend
             docker compose up -d backend
+            docker compose exec -T backend npx prisma db push --skip-generate
