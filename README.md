@@ -50,7 +50,7 @@ Detail lengkap ada di [`docs/architecture/system-design.md`](docs/architecture/s
 
 ## Struktur Proyek
 
-```
+```text
 Subur.in/
 ├── backend/     # API Express + mesin fuzzy logic + integrasi MQTT/Redis
 ├── frontend/    # Dashboard Next.js
