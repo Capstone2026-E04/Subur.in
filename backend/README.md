@@ -24,7 +24,7 @@ Backend service untuk proyek **Subur.in**.
 Berikut adalah daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
 
 ### 1. Health Check
-* **Endpoint:** `GET /health`
+* **Endpoint:** `GET /api/health`
 * **Deskripsi:** Memeriksa status kesehatan server backend dan koneksi database Supabase secara real-time.
 * **Format Response:**
   ```json
