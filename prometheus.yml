@@ -9,3 +9,7 @@ scrape_configs:
       credentials_file: /etc/prometheus/metrics_password.txt
     static_configs:
       - targets: ["backend:3000"]
+
+  - job_name: "node"
+    static_configs:
+      - targets: ["node_exporter:9100"]
