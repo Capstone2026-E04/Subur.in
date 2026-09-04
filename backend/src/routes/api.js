@@ -4,6 +4,7 @@ const client = require('prom-client');
 const prisma = require('../database/connections/prisma_client');
 const { getRedisClient } = require('../database/connections/redis');
 const authRoutes = require('./auth.routes');
+const metricsAuthMiddleware = require('../middlewares/metrics_auth.middleware');
 
 const metricsRegister = new client.Registry();
 client.collectDefaultMetrics({ register: metricsRegister });
@@ -49,7 +50,7 @@ router.get('/health', async (req, res) => {
   }
 });
 
-router.get('/metrics', async (req, res) => {
+router.get('/metrics', metricsAuthMiddleware, async (req, res) => {
   res.set('Content-Type', metricsRegister.contentType);
   res.end(await metricsRegister.metrics());
 });
