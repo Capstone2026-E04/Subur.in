@@ -6,6 +6,9 @@ node_modules/
 .env.local
 .env.*.local
 
+# Secrets
+prometheus_metrics_password.txt
+
 # OS
 .DS_Store
 Thumbs.db
