@@ -27,7 +27,7 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 | Frontend      | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, NextAuth v5, Recharts |
 | Backend       | Node.js, Express.js, Prisma ORM                                             |
 | Database      | PostgreSQL (Supabase)                                                       |
-| Cache         | Redis (Upstash)                                                             |
+| Cache         | Redis (self-hosted)                                                         |
 | Pesan IoT     | MQTT (EMQX Cloud, TLS)                                                      |
 | Realtime Web  | Server-Sent Events (SSE)                                                    |
 | Observability | Prometheus (`prom-client`)                                                  |

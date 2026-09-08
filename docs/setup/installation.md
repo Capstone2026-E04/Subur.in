@@ -4,7 +4,7 @@
 
 - Node.js 18+ and npm
 - A PostgreSQL database (the project targets Supabase in production, but any Postgres works locally)
-- A Redis instance (the project targets Upstash Redis REST API in production)
+- A Redis instance (self-hosted `redis-server` in production; any local Redis works for development)
 - An MQTT broker reachable over TLS (the project targets EMQX Cloud)
 - A Google Cloud OAuth 2.0 Client ID (Web application) for Google Sign-In
 

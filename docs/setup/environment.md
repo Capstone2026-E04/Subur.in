@@ -16,8 +16,9 @@ Never commit real values — `.env` / `.env.local` are gitignored. Copy the matc
 | `MQTT_BROKER_URL`                 | MQTT broker URL (`mqtts://...`)                                                   | Your EMQX Cloud (or other broker) deployment                        |
 | `MQTT_PORT`                       | MQTT broker TLS port                                                              | Broker dashboard, typically `8883`                                  |
 | `MQTT_USERNAME` / `MQTT_PASSWORD` | MQTT client credentials                                                           | Broker dashboard                                                    |
-| `UPSTASH_REDIS_REST_URL`          | Redis REST endpoint                                                               | Upstash console -> your database -> REST API                        |
-| `UPSTASH_REDIS_REST_TOKEN`        | Redis REST auth token                                                             | Upstash console -> your database -> REST API                        |
+| `REDIS_HOST`                      | Redis host (`host.docker.internal` in Docker, `127.0.0.1` for bare-metal/local)   | Self-hosted Redis instance                                           |
+| `REDIS_PORT`                      | Redis port                                                                        | Your choice, default `6379`                                         |
+| `REDIS_PASSWORD`                  | Redis auth password (`requirepass`)                                              | Self-hosted Redis instance config                                    |
 | `SENSOR_THROTTLE_SECONDS`         | Minimum seconds between raw sensor log writes per device                          | Your choice, default `30`                                           |
 
 ## Frontend (`frontend/.env.local`)

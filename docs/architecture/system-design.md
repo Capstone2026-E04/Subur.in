@@ -12,7 +12,7 @@ Subur.in is an IoT-based smart plant monitoring and recommendation platform. An 
 | MQTT broker | EMQX Cloud (managed) | Transport between device and backend |
 | Backend API | Node.js, Express, Prisma | Auth, device/plant/polybag CRUD, fuzzy recommendation engine, SSE, cron jobs, Prometheus metrics |
 | Database | PostgreSQL (Supabase) | Users, devices, plants, polybags, recommendation logs, raw sensor logs (partitioned) |
-| Cache | Redis (Upstash) | Latest sensor readings per device, throttling, dedupe locks |
+| Cache | Redis (self-hosted, ioredis client) | Latest sensor readings per device, throttling, dedupe locks |
 | Frontend | Next.js 16 (App Router), NextAuth v5 | Dashboard for monitoring, device management, recommendations |
 | Deployment | Docker, GHCR, GitHub Actions, VPS | Containers built by CI and pulled onto a VPS running docker-compose |
 

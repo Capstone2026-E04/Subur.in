@@ -19,7 +19,7 @@ Subur.in/
 │       │   └── __tests__/       # Unit tests for the engine and calculators
 │       ├── controllers/         # Express request handlers, one file per resource
 │       ├── cron/                # node-cron jobs (partition mgmt, downsampling)
-│       ├── database/connections/# Prisma client singleton, Redis client (Upstash/ioredis adapter)
+│       ├── database/connections/# Prisma client singleton, Redis client (ioredis)
 │       ├── middlewares/         # auth.middleware.js — JWT verification
 │       ├── mqtt/
 │       │   ├── connection.js        # MQTT client setup (EMQX over TLS)
