@@ -22,6 +22,8 @@ Both workflows:
 2. Push it to GitHub Container Registry (GHCR) as `:latest`.
 3. SSH into the VPS, `git pull` the repo (for the latest `docker-compose.yml`), pull the new image, and `docker compose up -d` that one service.
 
+Both workflows share the concurrency group `deploy-suburin-vps` with `cancel-in-progress: false` — a backend and a frontend deploy triggered close together queue and run one at a time against the shared VPS instead of racing each other. The deploy script also runs under `set -euo pipefail`, so any failed step (bad login, failed `git pull`, failed `prisma db push`) fails the whole job instead of silently continuing.
+
 The backend workflow additionally runs `prisma db push --skip-generate` against the production database after redeploying, so schema changes in `prisma/schema.prisma` are applied automatically on every backend deploy.
 
 The frontend build passes `NEXT_PUBLIC_API_URL_PROD` as a Docker build arg (from the repo's `vars.NEXT_PUBLIC_API_URL_PROD` Actions variable), since Next.js inlines `NEXT_PUBLIC_*` values at build time.

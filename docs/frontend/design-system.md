@@ -30,6 +30,6 @@ The base font size is intentionally bumped slightly above Tailwind's default `1r
 
 ## Conventions
 
-- No component library (no shadcn/ui, no MUI) — all UI is hand-built with Tailwind utility classes directly in `.tsx` files.
+- Most UI is hand-built with Tailwind utility classes directly in `.tsx` files. A small set of shadcn/ui-style primitives lives under [`src/components/ui/`](../../frontend/src/components/ui/) (`card.tsx`, `sidebar.tsx`) — built with `class-variance-authority` for variants, not pulled from a package — and pages compose those instead of hand-rolling card/sidebar markup. See [components.md](components.md#componentsui).
 - Icons come from `react-icons` (primarily the `md` — Material Design — set), not a custom icon set.
 - Keep new colors/fonts as `@theme` tokens in `globals.css` rather than hardcoding hex values in components, so the palette stays centrally editable.

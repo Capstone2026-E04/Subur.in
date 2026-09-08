@@ -17,12 +17,15 @@ Returns the authenticated user's profile.
       "name": "Budi Santoso",
       "email": "budi@gmail.com",
       "avatarUrl": "https://lh3.googleusercontent.com/a/AC...",
+      "isTelegramLinked": false,
       "createdAt": "2026-01-10T08:00:00.000Z",
       "updatedAt": "2026-01-10T08:00:00.000Z"
     }
   }
 }
 ```
+
+`isTelegramLinked` is a derived boolean (`Boolean(telegramChatId)`) — the raw `telegramChatId` is never sent to the client. See [telegram.md](telegram.md) for how it gets set.
 
 **Error responses:** `401` (no/invalid token), `404` (user no longer exists), `500`.
 
@@ -74,3 +77,7 @@ Permanently deletes the authenticated user's account. Cascades to their devices,
 ```
 
 **Error responses:** `401`, `404`, `500`.
+
+## `POST /api/users/me/telegram/link-code` and `DELETE /api/users/me/telegram`
+
+Generate/revoke the Telegram account link. Documented in full in [telegram.md](telegram.md).

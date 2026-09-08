@@ -1,16 +1,19 @@
 # Components
 
-No component library — everything under `src/components` is a hand-built, Tailwind-styled React component, organized by scope rather than by atomic-design tier.
+Everything under `src/components` is Tailwind-styled, organized by scope rather than by atomic-design tier, with a thin shadcn/ui-style primitive layer under `components/ui/`.
 
-## `components/common/`
+## `components/ui/`
 
-Shared across the whole app (both auth and dashboard layouts):
+Local shadcn/ui-style primitives (not installed from a registry — hand-built with `class-variance-authority` for variants), reused across dashboard pages:
 
 | Component | Purpose |
 |---|---|
-| `Header.tsx` | Top-level page header |
-| `Sidebar.tsx` | Generic sidebar shell |
-| `LoadingSpinner.tsx` | Reusable loading indicator |
+| `card.tsx` | `Card` / `CardHeader` / `CardContent` / `CardFooter` / `CardTitle` primitives with a `default`/`accent` variant, used as the base for nearly every dashboard panel |
+| `sidebar.tsx` | Collapsible desktop sidebar + slide-in mobile drawer primitives (`Sidebar`, `SidebarBody`, `SidebarLink`, `useSidebar`), consumed by `components/dashboard/Sidebar.tsx` |
+
+## `components/common/`
+
+Legacy stub files (`Header.tsx`, `Sidebar.tsx`, `LoadingSpinner.tsx`) left over from before the `components/dashboard/` + `components/ui/` layout landed. All three are currently empty and not imported anywhere — the real dashboard chrome lives in `components/dashboard/Sidebar.tsx` / `Topbar.tsx` on top of `components/ui/sidebar.tsx`. Safe to delete in a future cleanup; not removed here to keep this doc pass scoped to documentation.
 
 ## `components/dashboard/`
 

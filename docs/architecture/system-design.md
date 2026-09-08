@@ -13,6 +13,7 @@ Subur.in is an IoT-based smart plant monitoring and recommendation platform. An 
 | Backend API | Node.js, Express, Prisma | Auth, device/plant/polybag CRUD, fuzzy recommendation engine, SSE, cron jobs, Prometheus metrics |
 | Database | PostgreSQL (Supabase) | Users, devices, plants, polybags, recommendation logs, raw sensor logs (partitioned) |
 | Cache | Redis (self-hosted, ioredis client) | Latest sensor readings per device, throttling, dedupe locks |
+| Notifications | Telegram Bot API | Push channel for device alerts, alongside in-app SSE + notification history |
 | Frontend | Next.js 16 (App Router), NextAuth v5 | Dashboard for monitoring, device management, recommendations |
 | Deployment | Docker, GHCR, GitHub Actions, VPS | Containers built by CI and pulled onto a VPS running docker-compose |
 
@@ -38,6 +39,7 @@ flowchart LR
 - **MQTT layer** (`src/mqtt`) — subscribes to device telemetry, validates payloads, writes to Redis + Postgres, triggers notifications on invalid data, and publishes config changes (sensor interval) back to devices.
 - **AI recommendation engine** (`src/ai`) — a Mamdani fuzzy-logic system (pH x moisture -> 9-category action) plus deterministic dosage calculators for irrigation water, dolomite lime, and elemental sulfur. Pure functions, no I/O, safe to unit test in isolation ([`src/ai/__tests__`](../../backend/src/ai/__tests__)).
 - **SSE manager** (`src/sse`) — keeps per-device `EventSource` client lists in memory and broadcasts live sensor + notification events to connected dashboards.
+- **Notification dispatch** (`src/services/notification.service.js`, `src/services/telegram.service.js`) — the single entry point (`notifyDevice`) every notification-creating call site uses, fanning a notification out to Postgres, SSE, and Telegram (if the device owner has linked their account) in one call. See [api/telegram.md](../api/telegram.md).
 - **Cron jobs** (`src/cron`) — monthly Postgres partition management/cleanup for `raw_sensor_logs`, and a downsampling job.
 - **Repositories** (`src/repositories`) — thin data-access layer over Prisma (Postgres) and Redis for sensor reads.
 

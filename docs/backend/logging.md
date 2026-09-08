@@ -11,6 +11,8 @@ There is no structured logging library (no Winston/Pino) — logging is plain `c
 | `[MQTT Publish]` | Outgoing config publishes ([`mqtt/publishers/config_publisher.js`](../../backend/src/mqtt/publishers/config_publisher.js)) |
 | `[Redis]` | Redis client init ([`database/connections/redis.js`](../../backend/src/database/connections/redis.js)) |
 | `[Cron]` | Scheduled jobs ([`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) |
+| `[Telegram Service]` | Outgoing Bot API calls ([`services/telegram.service.js`](../../backend/src/services/telegram.service.js)) |
+| `[Telegram Controller]` | Webhook processing errors ([`controllers/telegram.controller.js`](../../backend/src/controllers/telegram.controller.js)) |
 | `[Sensor Controller]` | `sensor.controller.js` request handlers |
 | `[Update Device]` / `[Prisma History Query]` | Ad-hoc per-operation prefixes in device/sensor controllers |
 
@@ -25,7 +27,7 @@ Controller-level errors are logged with a descriptive label matching the operati
 
 ## Metrics
 
-Separately from logs, [`routes/api.js`](../../backend/src/routes/api.js) exposes `GET /api/metrics` via `prom-client` with Node.js default metrics registered (`collectDefaultMetrics`) — no custom application metrics are defined yet. Point a Prometheus scraper at this endpoint for process-level monitoring (event loop lag, memory, GC).
+Separately from logs, [`routes/api.js`](../../backend/src/routes/api.js) exposes `GET /api/metrics` via `prom-client` with Node.js default metrics registered (`collectDefaultMetrics`) — no custom application metrics are defined yet. Point a Prometheus scraper at this endpoint for process-level monitoring (event loop lag, memory, GC). The endpoint is protected by [`metrics_auth.middleware.js`](../../backend/src/middlewares/metrics_auth.middleware.js) — requests need `Authorization: Bearer <METRICS_PASSWORD>`.
 
 ## Adding Logging to New Code
 

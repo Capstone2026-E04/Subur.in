@@ -5,8 +5,8 @@
 `routes -> controllers -> (services / repositories) -> Prisma / Redis / MQTT`
 
 - **Routes** (`src/routes/*.routes.js`) only wire HTTP verbs/paths to controller functions and mount `authMiddleware` where the resource requires auth (`router.use(authMiddleware)` at the top of the router, or per-route).
-- **Controllers** (`src/controllers/*.controller.js`) parse/validate `req.body`/`req.params`/`req.query`, call into Prisma directly for simple CRUD, or delegate to a service (e.g. `ai/services/recommendation.service.js`) for business logic, and shape the JSON response. Every handler is wrapped in `try/catch` and returns the [standard envelope](../api/error-response.md) — there is no shared error-handling middleware.
-- **Services** (`src/ai/services`) hold logic that doesn't belong to a single HTTP request/response shape — currently just recommendation generation.
+- **Controllers** (`src/controllers/*.controller.js`) parse/validate `req.body`/`req.params`/`req.query`, call into Prisma directly for simple CRUD, or delegate to a service (e.g. `ai/services/recommendation.service.js`, `services/notification.service.js`) for business logic, and shape the JSON response. Every handler is wrapped in `try/catch` and returns the [standard envelope](../api/error-response.md) — there is no shared error-handling middleware.
+- **Services** hold logic that doesn't belong to a single HTTP request/response shape, and are split by concern: `src/ai/services` (recommendation generation, alongside the pure AI engine) and `src/services` (cross-cutting concerns used from multiple call sites — `notification.service.js` fans a notification out to Postgres/SSE/Telegram, `telegram.service.js` wraps the Bot API).
 - **Repositories** (`src/repositories`) wrap raw Prisma/Redis calls for sensor data specifically, giving controllers a cache-then-db read pattern (`getLatestSensorData` -> fallback `getLatestSensorLog`) without duplicating that fallback logic in every caller.
 - **AI engine** (`src/ai/core`, `src/ai/dosage`, `src/ai/utils`) is pure, I/O-free logic — no Prisma/Express imports — so it stays unit-testable in isolation.
 

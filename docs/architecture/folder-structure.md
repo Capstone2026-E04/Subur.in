@@ -27,6 +27,7 @@ Subur.in/
 │       │   └── subscribers/         # Subscribes to telemetry topic, validates + persists readings
 │       ├── repositories/        # Data access: sensor_repository (Postgres), sensor_redis_repository (cache)
 │       ├── routes/              # Express routers, mounted under /api in routes/api.js
+│       ├── services/            # notification.service.js (notifyDevice fan-out), telegram.service.js (Bot API client)
 │       ├── sse/                 # In-memory Server-Sent Events client registry + broadcaster
 │       └── server.js            # App bootstrap: Express, CORS, MQTT, Redis, cron init
 │
@@ -40,7 +41,8 @@ Subur.in/
 │       │   ├── layout.tsx / page.tsx
 │       │   └── globals.css          # Tailwind v4 theme tokens (colors, fonts)
 │       ├── components/
-│       │   ├── common/              # Header, Sidebar, LoadingSpinner (shared across app)
+│       │   ├── common/              # Legacy stubs (Header/Sidebar/LoadingSpinner) — currently empty, unused
+│       │   ├── ui/                  # shadcn-style primitives (Card, collapsible Sidebar) built on class-variance-authority
 │       │   ├── dashboard/           # Dashboard-specific widgets (StatCard, SensorGaugeCard, charts, nav)
 │       │   └── devices/             # Device management modals/cards
 │       ├── context/                 # AuthContext.tsx

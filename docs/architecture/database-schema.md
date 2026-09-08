@@ -33,6 +33,8 @@ erDiagram
         varchar name
         varchar email UK
         text avatar_url
+        varchar telegram_chat_id UK
+        varchar telegram_link_code UK
     }
     DEVICE {
         varchar id PK
@@ -100,5 +102,6 @@ erDiagram
 - `Device` -> `User` uses `onDelete: Cascade` — deleting a user removes their devices (and transitively their recommendation logs and notifications).
 - `RawSensorLog` is keyed on `(timestamp, id)` and range-partitioned by month at the database level (managed by [`src/cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) to keep high-frequency telemetry writes and retention cleanup cheap.
 - `DeviceStatus` enum: `ACTIVE`, `INACTIVE`, `OFFLINE`.
+- `User.telegramChatId` and `User.telegramLinkCode` are both nullable and unique — `telegramLinkCode` is a one-time code cleared as soon as the Telegram webhook consumes it to set `telegramChatId`. See [api/telegram.md](../api/telegram.md).
 
 See [database/prisma.md](../database/prisma.md) for query conventions and [database/migration.md](../database/migration.md) for how schema changes are applied.
