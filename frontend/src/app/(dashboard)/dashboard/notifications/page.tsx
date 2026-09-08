@@ -107,12 +107,6 @@ export default function NotificationsPage() {
   useEffect(() => {
     if (devices.length === 0 || !token) return;
 
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default") {
-        Notification.requestPermission();
-      }
-    }
-
     const streams = devices.map((device) => {
       const es = new EventSource(
         `${API_URL}/api/sensors/${device.id}/stream`
@@ -121,54 +115,6 @@ export default function NotificationsPage() {
         try {
           const payload = JSON.parse(event.data);
           if (payload?.notification) {
-            // Tampilkan notifikasi native browser jika diizinkan di preferensi
-            if (typeof window !== "undefined" && "Notification" in window) {
-              const browserPushNotif = localStorage.getItem("browserPushNotif") !== "false";
-              const savedMoisture = localStorage.getItem("moistureNotif") !== "false";
-              const savedPh = localStorage.getItem("phNotif") !== "false";
-
-              const titleLower = payload.notification.title?.toLowerCase() || "";
-              const messageLower = payload.notification.message?.toLowerCase() || "";
-
-              let shouldShow = true;
-              if (!savedMoisture) {
-                if (
-                  titleLower.includes("media") || 
-                  titleLower.includes("kering") || 
-                  titleLower.includes("basah") ||
-                  titleLower.includes("kelembapan") ||
-                  messageLower.includes("kelembapan") ||
-                  messageLower.includes("siram") ||
-                  messageLower.includes("kering") ||
-                  messageLower.includes("basah")
-                ) {
-                  shouldShow = false;
-                }
-              }
-
-              if (!savedPh) {
-                if (
-                  titleLower.includes("ph") || 
-                  titleLower.includes("asam") || 
-                  titleLower.includes("basa") ||
-                  messageLower.includes("ph") ||
-                  messageLower.includes("kapur") ||
-                  messageLower.includes("dolomit") ||
-                  messageLower.includes("sulfur")
-                ) {
-                  shouldShow = false;
-                }
-              }
-
-              if (browserPushNotif && shouldShow && Notification.permission === "granted") {
-                new Notification(payload.notification.title, {
-                  body: payload.notification.message,
-                  icon: "/favicon.ico",
-                  tag: payload.notification.id,
-                });
-              }
-            }
-
             loadNotificationsData();
           }
         } catch {
@@ -213,30 +159,11 @@ export default function NotificationsPage() {
 
   // Tes notifikasi baru
   const handleTestNotification = async () => {
-    // Minta izin notifikasi browser jika belum diatur
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default") {
-        await Notification.requestPermission();
-      }
-    }
-
     if (!token || isProcessing) return;
     setIsProcessing(true);
     try {
       await createTestNotification(token);
       await loadNotificationsData();
-
-      // Jika SSE tidak mendeteksi perangkat aktif (atau sebagai fallback), tampilkan notifikasi browser lokal secara instan
-      if (devices.length === 0 && typeof window !== "undefined" && "Notification" in window) {
-        const browserPushNotif = localStorage.getItem("browserPushNotif") !== "false";
-        if (browserPushNotif && Notification.permission === "granted") {
-          new Notification("Pengujian Sistem", {
-            body: "Ini adalah notifikasi uji coba untuk memverifikasi bahwa sistem notifikasi real-time Anda berfungsi dengan baik.",
-            icon: "/favicon.ico",
-            tag: "test-notification",
-          });
-        }
-      }
     } catch (err) {
       console.error("Gagal memicu notifikasi uji coba:", err);
     } finally {

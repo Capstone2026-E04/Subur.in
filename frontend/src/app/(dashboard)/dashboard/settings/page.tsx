@@ -40,7 +40,6 @@ export default function SettingsPage() {
 
   const [moistureNotif, setMoistureNotif] = useState(true);
   const [phNotif, setPhNotif] = useState(true);
-  const [browserPushNotif, setBrowserPushNotif] = useState(true);
 
   useEffect(() => {
     loadDevices();
@@ -48,12 +47,10 @@ export default function SettingsPage() {
     if (typeof window !== "undefined") {
       const savedMoisture = localStorage.getItem("moistureNotif");
       const savedPh = localStorage.getItem("phNotif");
-      const savedBrowser = localStorage.getItem("browserPushNotif");
 
       setTimeout(() => {
         if (savedMoisture !== null) setMoistureNotif(savedMoisture === "true");
         if (savedPh !== null) setPhNotif(savedPh === "true");
-        if (savedBrowser !== null) setBrowserPushNotif(savedBrowser === "true");
       }, 0);
     }
   }, [loadDevices]);
@@ -128,7 +125,6 @@ export default function SettingsPage() {
 
       localStorage.setItem("moistureNotif", String(moistureNotif));
       localStorage.setItem("phNotif", String(phNotif));
-      localStorage.setItem("browserPushNotif", String(browserPushNotif));
 
       setSuccessMessage("Pengaturan dan preferensi berhasil disimpan.");
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -272,7 +268,7 @@ export default function SettingsPage() {
             </label>
           </div>
 
-          <div className="flex items-center justify-between gap-4 pt-4 pb-2">
+          <div className="flex items-center justify-between gap-4 pt-4">
             <div>
               <p className="text-xs sm:text-sm font-medium text-gray-700">Notifikasi Sensor pH</p>
               <p className="text-[10px] sm:text-xs text-gray-400">Peringatkan jika pH tanah terdeteksi terlalu asam atau terlalu basa.</p>
@@ -283,23 +279,6 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={phNotif}
                 onChange={(e) => setPhNotif(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between gap-4 pt-4">
-            <div>
-              <p className="text-xs sm:text-sm font-medium text-gray-700">Notifikasi Push Browser (Desktop)</p>
-              <p className="text-[10px] sm:text-xs text-gray-400">Tampilkan notifikasi melayang di layar sistem operasi Anda.</p>
-            </div>
-            <label htmlFor="settings-browser-notif" className="relative inline-flex items-center cursor-pointer">
-              <input
-                id="settings-browser-notif"
-                type="checkbox"
-                checked={browserPushNotif}
-                onChange={(e) => setBrowserPushNotif(e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
