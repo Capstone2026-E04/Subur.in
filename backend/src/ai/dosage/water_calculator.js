@@ -1,12 +1,12 @@
 const { V_MAX_FRACTION, THETA_TARGET } = require('../config/treatment_constants');
 
 
-function calculateWaterVolume(moisturePercent, volumeLiter, targetMoisturePercent) {
-  if (typeof moisturePercent !== 'number' || typeof volumeLiter !== 'number' || typeof targetMoisturePercent !== 'number') {
+function calculateWaterVolume(moisturePercent, volumeLiter) {
+  if (typeof moisturePercent !== 'number' || typeof volumeLiter !== 'number') {
     throw new TypeError('Semua parameter input kalkulator air harus berupa angka.');
   }
 
-  const thetaTarget = THETA_TARGET !== undefined ? THETA_TARGET : (targetMoisturePercent / 100);
+  const thetaTarget = THETA_TARGET;
   const theta      = moisturePercent / 100;
 
   const rawVolume  = Math.max(0, (thetaTarget - theta) * volumeLiter);

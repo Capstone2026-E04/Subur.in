@@ -1,4 +1,4 @@
-const { K_L_LIME, M_L_MAX_PER_LITER, PH_TOLERANCE } = require('../config/treatment_constants');
+const { K_L_LIME, PH_TOLERANCE } = require('../config/treatment_constants');
 
 
 function calculateLimeDosage(phValue, volumeLiter, targetPh, minPh) {
@@ -12,21 +12,18 @@ function calculateLimeDosage(phValue, volumeLiter, targetPh, minPh) {
       phDeficit:      parseFloat(Math.max(0, targetPh - phValue).toFixed(3)),
       phTarget:       targetPh,
       kL:             K_L_LIME,
-      cappedByMax:    false,
     };
   }
 
   const phDeficit   = targetPh - phValue;
   const rawDosage   = K_L_LIME * volumeLiter * phDeficit;
-  const finalDosage = rawDosage;
+  const finalDosage = Math.max(0, rawDosage);
 
   return {
     limeDosageGram: parseFloat(finalDosage.toFixed(2)),
     phDeficit:      parseFloat(phDeficit.toFixed(3)),
     phTarget:       targetPh,
     kL:             K_L_LIME,
-    maxDosage:      null,
-    cappedByMax:    false,
   };
 }
 

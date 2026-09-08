@@ -5,6 +5,7 @@ const { calculateWaterVolume }   = require('../dosage/water_calculator');
 const { calculateLimeDosage }    = require('../dosage/lime_calculator');
 const { calculateSulfurDosage }  = require('../dosage/sulfur_calculator');
 const { getPhysicalPreset }      = require('../config/physical_presets');
+const { THETA_TARGET }           = require('../config/treatment_constants');
 
 async function generateRecommendation({ phValue, moistureValue, polybagPreset, plantIdOrName }) {
   if (typeof phValue !== 'number' || typeof moistureValue !== 'number') {
@@ -52,16 +53,11 @@ async function generateRecommendation({ phValue, moistureValue, polybagPreset, p
   }
 
   const phTarget = plant.phTarget;
-  const targetMoisture = 30.0;
-  const thetaTarget = targetMoisture / 100;
 
   const plantParams = {
     minPh: plant.minPh,
     maxPh: plant.maxPh,
     phTarget: plant.phTarget,
-    minMoisture: 20.0,
-    maxMoisture: 40.0,
-    targetMoisture: targetMoisture
   };
 
   const inference = runInference(phValue, moistureValue, plantParams);
@@ -76,7 +72,7 @@ async function generateRecommendation({ phValue, moistureValue, polybagPreset, p
   let sulfurDetail     = null;
 
   if (interpretation.needsWater) {
-    waterDetail       = calculateWaterVolume(moistureValue, preset.volumeLiter, targetMoisture);
+    waterDetail       = calculateWaterVolume(moistureValue, preset.volumeLiter);
     waterVolumeLiter  = waterDetail.waterVolumeLiter;
   }
 
@@ -113,7 +109,7 @@ async function generateRecommendation({ phValue, moistureValue, polybagPreset, p
       volumeLiterUsed:    parseFloat(preset.volumeLiter.toFixed(3)),
       plantUsed:          `${plant.name} (${plant.scientificName || 'n/a'})`,
       phTarget:           parseFloat(phTarget.toFixed(3)),
-      thetaTarget:        parseFloat(thetaTarget.toFixed(4)),
+      thetaTarget:        THETA_TARGET,
       waterDetail,
       limeDetail,
       sulfurDetail,
