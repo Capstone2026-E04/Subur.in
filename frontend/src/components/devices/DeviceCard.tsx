@@ -47,7 +47,7 @@ export default function DeviceCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.06, ease: "easeOut" }}
-      className="group relative flex rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+      className="group relative flex rounded-2xl bg-card border border-border shadow-xs overflow-hidden hover:shadow-md transition-shadow duration-300"
     >
       <div
         className={`w-1.5 shrink-0 ${isActive ? "bg-emerald-500" : "bg-gray-200"}`}
@@ -135,7 +135,7 @@ export default function DeviceCard({
         </div>
 
         {/* Right Section: Last Seen & Action Buttons */}
-        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center md:items-end lg:items-center justify-between md:justify-end gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-black/5">
+        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center md:items-end lg:items-center justify-between md:justify-end gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border">
           <div className="flex items-center gap-1.5 text-xs text-gray-400">
             <MdAccessTime size={13} className="shrink-0" />
             <span>{formatRelativeTime(device.lastSeenAt)}</span>

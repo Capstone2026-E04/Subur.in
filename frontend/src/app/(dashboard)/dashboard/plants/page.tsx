@@ -11,10 +11,11 @@ import {
   MdOutlineInfo,
 } from "react-icons/md";
 import { usePlants } from "@/hooks/usePlants";
+import { Card } from "@/components/ui/card";
 
 function PlantSkeletonCard() {
   return (
-    <div className="rounded-2xl bg-white border border-black/5 p-5 shadow-sm animate-pulse flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <Card className="flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 animate-pulse">
       <div className="flex items-center gap-3 shrink-0">
         <div className="h-10 w-10 rounded-xl bg-gray-100 shrink-0" />
         <div className="flex flex-col gap-1.5 w-32">
@@ -27,7 +28,7 @@ function PlantSkeletonCard() {
         <div className="h-12 w-24 rounded-xl bg-gray-50" />
         <div className="h-12 w-24 rounded-xl bg-gray-50" />
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -117,7 +118,7 @@ export default function PlantsPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="group relative flex rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+                className="group relative flex rounded-2xl bg-card border border-border shadow-xs overflow-hidden hover:shadow-md transition-shadow duration-300"
               >
                 {/* Left accent bar matching DeviceCard */}
                 <div className="w-1.5 shrink-0 bg-primary/40 group-hover:bg-primary transition-all duration-300" />
@@ -154,7 +155,7 @@ export default function PlantsPage() {
                   </div>
 
                   {/* Right Section: Optimal Parameters Box */}
-                  <div className="flex items-center gap-3 shrink-0 border-t md:border-t-0 border-black/5 pt-3 md:pt-0">
+                  <div className="flex items-center gap-3 shrink-0 border-t md:border-t-0 border-border pt-3 md:pt-0">
                     {/* Kelembapan */}
                     <div className="rounded-xl bg-sky-50 px-3 py-2 border border-sky-100 flex flex-col items-center min-w-[100px]">
                       <span className="text-[9px] font-bold text-sky-600 uppercase tracking-wider">

@@ -21,6 +21,7 @@ import {
 import { fetchSensorHistory } from "@/services/deviceService";
 import type { SensorHistoryItem } from "@/types/device";
 import { useSensorRealtime } from "@/hooks/useSensorRealtime";
+import { Card, CardHeader } from "@/components/ui/card";
 
 interface SensorHistoryChartProps {
   deviceId: string;
@@ -157,16 +158,16 @@ export default function SensorHistoryChart({
 
   if (!isMounted) {
     return (
-      <div className="h-96 rounded-2xl bg-white border border-black/6 shadow-sm flex items-center justify-center">
+      <Card className="h-96 items-center justify-center">
         <p className="text-sm text-gray-400">Menyiapkan grafik...</p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden flex flex-col">
+    <Card className="overflow-hidden">
       {/* Chart Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 border-b border-black/6 bg-gray-50 shrink-0">
+      <CardHeader className="flex-wrap gap-4 py-4 bg-muted/60 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
             <MdOutlineTimeline size={20} className="text-primary" />
@@ -236,7 +237,7 @@ export default function SensorHistoryChart({
             </button>
           </div>
         )}
-      </div>
+      </CardHeader>
 
       {/* Chart Canvas */}
       <div className={`flex-1 p-5 ${simple ? "min-h-[220px]" : "min-h-[320px]"} relative`}>
@@ -359,6 +360,6 @@ export default function SensorHistoryChart({
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

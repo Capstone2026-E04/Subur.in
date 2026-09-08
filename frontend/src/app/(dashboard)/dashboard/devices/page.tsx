@@ -14,13 +14,14 @@ import ConnectDeviceModal from "@/components/devices/ConnectDeviceModal";
 import EditDeviceModal from "@/components/devices/EditDeviceModal";
 import DeleteConfirmDialog from "@/components/devices/DeleteConfirmDialog";
 import type { RegisteredDevice } from "@/types/device";
+import { Card } from "@/components/ui/card";
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-black/12 bg-white/60 py-16 text-center"
+      className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-border bg-card/60 py-16 text-center"
     >
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8 text-primary">
         <MdOutlineDeviceHub size={32} />
@@ -45,7 +46,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden">
+    <Card className="rounded-2xl overflow-hidden">
       <div className="h-1 bg-gray-100" />
       <div className="flex flex-col gap-4 p-5 animate-pulse">
         <div className="flex items-center gap-3">
@@ -68,7 +69,7 @@ function SkeletonCard() {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -125,7 +126,7 @@ export default function DevicesPage() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-3 divide-x divide-black/5 rounded-2xl border border-black/6 bg-white shadow-sm overflow-hidden"
+          className="grid grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card shadow-xs overflow-hidden"
         >
           {[
             { label: "Total Alat", value: devices.length, color: "text-primary" },

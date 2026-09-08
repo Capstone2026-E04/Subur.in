@@ -6,10 +6,16 @@
   --color-primary-light: #306D29;
   --color-background: #FBF5DD;
   --font-sans: "Stack Sans Text", sans-serif;
-  
+
   --font-size-xs: 0.85rem;
   --font-size-sm: 0.95rem;
   --font-size-base: 1.05rem;
+
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1c2d1b;
+  --color-border: #E7E2CE;
+  --color-muted: #F5F1E1;
+  --color-muted-foreground: #6b7280;
 }
 
 body {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { MdMyLocation, MdPlace, MdWarningAmber } from "react-icons/md";
+import { Card } from "@/components/ui/card";
 
 interface NominatimAddress {
   road?: string;
@@ -138,7 +139,7 @@ export default function LiveLocationTracker() {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl bg-white border border-black/5 shadow-sm p-5 flex items-center gap-4 animate-pulse">
+      <Card className="flex-row items-center gap-4 p-5 animate-pulse">
         <div className="h-11 w-11 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
           <MdMyLocation className="text-gray-400 animate-spin" size={20} />
         </div>
@@ -146,13 +147,13 @@ export default function LiveLocationTracker() {
           <div className="h-4 bg-gray-200 rounded w-1/4"></div>
           <div className="h-3 bg-gray-100 rounded w-3/4"></div>
         </div>
-      </div>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-xl bg-rose-50/70 border border-rose-100 p-5 flex items-start gap-4 hover:shadow-sm transition-all duration-300">
+      <Card className="flex-row items-start gap-4 p-5 bg-rose-50/70 border-rose-100 hover:shadow-sm transition-all duration-300">
         <div className="h-11 w-11 rounded-xl bg-rose-100 flex items-center justify-center shrink-0 text-rose-600">
           <MdWarningAmber size={22} />
         </div>
@@ -167,12 +168,12 @@ export default function LiveLocationTracker() {
             {error}
           </p>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="rounded-xl bg-white border border-black/5 shadow-sm p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md transition-all duration-300">
+    <Card className="flex-col md:flex-row md:items-center justify-between gap-4 p-5 hover:shadow-md transition-all duration-300">
       <div className="flex items-start gap-4">
         <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-md shadow-primary/10 text-white">
           <MdPlace size={24} />
@@ -193,6 +194,6 @@ export default function LiveLocationTracker() {
           </p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -2,6 +2,7 @@
 
 import { motion, useSpring, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
+import { Card } from "@/components/ui/card";
 
 interface SensorGaugeCardProps {
   label: string;
@@ -134,7 +135,7 @@ export default function SensorGaugeCard({
   }
 
   return (
-    <div className="relative flex flex-col items-center rounded-2xl bg-white border border-black/6 shadow-sm p-6 overflow-hidden gap-4 transition-shadow duration-300 hover:shadow-md">
+    <Card className="relative items-center rounded-2xl p-6 overflow-hidden gap-4 transition-shadow duration-300 hover:shadow-md">
       {/* Flash overlay on value update */}
       {flashKey > 0 && (
         <motion.div
@@ -174,6 +175,6 @@ export default function SensorGaugeCard({
       >
         {classification}
       </motion.div>
-    </div>
+    </Card>
   );
 }

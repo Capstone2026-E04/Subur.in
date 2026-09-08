@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { MdEmail, MdCalendarMonth } from "react-icons/md";
 import EditNameForm from "@/components/dashboard/EditNameForm";
 import { API_URL } from "@/services/api";
+import { Card } from "@/components/ui/card";
 
 interface BackendUser {
   name?: string;
@@ -51,7 +52,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="rounded-xl bg-white border border-black/5 shadow-sm p-6 flex items-center gap-5">
+      <Card className="flex-row items-center gap-5 p-6">
         <div className="h-16 w-16 shrink-0 rounded-full overflow-hidden bg-primary shadow-sm">
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -74,10 +75,10 @@ export default async function ProfilePage() {
           </p>
           <p className="text-sm text-gray-400 truncate">{email}</p>
         </div>
-      </div>
+      </Card>
 
       {/* Detail informasi */}
-      <div className="rounded-xl bg-white border border-black/5 shadow-sm p-5 space-y-5">
+      <Card className="p-5 space-y-5">
         <h2 className="text-sm font-semibold text-primary">Informasi Akun</h2>
 
         {/* Nama — bisa diedit */}
@@ -110,7 +111,7 @@ export default async function ProfilePage() {
             <span className="text-sm text-gray-500">{createdAt}</span>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

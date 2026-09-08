@@ -4,6 +4,7 @@ import { useSensorRealtime, ConnectionStatus } from "@/hooks/useSensorRealtime";
 import SensorGaugeCard from "./SensorGaugeCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdOutlineWaterDrop, MdOutlineSpa, MdSignalWifiStatusbarConnectedNoInternet4, MdSignalWifi4Bar, MdSignalWifiOff } from "react-icons/md";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
 function formatTimestamp(ts: string | null): string {
   if (!ts) return "Belum ada data";
@@ -162,9 +163,9 @@ export default function SensorMonitorPanel({
     useSensorRealtime(deviceId);
 
   return (
-    <div className="rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden">
+    <Card className="overflow-hidden">
       {/* Panel Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-black/6 bg-gray-50">
+      <CardHeader className="flex-wrap py-4 bg-muted/60">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
             <MdOutlineSpa size={20} className="text-primary" />
@@ -179,10 +180,10 @@ export default function SensorMonitorPanel({
           </div>
         </div>
         <ConnectionBadge status={connectionStatus} />
-      </div>
+      </CardHeader>
 
       {/* Gauge Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5">
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* pH Card */}
         <SensorGaugeCard
           label="Tingkat pH Tanah"
@@ -208,10 +209,10 @@ export default function SensorMonitorPanel({
           icon={<MdOutlineWaterDrop size={18} />}
           decimals={0}
         />
-      </div>
+      </CardContent>
 
       {/* Footer — Last Updated */}
-      <div className="px-5 py-3 border-t border-black/5 bg-gray-50/60 flex items-center gap-2">
+      <CardFooter className="py-3 bg-muted/40">
         <AnimatePresence mode="wait">
           <motion.div
             key={lastUpdated ?? "empty"}
@@ -236,7 +237,7 @@ export default function SensorMonitorPanel({
             </span>
           </motion.div>
         </AnimatePresence>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

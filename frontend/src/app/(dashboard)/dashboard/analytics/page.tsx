@@ -27,6 +27,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 type ChartViewMode = "both" | "ph" | "moisture";
 
@@ -51,7 +52,7 @@ function PageSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-8 border border-dashed border-black/12 rounded-3xl bg-white/60 py-20 max-w-xl mx-auto shadow-sm my-8">
+    <Card className="items-center justify-center text-center p-8 border-dashed rounded-3xl py-20 max-w-xl mx-auto my-8">
       <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-6 animate-bounce">
         <MdOutlineTimeline size={40} />
       </div>
@@ -59,7 +60,7 @@ function EmptyState() {
       <p className="text-sm text-gray-500 mt-2 max-w-sm leading-relaxed">
         Silakan hubungkan perangkat Anda terlebih dahulu pada tab "Perangkat" untuk melihat analitik dan visualisasi data sensor real-time.
       </p>
-    </div>
+    </Card>
   );
 }
 
@@ -265,7 +266,7 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl bg-white border border-black/5 p-5 shadow-sm flex items-center justify-between gap-4">
+        <Card className="flex-row items-center justify-between gap-4 p-5">
           <div className="space-y-1.5 min-w-0">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
               Rata-rata Kelembapan
@@ -287,9 +288,9 @@ export default function AnalyticsPage() {
           <div className="h-12 w-12 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center shrink-0 shadow-inner">
             <MdWaterDrop size={24} />
           </div>
-        </div>
+        </Card>
 
-        <div className="rounded-2xl bg-white border border-black/5 p-5 shadow-sm flex items-center justify-between gap-4">
+        <Card className="flex-row items-center justify-between gap-4 p-5">
           <div className="space-y-1.5 min-w-0">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
               Rata-rata pH Tanah
@@ -311,11 +312,11 @@ export default function AnalyticsPage() {
           <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 shadow-inner">
             <MdOutlineSpa size={24} />
           </div>
-        </div>
+        </Card>
       </div>
 
-      <div className="rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden flex flex-col">
-        <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 border-b border-black/6 bg-gray-50 shrink-0">
+      <Card className="overflow-hidden">
+        <CardHeader className="flex-wrap gap-4 py-4 bg-muted/60 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
               <MdOutlineTimeline size={20} className="text-primary" />
@@ -395,7 +396,7 @@ export default function AnalyticsPage() {
               <MdRefresh size={16} className={isHistoryLoading ? "animate-spin" : ""} />
             </button>
           </div>
-        </div>
+        </CardHeader>
 
         {/* Chart Canvas Area */}
         <div className="flex-1 p-5 min-h-[360px] relative">
@@ -526,7 +527,7 @@ export default function AnalyticsPage() {
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

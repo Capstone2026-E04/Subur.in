@@ -1,54 +1,76 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS } from "./navConfig";
-import { MdOutlineLogout, MdOutlineSpa } from "react-icons/md";
 import { signOut } from "next-auth/react";
+import { motion } from "framer-motion";
+import { MdOutlineLogout, MdOutlineSpa } from "react-icons/md";
+import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from "@/components/ui/sidebar";
+import { NAV_ITEMS } from "./navConfig";
+
+function LogoutButton() {
+  const { open } = useSidebar();
+  return (
+    <button
+      onClick={() => signOut({ callbackUrl: "/login" })}
+      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer bg-red-800 text-white hover:bg-red-700"
+    >
+      <MdOutlineLogout size={18} className="shrink-0" />
+      <motion.span
+        animate={{ opacity: open ? 1 : 0, display: open ? "inline-block" : "none" }}
+        className="whitespace-pre !p-0 !m-0"
+      >
+        Keluar
+      </motion.span>
+    </button>
+  );
+}
+
+function Logo() {
+  const { open } = useSidebar();
+  return (
+    <div className="flex items-center gap-2.5 px-2 py-1">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15">
+        <MdOutlineSpa size={18} className="text-white" />
+      </div>
+      <motion.span
+        animate={{ opacity: open ? 1 : 0, display: open ? "inline-block" : "none" }}
+        className="text-lg font-semibold tracking-tight text-white whitespace-pre !p-0 !m-0"
+      >
+        Subur.in
+      </motion.span>
+    </div>
+  );
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-60 flex-col bg-primary text-white shadow-lg">
-      <div className="flex items-center gap-2.5 px-6 py-5 border-b border-white/10">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
-          <MdOutlineSpa size={18} className="text-white" />
+    <SidebarRoot>
+      <SidebarBody className="justify-between gap-10">
+        <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+          <Logo />
+
+          <nav className="mt-6 flex flex-col gap-0.5">
+            {NAV_ITEMS.filter((item) => !item.hidden).map((item) => {
+              const Icon = item.icon;
+              return (
+                <SidebarLink
+                  key={item.href}
+                  active={pathname === item.href}
+                  link={{
+                    label: item.label,
+                    href: item.href,
+                    icon: <Icon size={18} className="shrink-0" />,
+                  }}
+                />
+              );
+            })}
+          </nav>
         </div>
-        <span className="text-lg font-semibold tracking-tight">Subur.in</span>
-      </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-        {NAV_ITEMS.filter((item) => !item.hidden).map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={[
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-white/15 text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white",
-              ].join(" ")}
-            >
-              <Icon size={18} className="shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="px-3 pb-5 border-t border-white/10 pt-3">
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer bg-red-800 text-white hover:bg-red-700"
-        >
-          <MdOutlineLogout size={18} className="shrink-0" />
-          Keluar
-        </button>
-      </div>
-    </aside>
+        <LogoutButton />
+      </SidebarBody>
+    </SidebarRoot>
   );
 }

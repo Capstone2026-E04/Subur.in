@@ -17,6 +17,7 @@ import {
 } from "@/services/notificationService";
 import { API_URL } from "@/services/api";
 import type { NotificationItem } from "@/types/device";
+import { Card } from "@/components/ui/card";
 
 const iconStyles = {
   warning: "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30",
@@ -317,12 +318,12 @@ export default function NotificationsPage() {
 
       {/* List */}
       {isLoading ? (
-        <div className="rounded-2xl bg-white border border-black/5 p-8 flex flex-col items-center justify-center animate-pulse space-y-4 shadow-sm">
+        <Card className="items-center justify-center p-8 animate-pulse space-y-4">
           <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
           <p className="text-xs text-gray-400 font-semibold">Memuat notifikasi kebun Anda...</p>
-        </div>
+        </Card>
       ) : filteredNotifications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center p-8 border border-dashed border-black/12 rounded-3xl bg-white/60 py-20 max-w-xl mx-auto shadow-sm my-8">
+        <Card className="items-center justify-center text-center p-8 border-dashed rounded-3xl py-20 max-w-xl mx-auto my-8">
           <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-6">
             <MdNotificationsNone size={40} className="text-primary/70" />
           </div>
@@ -330,9 +331,9 @@ export default function NotificationsPage() {
           <p className="text-sm text-gray-500 mt-2 max-w-sm leading-relaxed">
             Belum ada notifikasi baru untuk kebun Anda. Sistem akan memberi peringatan jika kelembapan atau pH sensor terdeteksi di luar batas optimal.
           </p>
-        </div>
+        </Card>
       ) : (
-        <div className="rounded-2xl bg-white border border-black/5 shadow-sm divide-y divide-black/5 overflow-hidden">
+        <Card className="divide-y divide-border overflow-hidden">
           {filteredNotifications.map((notif) => {
             const Icon = iconComponents[notif.type] || MdInfoOutline;
             return (
@@ -386,7 +387,7 @@ export default function NotificationsPage() {
               </div>
             );
           })}
-        </div>
+        </Card>
       )}
     </div>
   );

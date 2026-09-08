@@ -23,6 +23,7 @@ import {
   fetchRecommendationHistory,
 } from "@/services/deviceService";
 import type { RegisteredDevice, DeviceRecommendation, RecommendationLogItem } from "@/types/device";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 function PageSkeleton() {
   return (
@@ -42,7 +43,7 @@ function PageSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-8 border border-dashed border-black/12 rounded-3xl bg-white/60 py-20 max-w-xl mx-auto shadow-sm my-8">
+    <Card className="items-center justify-center text-center p-8 border-dashed rounded-3xl py-20 max-w-xl mx-auto my-8">
       <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-6">
         <MdAutoAwesome size={40} className="animate-pulse" />
       </div>
@@ -50,7 +51,7 @@ function EmptyState() {
       <p className="text-sm text-gray-500 mt-2 max-w-sm leading-relaxed">
         Silakan hubungkan perangkat Anda terlebih dahulu pada tab "Perangkat" untuk melihat kalkulasi rekomendasi agronomis otomatis dari AI.
       </p>
-    </div>
+    </Card>
   );
 }
 
@@ -189,8 +190,8 @@ export default function RecommendationsPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-black/6">
+      <Card className="overflow-hidden">
+        <CardHeader className="py-4">
           <div className="flex items-center gap-2">
             <MdOutlineSpa className="text-primary" size={20} />
             <h3 className="text-sm font-bold text-primary">
@@ -204,9 +205,9 @@ export default function RecommendationsPage() {
           >
             {isRecLoading ? "Memproses..." : "Hitung Ulang"}
           </button>
-        </div>
+        </CardHeader>
 
-        <div className="p-6">
+        <CardContent className="p-6">
           {isRecLoading ? (
             <div className="flex flex-col items-center justify-center py-16 animate-pulse">
               <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
@@ -355,11 +356,11 @@ export default function RecommendationsPage() {
               </div>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between px-5 py-4 border-b border-black/6 bg-gray-50 gap-4">
+      <Card className="overflow-hidden">
+        <CardHeader className="flex-wrap gap-4 py-4 bg-muted/60">
           <div className="flex items-center gap-2">
             <MdHistory className="text-primary" size={20} />
             <h3 className="text-sm font-bold text-primary">Riwayat Log Rekomendasi</h3>
@@ -384,9 +385,9 @@ export default function RecommendationsPage() {
               </select>
             </div>
           )}
-        </div>
+        </CardHeader>
 
-        <div className="p-0">
+        <CardContent className="p-0">
           {isHistoryLoading ? (
             <div className="flex flex-col items-center justify-center py-16 animate-pulse">
               <div className="h-6 bg-gray-200 rounded w-48 mb-3"></div>
@@ -531,8 +532,8 @@ export default function RecommendationsPage() {
               )}
             </>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

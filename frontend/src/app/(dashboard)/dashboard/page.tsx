@@ -23,6 +23,7 @@ import StatCard from "@/components/dashboard/StatCard";
 import SensorMonitorPanel from "@/components/dashboard/SensorMonitorPanel";
 import SensorHistoryChart from "@/components/dashboard/SensorHistoryChart";
 import type { RegisteredDevice, DeviceRecommendation } from "@/types/device";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 function DashboardSkeleton() {
   return (
@@ -50,7 +51,7 @@ function DashboardSkeleton() {
 function EmptyDashboardState() {
   const router = useRouter();
   return (
-    <div className="flex flex-col items-center justify-center text-center p-8 border border-dashed border-black/12 rounded-3xl bg-white/60 py-20 max-w-xl mx-auto shadow-sm my-8">
+    <Card className="items-center justify-center text-center p-8 border-dashed rounded-3xl py-20 max-w-xl mx-auto my-8">
       <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-6">
         <MdOutlineDeviceHub size={40} />
       </div>
@@ -66,7 +67,7 @@ function EmptyDashboardState() {
         <MdAdd size={18} />
         Hubungkan Alat Baru
       </button>
-    </div>
+    </Card>
   );
 }
 
@@ -78,7 +79,7 @@ function UnselectedDeviceState({
   onSelect: (device: RegisteredDevice) => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-8 border border-black/6 rounded-3xl bg-white py-16 max-w-xl mx-auto shadow-sm my-8">
+    <Card className="items-center justify-center text-center p-8 rounded-3xl py-16 max-w-xl mx-auto my-8">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 mb-5">
         <MdOutlineDeviceHub size={32} />
       </div>
@@ -115,7 +116,7 @@ function UnselectedDeviceState({
           </button>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -258,8 +259,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white border border-black/6 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-black/6 bg-gray-50">
+      <Card className="overflow-hidden">
+        <CardHeader className="py-4 bg-muted/60">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold text-primary">
               Rekomendasi AI (Fuzzy Logic)
@@ -272,9 +273,9 @@ export default function DashboardPage() {
           >
             {isRecLoading ? "Memuat..." : "Hitung Ulang"}
           </button>
-        </div>
+        </CardHeader>
 
-        <div className="p-6">
+        <CardContent className="p-6">
           {isRecLoading ? (
             <div className="flex flex-col items-center justify-center py-10 animate-pulse">
               <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
@@ -435,8 +436,8 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <SensorMonitorPanel deviceId={selectedDevice.id} deviceLabel={selectedDevice.label} />
 

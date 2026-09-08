@@ -9,6 +9,7 @@ import {
   MdOutlineDeviceHub,
 } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
+import { Card } from "@/components/ui/card";
 
 export default function SettingsPage() {
   const { devices, isLoading, loadDevices, update } = useDevices();
@@ -91,8 +92,8 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl bg-white border border-black/5 p-5 shadow-sm space-y-4">
-        <div className="flex items-center gap-3 border-b border-black/5 pb-3">
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-3 border-b border-border pb-3">
           <div className="h-9 w-9 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
             <MdAccessTime size={18} />
           </div>
@@ -184,10 +185,10 @@ export default function SettingsPage() {
             </AnimatePresence>
           </div>
         )}
-      </div>
+      </Card>
 
-      <div className="rounded-2xl bg-white border border-black/5 p-5 shadow-sm space-y-4">
-        <div className="flex items-center gap-3 border-b border-black/5 pb-3">
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-3 border-b border-border pb-3">
           <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <MdNotificationsActive size={18} />
           </div>
@@ -197,7 +198,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="space-y-4 divide-y divide-black/5">
+        <div className="space-y-4 divide-y divide-border">
           {/* Kelembapan */}
           <div className="flex items-center justify-between gap-4 py-2">
             <div>
@@ -252,7 +253,7 @@ export default function SettingsPage() {
             </label>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="flex justify-end">
         <button
