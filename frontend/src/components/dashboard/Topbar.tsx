@@ -88,11 +88,11 @@ export default function Topbar({ user }: TopbarProps) {
   });
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-black/5 bg-background px-6">
+    <header className="flex h-16 items-center justify-between gap-3 border-b border-black/5 bg-background px-4 sm:px-6">
       {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs sm:text-sm font-medium">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs sm:text-sm font-medium min-w-0 overflow-x-auto">
         {breadcrumbs.map((crumb, idx) => (
-          <div key={crumb.href} className="flex items-center gap-1.5">
+          <div key={crumb.href} className="flex items-center gap-1.5 shrink-0">
             {idx > 0 && <span className="text-gray-300">/</span>}
             {crumb.isLast ? (
               <span className="text-primary font-semibold">{crumb.label}</span>
@@ -105,9 +105,9 @@ export default function Topbar({ user }: TopbarProps) {
         ))}
       </nav>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         {/* Greeting */}
-        <span className="text-sm sm:text-md font-semibold text-gray-700">
+        <span className="hidden md:block text-sm sm:text-md font-semibold text-gray-700 truncate max-w-[160px]">
           Halo, {user?.name || "Pengguna"}
         </span>
 

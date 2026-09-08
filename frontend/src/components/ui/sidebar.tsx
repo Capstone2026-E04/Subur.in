@@ -119,10 +119,14 @@ export const MobileSidebar = ({
         {...props}
       >
         <div className="flex justify-end z-20 w-full">
-          <FiMenu
-            className="text-white cursor-pointer h-5 w-5"
+          <button
+            type="button"
             onClick={() => setOpen(!open)}
-          />
+            aria-label="Buka menu navigasi"
+            className="flex h-11 w-11 items-center justify-center text-white cursor-pointer"
+          >
+            <FiMenu className="h-5 w-5" />
+          </button>
         </div>
         <AnimatePresence>
           {open && (
@@ -135,16 +139,18 @@ export const MobileSidebar = ({
                 ease: "easeInOut",
               }}
               className={cn(
-                "fixed h-full w-full inset-0 bg-primary text-white p-10 z-[100] flex flex-col justify-between",
+                "fixed h-full w-full inset-0 bg-primary text-white p-6 sm:p-10 z-[100] flex flex-col justify-between",
                 className
               )}
             >
-              <div
-                className="absolute right-10 top-10 z-50 text-white cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setOpen(!open)}
+                aria-label="Tutup menu navigasi"
+                className="absolute right-4 top-4 sm:right-8 sm:top-8 z-50 flex h-11 w-11 items-center justify-center text-white cursor-pointer"
               >
                 <FiX className="h-5 w-5" />
-              </div>
+              </button>
               {children}
             </motion.div>
           )}
