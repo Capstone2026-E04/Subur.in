@@ -105,9 +105,9 @@ export default function PlantsPage() {
             <MdOutlineSpa size={32} />
           </div>
           <div>
-            <p className="text-base font-bold text-gray-700">Katalog Tanaman Kosong</p>
+            <p className="text-base font-bold text-gray-700">Katalog Tanaman Belum Tersedia</p>
             <p className="text-sm text-gray-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
-              Tidak ditemukan data tanaman di database. Silakan jalankan seeder database pada backend Anda.
+              Data jenis tanaman belum ditambahkan ke sistem. Hubungi admin Subur.in untuk melengkapinya.
             </p>
           </div>
         </motion.div>

@@ -263,7 +263,7 @@ export default function DashboardPage() {
         <CardHeader className="py-4 bg-muted/60">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold text-primary">
-              Rekomendasi AI (Fuzzy Logic)
+              Rekomendasi Perawatan AI
             </h3>
           </div>
           <button
@@ -340,7 +340,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="text-xs font-extrabold text-emerald-900">Kondisi Sangat Baik</p>
                       <p className="text-xs text-emerald-700 mt-1 leading-relaxed">
-                        Tingkat keasaman (pH) dan kelembapan tanah Anda saat ini sangat ideal untuk pertumbuhan optimal tanaman **{plantName}**. Teruskan pola penyiraman harian normal.
+                        Tingkat keasaman (pH) dan kelembapan tanah Anda saat ini sangat ideal untuk pertumbuhan optimal tanaman <strong>{plantName}</strong>. Teruskan pola penyiraman harian normal.
                       </p>
                     </div>
                   </div>

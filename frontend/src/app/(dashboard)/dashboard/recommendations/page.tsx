@@ -166,7 +166,7 @@ export default function RecommendationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black tracking-tight text-primary">
-            Rekomendasi Treatment
+            Rekomendasi Perawatan
           </h2>
         </div>
 
@@ -272,7 +272,7 @@ export default function RecommendationsPage() {
                     <div>
                       <p className="text-sm font-extrabold text-emerald-800">Kondisi Media Sangat Optimal!</p>
                       <p className="text-xs text-emerald-700/80 mt-1 leading-relaxed">
-                        Tingkat keasaman (pH) dan kelembapan tanah Anda saat ini berada dalam kondisi prima untuk varietas **{plantName}**. Lanjutkan rutinitas perawatan saat ini.
+                        Tingkat keasaman (pH) dan kelembapan tanah Anda saat ini berada dalam kondisi prima untuk varietas <strong>{plantName}</strong>. Lanjutkan rutinitas perawatan saat ini.
                       </p>
                     </div>
                   </div>

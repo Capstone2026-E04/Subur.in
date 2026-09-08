@@ -427,7 +427,7 @@ export default function AnalyticsPage() {
               </div>
               <p className="text-sm font-bold text-gray-700">Belum Ada Riwayat Data</p>
               <p className="text-xs text-gray-400 mt-1 max-w-sm leading-relaxed">
-                Nyalakan perangkat **{selectedDevice.label}** Anda untuk merekam log pembacaan sensor ke database.
+                Nyalakan perangkat <strong>{selectedDevice.label}</strong> Anda untuk mulai merekam riwayat pembacaan sensor.
               </p>
             </div>
           ) : null}
