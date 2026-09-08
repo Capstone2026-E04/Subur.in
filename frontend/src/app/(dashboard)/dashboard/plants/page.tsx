@@ -13,6 +13,12 @@ import {
 import { usePlants } from "@/hooks/usePlants";
 import { Card } from "@/components/ui/card";
 
+const MOISTURE_TARGET = {
+  min: 25,
+  max: 35,
+  target: 30,
+};
+
 function PlantSkeletonCard() {
   return (
     <Card className="flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 animate-pulse">
@@ -162,10 +168,10 @@ export default function PlantsPage() {
                         Kelembapan
                       </span>
                       <span className="text-xs font-bold text-gray-700 mt-0.5">
-                        {plant.minMoisture.toFixed(0)}% - {plant.maxMoisture.toFixed(0)}%
+                        {MOISTURE_TARGET.min}% - {MOISTURE_TARGET.max}%
                       </span>
                       <span className="text-[9px] text-sky-700/80 font-semibold mt-0.5">
-                        Tgt: {plant.targetMoisture.toFixed(0)}%
+                        Tgt: {MOISTURE_TARGET.target}%
                       </span>
                     </div>
 
