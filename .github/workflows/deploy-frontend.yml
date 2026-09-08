@@ -40,8 +40,11 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -euo pipefail
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
             cd ${{ secrets.VPS_DEPLOY_PATH }}
             git pull
             docker compose pull frontend
             docker compose up -d frontend
+            docker image prune -f
+            echo "Deployed image: $(docker inspect --format='{{.Config.Image}}' $(docker compose ps -q frontend))"
