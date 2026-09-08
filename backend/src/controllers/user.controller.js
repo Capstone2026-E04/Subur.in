@@ -1,4 +1,5 @@
 const prisma = require('../database/connections/prisma_client');
+const telegramService = require('../services/telegram.service');
 
 
 exports.getProfile = async (req, res) => {
@@ -12,6 +13,7 @@ exports.getProfile = async (req, res) => {
         name: true,
         email: true,
         avatarUrl: true,
+        telegramChatId: true,
         createdAt: true,
         updatedAt: true,
       }
@@ -24,10 +26,12 @@ exports.getProfile = async (req, res) => {
       });
     }
 
+    const { telegramChatId, ...userWithoutChatId } = user;
+
     return res.status(200).json({
       success: true,
       message: 'Data profil berhasil diambil.',
-      data: { user }
+      data: { user: { ...userWithoutChatId, isTelegramLinked: Boolean(telegramChatId) } }
     });
 
   } catch (error) {
@@ -131,6 +135,58 @@ exports.deleteAccount = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan saat menghapus akun.',
+      error: error.message
+    });
+  }
+};
+
+
+exports.getTelegramLinkCode = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const code = telegramService.generateLinkCode();
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { telegramLinkCode: code }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Kode penghubung Telegram berhasil dibuat.',
+      data: { linkCode: code }
+    });
+
+  } catch (error) {
+    console.error('Get Telegram Link Code Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan saat membuat kode penghubung Telegram.',
+      error: error.message
+    });
+  }
+};
+
+
+exports.unlinkTelegram = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { telegramChatId: null, telegramLinkCode: null }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Koneksi Telegram berhasil diputuskan.'
+    });
+
+  } catch (error) {
+    console.error('Unlink Telegram Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan saat memutuskan koneksi Telegram.',
       error: error.message
     });
   }

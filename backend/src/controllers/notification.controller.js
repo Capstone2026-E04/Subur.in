@@ -1,7 +1,7 @@
 "use strict";
 
 const prisma = require('../database/connections/prisma_client');
-const { broadcastToDevice } = require('../sse/sse_manager');
+const { notifyDevice } = require('../services/notification.service');
 
 exports.getUserNotifications = async (req, res) => {
   try {
@@ -139,28 +139,16 @@ exports.createTestNotification = async (req, res) => {
       });
     }
 
-    const mockNotification = {
-      id: `test-notif-${Date.now()}`,
-      deviceId: device.id,
+    const notification = await notifyDevice(device.id, {
       title: 'Pengujian Sistem',
       message: 'Ini adalah notifikasi uji coba untuk memverifikasi bahwa sistem notifikasi real-time Anda berfungsi dengan baik.',
       type: 'info',
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      device: {
-        label: device.label
-      }
-    };
-
-    broadcastToDevice(device.id, {
-      type: "NOTIFICATION",
-      notification: mockNotification
     });
 
     return res.status(201).json({
       success: true,
-      message: 'Notifikasi uji coba berhasil dibuat secara real-time (tanpa disimpan ke database).',
-      data: { notification: mockNotification }
+      message: 'Notifikasi uji coba berhasil dibuat dan dikirim ke seluruh kanal (dashboard & Telegram jika terhubung).',
+      data: { notification }
     });
   } catch (error) {
     console.error('Create Test Notification Error:', error);

@@ -1,17 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useDevices } from "@/hooks/useDevices";
 import {
   MdNotificationsActive,
   MdSave,
   MdAccessTime,
   MdOutlineDeviceHub,
+  MdSend,
+  MdCheckCircle,
+  MdLinkOff,
 } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import {
+  fetchMe,
+  generateTelegramLinkCode,
+  disconnectTelegram,
+} from "@/services/userService";
+
+const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
+  const backendToken = session?.user?.backendToken ?? "";
+
   const { devices, isLoading, loadDevices, update } = useDevices();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
   const [sensorInterval, setSensorInterval] = useState<number>(15);
@@ -19,7 +33,11 @@ export default function SettingsPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // States untuk preferensi notifikasi
+  const [isTelegramLinked, setIsTelegramLinked] = useState(false);
+  const [isTelegramLoading, setIsTelegramLoading] = useState(false);
+  const [telegramLinkCode, setTelegramLinkCode] = useState<string | null>(null);
+  const [telegramError, setTelegramError] = useState<string | null>(null);
+
   const [moistureNotif, setMoistureNotif] = useState(true);
   const [phNotif, setPhNotif] = useState(true);
   const [browserPushNotif, setBrowserPushNotif] = useState(true);
@@ -27,7 +45,6 @@ export default function SettingsPage() {
   useEffect(() => {
     loadDevices();
 
-    // Muat preferensi dari localStorage
     if (typeof window !== "undefined") {
       const savedMoisture = localStorage.getItem("moistureNotif");
       const savedPh = localStorage.getItem("phNotif");
@@ -50,6 +67,46 @@ export default function SettingsPage() {
     }
   }, [devices, selectedDeviceId]);
 
+  useEffect(() => {
+    if (!backendToken) return;
+    fetchMe(backendToken)
+      .then((user) => setIsTelegramLinked(user.isTelegramLinked))
+      .catch(() => {});
+  }, [backendToken]);
+
+  const handleGenerateTelegramLinkCode = async () => {
+    if (!backendToken) return;
+    setIsTelegramLoading(true);
+    setTelegramError(null);
+    try {
+      const code = await generateTelegramLinkCode(backendToken);
+      setTelegramLinkCode(code);
+    } catch (err) {
+      setTelegramError(
+        err instanceof Error ? err.message : "Gagal membuat kode penghubung Telegram."
+      );
+    } finally {
+      setIsTelegramLoading(false);
+    }
+  };
+
+  const handleDisconnectTelegram = async () => {
+    if (!backendToken) return;
+    setIsTelegramLoading(true);
+    setTelegramError(null);
+    try {
+      await disconnectTelegram(backendToken);
+      setIsTelegramLinked(false);
+      setTelegramLinkCode(null);
+    } catch (err) {
+      setTelegramError(
+        err instanceof Error ? err.message : "Gagal memutuskan koneksi Telegram."
+      );
+    } finally {
+      setIsTelegramLoading(false);
+    }
+  };
+
   const handleDeviceChange = (deviceId: string) => {
     setSelectedDeviceId(deviceId);
     const dev = devices.find((d) => d.id === deviceId);
@@ -69,7 +126,6 @@ export default function SettingsPage() {
         });
       }
 
-      // Simpan preferensi ke localStorage
       localStorage.setItem("moistureNotif", String(moistureNotif));
       localStorage.setItem("phNotif", String(phNotif));
       localStorage.setItem("browserPushNotif", String(browserPushNotif));
@@ -199,7 +255,6 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-4 divide-y divide-border">
-          {/* Kelembapan */}
           <div className="flex items-center justify-between gap-4 py-2">
             <div>
               <p className="text-xs sm:text-sm font-medium text-gray-700">Notifikasi Sensor Kelembapan</p>
@@ -217,7 +272,6 @@ export default function SettingsPage() {
             </label>
           </div>
 
-          {/* pH */}
           <div className="flex items-center justify-between gap-4 pt-4 pb-2">
             <div>
               <p className="text-xs sm:text-sm font-medium text-gray-700">Notifikasi Sensor pH</p>
@@ -235,7 +289,6 @@ export default function SettingsPage() {
             </label>
           </div>
 
-          {/* Browser Push */}
           <div className="flex items-center justify-between gap-4 pt-4">
             <div>
               <p className="text-xs sm:text-sm font-medium text-gray-700">Notifikasi Push Browser (Desktop)</p>
@@ -253,6 +306,62 @@ export default function SettingsPage() {
             </label>
           </div>
         </div>
+      </Card>
+
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-3 border-b border-border pb-3">
+          <div className="h-9 w-9 rounded-lg bg-sky-50 text-sky-500 flex items-center justify-center shrink-0">
+            <MdSend size={18} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-800">Hubungkan Telegram</h3>
+            <p className="text-[10px] text-gray-400">Terima notifikasi perangkat Anda langsung di Telegram.</p>
+          </div>
+        </div>
+
+        {isTelegramLinked ? (
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <MdCheckCircle size={18} className="text-emerald-500 shrink-0" />
+              <p className="text-xs sm:text-sm font-medium text-emerald-700">Terhubung ke Telegram</p>
+            </div>
+            <button
+              onClick={handleDisconnectTelegram}
+              disabled={isTelegramLoading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-60 transition-colors cursor-pointer"
+            >
+              <MdLinkOff size={14} />
+              Putuskan Koneksi
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs sm:text-sm text-gray-500">Akun Telegram Anda belum terhubung.</p>
+              <button
+                onClick={handleGenerateTelegramLinkCode}
+                disabled={isTelegramLoading}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-white hover:bg-primary-light disabled:opacity-60 transition-colors cursor-pointer"
+              >
+                <MdSend size={14} />
+                Hubungkan Telegram
+              </button>
+            </div>
+
+            {telegramLinkCode && (
+              <div className="rounded-lg border border-black/8 bg-gray-50 px-4 py-3 space-y-1.5">
+                <p className="text-xs text-gray-500">
+                  Buka bot {TELEGRAM_BOT_USERNAME ? `@${TELEGRAM_BOT_USERNAME}` : "Subur.in"} di Telegram, lalu kirim pesan berikut:
+                </p>
+                <p className="text-sm font-mono font-semibold text-gray-800">/link {telegramLinkCode}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {telegramError && (
+          <p className="text-xs text-rose-600 font-semibold">⚠ {telegramError}</p>
+        )}
       </Card>
 
       <div className="flex justify-end">

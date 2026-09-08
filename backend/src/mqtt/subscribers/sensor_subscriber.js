@@ -15,6 +15,7 @@ const { broadcastToDevice } = require("../../sse/sse_manager");
 const prisma = require("../../database/connections/prisma_client");
 const { generateRecommendation } = require("../../ai/services/recommendation.service");
 const { getRedisClient } = require("../../database/connections/redis");
+const { notifyDevice } = require("../../services/notification.service");
 
 const SENSOR_TOPIC = "suburin/devices/+/telemetry";
 
@@ -67,27 +68,16 @@ function registerSensorSubscriber(mqttClient) {
         const invalidNotifiedKey = `sensor:invalid_notified:${deviceId}`;
         const alreadyNotified = await redis.get(invalidNotifiedKey);
         if (!alreadyNotified) {
-          await prisma.notification.create({
-            data: {
-              deviceId,
-              title: "Data Sensor Tidak Valid",
-              message: "Data sensor tidak valid. Periksa sensor, daya, atau koneksi.",
-              type: "warning",
-            }
+          await notifyDevice(deviceId, {
+            title: "Data Sensor Tidak Valid",
+            message: "Data sensor tidak valid. Periksa sensor, daya, atau koneksi.",
+            type: "warning",
           });
           await redis.setex(invalidNotifiedKey, 3600, "1"); // Lock 1 jam
         }
       } catch (err) {
         console.error("[MQTT Subscriber] Gagal menyimpan notifikasi data tidak valid:", err.message);
       }
-      broadcastToDevice(deviceId, {
-        type: "NOTIFICATION",
-        notification: {
-          title: "Data Sensor Tidak Valid",
-          message: "Data sensor tidak valid. Periksa sensor, daya, atau koneksi.",
-          type: "warning",
-        }
-      });
       return;
     }
 
@@ -143,7 +133,6 @@ function registerSensorSubscriber(mqttClient) {
           `[MQTT Subscriber]  Recommendation log disimpan ke Postgres | Device: ${deviceId}`
         );
 
-        // --- SISTEM NOTIFIKASI DASHBOARD & REALTIME BROWSER ---
         const redis = getRedisClient();
         const dryKey = `sensor:consecutive_dry:${deviceId}`;
         const wetKey = `sensor:consecutive_wet:${deviceId}`;
@@ -152,55 +141,27 @@ function registerSensorSubscriber(mqttClient) {
         const phAcidNotifiedKey = `sensor:ph_acid_notified:${deviceId}`;
         const phAlkalineNotifiedKey = `sensor:ph_alkaline_notified:${deviceId}`;
 
-        // Hapus status offline/invalid jika ada data valid yang masuk
         await redis.del(offlineNotifiedKey);
         await redis.del(invalidNotifiedKey);
 
-        // 1. Pengecekan Kelembapan (Persisten minimal 2x berturut-turut untuk meredam noise)
         if (moisture < 25) {
           const dryCount = await redis.incr(dryKey);
           await redis.del(wetKey);
-          if (dryCount >= 2) {
-            if (dryCount === 2) {
-              await prisma.notification.create({
-                data: {
-                  deviceId,
-                  title: "Media Kering",
-                  message: `Media kering. Siram sekitar ${Math.round(recommendation.waterVolumeLiter * 1000)} mL.`,
-                  type: "warning",
-                }
-              });
-            }
-            broadcastToDevice(deviceId, {
-              type: "NOTIFICATION",
-              notification: {
-                title: "Media Kering",
-                message: `Media kering. Siram sekitar ${Math.round(recommendation.waterVolumeLiter * 1000)} mL.`,
-                type: "warning",
-              }
+          if (dryCount === 2 && recommendation.waterVolumeLiter > 0) {
+            await notifyDevice(deviceId, {
+              title: "Media Kering",
+              message: `Media kering. Siram sekitar ${Math.round(recommendation.waterVolumeLiter * 1000)} mL.`,
+              type: "warning",
             });
           }
         } else if (moisture > 35) {
           const wetCount = await redis.incr(wetKey);
           await redis.del(dryKey);
-          if (wetCount >= 2) {
-            if (wetCount === 2) {
-              await prisma.notification.create({
-                data: {
-                  deviceId,
-                  title: "Media Terlalu Basah",
-                  message: "Media terlalu basah. Hentikan penyiraman sementara dan cek drainase.",
-                  type: "warning",
-                }
-              });
-            }
-            broadcastToDevice(deviceId, {
-              type: "NOTIFICATION",
-              notification: {
-                title: "Media Terlalu Basah",
-                message: "Media terlalu basah. Hentikan penyiraman sementara dan cek drainase.",
-                type: "warning",
-              }
+          if (wetCount === 2 && recommendation.reduceWatering) {
+            await notifyDevice(deviceId, {
+              title: "Media Terlalu Basah",
+              message: "Media terlalu basah. Hentikan penyiraman sementara dan cek drainase.",
+              type: "warning",
             });
           }
         } else {
@@ -208,52 +169,29 @@ function registerSensorSubscriber(mqttClient) {
           await redis.del(wetKey);
         }
 
-        // 2. Pengecekan pH (Langsung trigger ketika keluar dari rentang toleransi)
         const minPh = device.plant.minPh;
         const maxPh = device.plant.maxPh;
 
-        if (ph < minPh - 0.2) {
+        if (ph < minPh - 0.2 && recommendation.limeDosageGram > 0) {
           const alreadyNotified = await redis.get(phAcidNotifiedKey);
           if (!alreadyNotified) {
-            await prisma.notification.create({
-              data: {
-                deviceId,
-                title: "pH Terlalu Asam",
-                message: `pH terlalu asam. Tambahkan kapur/dolomit sekitar ${Math.round(recommendation.limeDosageGram)} gram.`,
-                type: "warning",
-              }
-            });
-            await redis.setex(phAcidNotifiedKey, 3600, "1"); // Lock 1 jam
-          }
-          broadcastToDevice(deviceId, {
-            type: "NOTIFICATION",
-            notification: {
+            await notifyDevice(deviceId, {
               title: "pH Terlalu Asam",
               message: `pH terlalu asam. Tambahkan kapur/dolomit sekitar ${Math.round(recommendation.limeDosageGram)} gram.`,
               type: "warning",
-            }
-          });
-        } else if (ph > maxPh + 0.2) {
+            });
+            await redis.setex(phAcidNotifiedKey, 3600, "1"); // Lock 1 jam
+          }
+        } else if (ph > maxPh + 0.2 && recommendation.sulfurDosageGram > 0) {
           const alreadyNotified = await redis.get(phAlkalineNotifiedKey);
           if (!alreadyNotified) {
-            await prisma.notification.create({
-              data: {
-                deviceId,
-                title: "pH Terlalu Basa",
-                message: `pH terlalu basa. Tambahkan sulfur elemental sekitar ${Math.round(recommendation.sulfurDosageGram)} gram.`,
-                type: "warning",
-              }
-            });
-            await redis.setex(phAlkalineNotifiedKey, 3600, "1"); // Lock 1 jam
-          }
-          broadcastToDevice(deviceId, {
-            type: "NOTIFICATION",
-            notification: {
+            await notifyDevice(deviceId, {
               title: "pH Terlalu Basa",
               message: `pH terlalu basa. Tambahkan sulfur elemental sekitar ${Math.round(recommendation.sulfurDosageGram)} gram.`,
               type: "warning",
-            }
-          });
+            });
+            await redis.setex(phAlkalineNotifiedKey, 3600, "1"); // Lock 1 jam
+          }
         } else {
           await redis.del(phAcidNotifiedKey);
           await redis.del(phAlkalineNotifiedKey);

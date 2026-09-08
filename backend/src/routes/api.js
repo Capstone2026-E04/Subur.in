@@ -15,6 +15,7 @@ const plantRoutes = require('./plant.routes');
 const polybagRoutes = require('./polybag.routes');
 const recommendationRoutes = require('./recommendation.routes');
 const notificationRoutes = require('./notification.routes');
+const telegramRoutes = require('./telegram.routes');
 
 router.get('/health', async (req, res) => {
   try {
@@ -90,6 +91,11 @@ router.get('/', (req, res) => {
         stream: 'GET /api/sensors/:deviceId/stream',
         latest: 'GET /api/sensors/:deviceId/latest',
       },
+      telegram: {
+        webhook: 'POST /api/telegram/webhook',
+        linkCode: 'POST /api/users/me/telegram/link-code',
+        unlink: 'DELETE /api/users/me/telegram',
+      },
     }
   });
 });
@@ -102,6 +108,7 @@ router.use('/plants', plantRoutes);
 router.use('/polybags', polybagRoutes);
 router.use('/recommendations', recommendationRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/telegram', telegramRoutes);
 
 module.exports = router;
 
