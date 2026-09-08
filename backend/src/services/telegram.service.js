@@ -3,7 +3,7 @@
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_API_BASE = "https://api.telegram.org";
 
-async function sendMessage(chatId, text) {
+async function sendMessage(chatId, text, parseMode) {
   try {
     const response = await fetch(
       `${TELEGRAM_API_BASE}/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
@@ -13,7 +13,7 @@ async function sendMessage(chatId, text) {
         body: JSON.stringify({
           chat_id: chatId,
           text,
-          parse_mode: "Markdown",
+          ...(parseMode ? { parse_mode: parseMode } : {}),
         }),
       }
     );

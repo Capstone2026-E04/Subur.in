@@ -22,7 +22,8 @@ async function notifyDevice(deviceId, { title, message, type }) {
   if (device?.user?.telegramChatId) {
     await telegramService.sendMessage(
       device.user.telegramChatId,
-      `*${title}*\n${message}`
+      `*${title}*\n${message}`,
+      "Markdown"
     );
   }
 
