@@ -1,11 +1,14 @@
 name: Deploy Frontend
-
 on:
   push:
     branches: [main]
     paths:
       - "frontend/**"
       - ".github/workflows/deploy-frontend.yml"
+
+concurrency:
+  group: deploy-suburin-vps
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -16,14 +19,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
@@ -32,7 +33,6 @@ jobs:
           tags: ghcr.io/capstone2026-e04/subur-in-frontend:latest
           build-args: |
             NEXT_PUBLIC_API_URL_PROD=${{ vars.NEXT_PUBLIC_API_URL_PROD }}
-
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
         with:
