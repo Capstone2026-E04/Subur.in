@@ -2,6 +2,11 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { API_URL } from "@/services/api";
 
+process.env.AUTH_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.AUTH_URL_PROD
+    : process.env.AUTH_URL_DEV;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   basePath: "/api/nextauth",
