@@ -58,7 +58,6 @@ export default function NotificationsPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const isMountedRef = useRef(true);
 
-  // Muat data dari backend
   const loadNotificationsData = useCallback(async () => {
     if (!token) return;
     try {
@@ -75,11 +74,9 @@ export default function NotificationsPage() {
     }
   }, [token]);
 
-  // Preferensi notifikasi dari settings
   const [moistureNotif, setMoistureNotif] = useState(true);
   const [phNotif, setPhNotif] = useState(true);
 
-  // Initial load
   useEffect(() => {
     isMountedRef.current = true;
     loadDevices();
@@ -88,7 +85,6 @@ export default function NotificationsPage() {
       loadNotificationsData();
     }, 0);
 
-    // Muat preferensi dari localStorage
     if (typeof window !== "undefined") {
       const savedMoisture = localStorage.getItem("moistureNotif");
       const savedPh = localStorage.getItem("phNotif");
@@ -143,7 +139,6 @@ export default function NotificationsPage() {
     }
   };
 
-  // Hapus notifikasi
   const handleDeleteNotif = async (id: string) => {
     if (!token || isProcessing) return;
     setIsProcessing(true);
@@ -157,7 +152,6 @@ export default function NotificationsPage() {
     }
   };
 
-  // Tes notifikasi baru
   const handleTestNotification = async () => {
     if (!token || isProcessing) return;
     setIsProcessing(true);
@@ -175,7 +169,6 @@ export default function NotificationsPage() {
     const titleLower = notif.title?.toLowerCase() || "";
     const messageLower = notif.message?.toLowerCase() || "";
 
-    // Cek filter kelembapan (moisture)
     if (!moistureNotif) {
       if (
         titleLower.includes("media") || 
@@ -191,7 +184,6 @@ export default function NotificationsPage() {
       }
     }
 
-    // Cek filter pH
     if (!phNotif) {
       if (
         titleLower.includes("ph") || 
@@ -211,7 +203,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
-      {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black tracking-tight text-primary">Notifikasi</h2>
@@ -243,7 +234,6 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {/* List */}
       {isLoading ? (
         <Card className="items-center justify-center p-8 animate-pulse space-y-4">
           <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
@@ -270,7 +260,6 @@ export default function NotificationsPage() {
                   !notif.isRead ? "bg-primary/[0.015]" : ""
                 }`}
               >
-                {/* Icon Container */}
                 <div
                   className={`h-10 w-10 rounded-xl border flex items-center justify-center shrink-0 ${
                     iconStyles[notif.type] || iconStyles.info
@@ -279,7 +268,6 @@ export default function NotificationsPage() {
                   <Icon size={20} />
                 </div>
 
-                {/* Text Container */}
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
@@ -302,7 +290,6 @@ export default function NotificationsPage() {
                   </p>
                 </div>
 
-                {/* Delete Button */}
                 <button
                   onClick={() => handleDeleteNotif(notif.id)}
                   disabled={isProcessing}

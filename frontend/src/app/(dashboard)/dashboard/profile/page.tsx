@@ -77,17 +77,14 @@ export default async function ProfilePage() {
         </div>
       </Card>
 
-      {/* Detail informasi */}
       <Card className="p-5 space-y-5">
         <h2 className="text-sm font-semibold text-primary">Informasi Akun</h2>
 
-        {/* Nama — bisa diedit */}
         <EditNameForm
           currentName={name ?? ""}
           backendToken={backendToken}
         />
 
-        {/* Email — read-only */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Alamat Email
@@ -101,7 +98,6 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        {/* Tanggal bergabung */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Bergabung Sejak

@@ -67,7 +67,6 @@ function CircularGauge({
         </filter>
       </defs>
 
-      {/* Background track */}
       <circle
         cx={70}
         cy={70}
@@ -82,7 +81,6 @@ function CircularGauge({
         transform="rotate(135 70 70)"
       />
 
-      {/* Animated fill arc */}
       <motion.circle
         cx={70}
         cy={70}
@@ -102,7 +100,6 @@ function CircularGauge({
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
 
 export default function SensorGaugeCard({
   label,
@@ -123,7 +120,6 @@ export default function SensorGaugeCard({
   const classification = value !== null ? getClassification(value) : "—";
   const displayValue = value !== null ? value : 0;
 
-  // Track previous value for flash animation
   const [prevValue, setPrevValue] = useState<number | null>(null);
   const [flashKey, setFlashKey] = useState(0);
 
@@ -136,7 +132,6 @@ export default function SensorGaugeCard({
 
   return (
     <Card className="relative items-center rounded-2xl p-6 overflow-hidden gap-4 transition-shadow duration-300 hover:shadow-md">
-      {/* Flash overlay on value update */}
       {flashKey > 0 && (
         <motion.div
           key={flashKey}
@@ -148,13 +143,11 @@ export default function SensorGaugeCard({
         />
       )}
 
-      {/* Header */}
       <div className="flex items-center gap-2 self-start">
         <span className="text-primary/70">{icon}</span>
         <span className="text-sm font-semibold text-gray-600">{label}</span>
       </div>
 
-      {/* Gauge + Center Value */}
       <div className="relative flex items-center justify-center">
         <CircularGauge pct={pct} strokeColor={colors.stroke} glowColor={colors.glow} />
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-3">
@@ -165,7 +158,6 @@ export default function SensorGaugeCard({
         </div>
       </div>
 
-      {/* Classification badge */}
       <motion.div
         key={classification}
         initial={{ opacity: 0, y: 4 }}

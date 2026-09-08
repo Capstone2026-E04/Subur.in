@@ -73,7 +73,7 @@ function registerSensorSubscriber(mqttClient) {
             message: "Data sensor tidak valid. Periksa sensor, daya, atau koneksi.",
             type: "warning",
           });
-          await redis.setex(invalidNotifiedKey, 3600, "1"); // Lock 1 jam
+          await redis.setex(invalidNotifiedKey, 3600, "1");
         }
       } catch (err) {
         console.error("[MQTT Subscriber] Gagal menyimpan notifikasi data tidak valid:", err.message);
@@ -180,7 +180,7 @@ function registerSensorSubscriber(mqttClient) {
               message: `pH terlalu asam. Tambahkan kapur/dolomit sekitar ${Math.round(recommendation.limeDosageGram)} gram.`,
               type: "warning",
             });
-            await redis.setex(phAcidNotifiedKey, 3600, "1"); // Lock 1 jam
+            await redis.setex(phAcidNotifiedKey, 3600, "1");
           }
         } else if (ph > maxPh + 0.2 && recommendation.sulfurDosageGram > 0) {
           const alreadyNotified = await redis.get(phAlkalineNotifiedKey);
@@ -190,7 +190,7 @@ function registerSensorSubscriber(mqttClient) {
               message: `pH terlalu basa. Tambahkan sulfur elemental sekitar ${Math.round(recommendation.sulfurDosageGram)} gram.`,
               type: "warning",
             });
-            await redis.setex(phAlkalineNotifiedKey, 3600, "1"); // Lock 1 jam
+            await redis.setex(phAlkalineNotifiedKey, 3600, "1");
           }
         } else {
           await redis.del(phAcidNotifiedKey);

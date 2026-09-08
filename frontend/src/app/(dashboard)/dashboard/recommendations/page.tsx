@@ -65,7 +65,6 @@ export default function RecommendationsPage() {
   const [historyLogs, setHistoryLogs] = useState<RecommendationLogItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
-  // Pagination & limit states
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState<number | "all">(20);
 
@@ -75,7 +74,6 @@ export default function RecommendationsPage() {
 
   const selectedDevice = devices.find((d) => d.id === selectedDeviceId) || devices[0] || null;
 
-  // Pagination slicing logic
   const logsToDisplay = limit === "all"
     ? historyLogs
     : historyLogs.slice((currentPage - 1) * limit, currentPage * limit);
@@ -313,7 +311,6 @@ export default function RecommendationsPage() {
                       </div>
                     )}
 
-                    {/* Lime (Dolomite) Box */}
                     {recommendation.limeDosageGram > 0 && (
                       <div className="relative group overflow-hidden flex items-start gap-3 rounded-2xl bg-emerald-50 border border-emerald-200/55 p-4 shadow-sm hover:shadow transition-all duration-300">
                         <div className="absolute right-[-10px] bottom-[-10px] text-emerald-200/40 opacity-50 group-hover:scale-110 transition-transform duration-300">
@@ -484,7 +481,6 @@ export default function RecommendationsPage() {
                 </table>
               </div>
 
-              {/* Sleek Pagination Bar */}
               {limit !== "all" && historyLogs.length > limit && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4 border-t border-black/5 bg-gray-50/50">
                   <span className="text-xs text-gray-400 font-semibold text-center sm:text-left">

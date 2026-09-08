@@ -94,25 +94,21 @@ export default function SensorHistoryChart({
   const [viewMode, setViewMode] = useState<ChartViewMode>("both");
   const [error, setError] = useState<string | null>(null);
 
-  // Hubungkan ke hook real-time SSE
   const { ph, moisture, lastUpdated } = useSensorRealtime(deviceId);
 
-  // Efek untuk menyinkronkan data real-time ke dalam riwayat grafik secara dinamis
   useEffect(() => {
     if (ph !== null && moisture !== null && lastUpdated) {
       setHistory((prev) => {
-        // Hindari duplikasi data jika data dengan timestamp yang sama sudah ada
         if (prev.some((item) => item.timestamp === lastUpdated)) {
           return prev;
         }
         const newItem: SensorHistoryItem = {
-          id: Date.now(), // Gunakan timestamp sebagai ID unik lokal
+          id: Date.now(),
           deviceId,
           ph,
           moisture,
           timestamp: lastUpdated,
         };
-        // Masukkan data baru, urutkan berdasarkan waktu (kiri ke kanan), dan batasi sesuai limit
         const updated = [...prev, newItem].sort(
           (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
@@ -127,7 +123,6 @@ export default function SensorHistoryChart({
     setError(null);
     try {
       const data = await fetchSensorHistory(token, deviceId, limit);
-      // Sort history data chronologically ascending (oldest on left, newest on right)
       const sorted = [...data].sort(
         (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
@@ -166,7 +161,6 @@ export default function SensorHistoryChart({
 
   return (
     <Card className="overflow-hidden">
-      {/* Chart Header */}
       <CardHeader className="flex-wrap gap-4 py-4 bg-muted/60 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
@@ -182,10 +176,8 @@ export default function SensorHistoryChart({
           </div>
         </div>
 
-        {/* Header Controls */}
         {!simple && (
           <div className="flex items-center gap-2">
-            {/* Mode Toggles */}
             <div className="flex rounded-xl bg-gray-100 p-0.5 border border-black/5 text-xs font-semibold">
               {[
                 { id: "both", label: "Semua", Icon: MdCompare },
@@ -212,7 +204,6 @@ export default function SensorHistoryChart({
               })}
             </div>
 
-            {/* Limit Selector */}
             <select
               id="chart-limit-select"
               value={limit}
@@ -225,7 +216,6 @@ export default function SensorHistoryChart({
               <option value={50}>50 data</option>
             </select>
 
-            {/* Refresh Button */}
             <button
               id="refresh-chart-btn"
               onClick={loadHistory}
@@ -239,7 +229,6 @@ export default function SensorHistoryChart({
         )}
       </CardHeader>
 
-      {/* Chart Canvas */}
       <div className={`flex-1 p-5 ${simple ? "min-h-[220px]" : "min-h-[320px]"} relative`}>
         {isLoading && history.length === 0 ? (
           <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10 animate-pulse">
@@ -283,7 +272,6 @@ export default function SensorHistoryChart({
                   dy={10}
                 />
                 
-                {/* Y-Axis configuration based on active view mode */}
                 {viewMode === "ph" || viewMode === "both" ? (
                   <YAxis
                     yAxisId="ph-axis"
@@ -328,7 +316,6 @@ export default function SensorHistoryChart({
                   wrapperStyle={{ fontSize: 11, fontWeight: 600, color: "#475569" }}
                 />
 
-                {/* pH Line */}
                 {(viewMode === "ph" || viewMode === "both") && (
                   <Line
                     yAxisId="ph-axis"
@@ -342,7 +329,6 @@ export default function SensorHistoryChart({
                   />
                 )}
 
-                {/* Moisture Line */}
                 {(viewMode === "moisture" || viewMode === "both") && (
                   <Line
                     yAxisId="moisture-axis"

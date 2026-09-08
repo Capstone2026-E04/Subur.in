@@ -60,7 +60,6 @@ function getPhClassification(ph: number): string {
   return "Sangat Basa";
 }
 
-// ── Moisture Color Scheme ─────────────────────────────────────────────────────
 
 function getMoistureColor(m: number) {
   if (m < 30) {
@@ -98,7 +97,6 @@ function getMoistureClassification(m: number): string {
   return "Terlalu Lembap";
 }
 
-// ── Connection Status Indicator ───────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<
   ConnectionStatus,
@@ -133,7 +131,6 @@ function ConnectionBadge({ status }: { status: ConnectionStatus }) {
 
   return (
     <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border border-black/6 bg-white shadow-sm`}>
-      {/* Pulsing dot */}
       <span className="relative flex h-2.5 w-2.5">
         {status !== "disconnected" && (
           <motion.span
@@ -164,7 +161,6 @@ export default function SensorMonitorPanel({
 
   return (
     <Card className="overflow-hidden">
-      {/* Panel Header */}
       <CardHeader className="flex-wrap py-4 bg-muted/60">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
@@ -182,9 +178,7 @@ export default function SensorMonitorPanel({
         <ConnectionBadge status={connectionStatus} />
       </CardHeader>
 
-      {/* Gauge Grid */}
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* pH Card */}
         <SensorGaugeCard
           label="Tingkat pH Tanah"
           value={ph}
@@ -197,7 +191,6 @@ export default function SensorMonitorPanel({
           decimals={1}
         />
 
-        {/* Moisture Card */}
         <SensorGaugeCard
           label="Kelembapan Tanah"
           value={moisture}
@@ -211,7 +204,6 @@ export default function SensorMonitorPanel({
         />
       </CardContent>
 
-      {/* Footer — Last Updated */}
       <CardFooter className="py-3 bg-muted/40">
         <AnimatePresence mode="wait">
           <motion.div

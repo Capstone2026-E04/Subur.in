@@ -126,11 +126,9 @@ export default function PlantsPage() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="group relative flex rounded-2xl bg-card border border-border shadow-xs overflow-hidden hover:shadow-md transition-shadow duration-300"
               >
-                {/* Left accent bar matching DeviceCard */}
                 <div className="w-1.5 shrink-0 bg-primary/40 group-hover:bg-primary transition-all duration-300" />
 
                 <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
-                  {/* Left Section: Icon and names */}
                   <div className="flex items-center gap-3 min-w-0 md:max-w-xs shrink-0">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/8 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
                       <MdOutlineSpa size={22} />
@@ -147,7 +145,6 @@ export default function PlantsPage() {
                     </div>
                   </div>
 
-                  {/* Middle Section: Description */}
                   <div className="flex-1 min-w-0">
                     {plant.description ? (
                       <p className="text-xs text-gray-500 leading-relaxed font-normal md:line-clamp-2">
@@ -160,9 +157,7 @@ export default function PlantsPage() {
                     )}
                   </div>
 
-                  {/* Right Section: Optimal Parameters Box */}
                   <div className="flex items-center gap-3 shrink-0 border-t md:border-t-0 border-border pt-3 md:pt-0">
-                    {/* Kelembapan */}
                     <div className="rounded-xl bg-sky-50 px-3 py-2 border border-sky-100 flex flex-col items-center min-w-[100px]">
                       <span className="text-[9px] font-bold text-sky-600 uppercase tracking-wider">
                         Kelembapan
@@ -175,7 +170,6 @@ export default function PlantsPage() {
                       </span>
                     </div>
 
-                    {/* pH Tanah */}
                     <div className="rounded-xl bg-amber-50 px-3 py-2 border border-amber-100 flex flex-col items-center min-w-[100px]">
                       <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider">
                         pH Tanah

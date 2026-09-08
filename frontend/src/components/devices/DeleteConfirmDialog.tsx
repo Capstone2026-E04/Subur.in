@@ -43,7 +43,6 @@ export default function DeleteConfirmDialog({
     <AnimatePresence>
       {isOpen && device && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="del-backdrop"
             className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
@@ -53,7 +52,6 @@ export default function DeleteConfirmDialog({
             onClick={onClose}
           />
 
-          {/* Dialog */}
           <motion.div
             key="del-dialog"
             className="fixed inset-0 z-[60] flex items-center justify-center p-4"
@@ -68,7 +66,6 @@ export default function DeleteConfirmDialog({
               exit={{ scale: 0.92, y: 12 }}
               transition={{ type: "spring", stiffness: 320, damping: 28 }}
             >
-              {/* Icon header */}
               <div className="flex flex-col items-center gap-3 pt-8 pb-5 px-6 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100">
                   <MdOutlineDeleteOutline size={28} className="text-rose-500" />
@@ -83,7 +80,6 @@ export default function DeleteConfirmDialog({
                 </div>
               </div>
 
-              {/* Device info strip */}
               <div className="mx-6 mb-4 rounded-xl bg-gray-50 border border-black/5 px-4 py-3 flex items-center gap-3">
                 <MdWarningAmber size={16} className="text-amber-500 shrink-0" />
                 <div>
@@ -94,14 +90,12 @@ export default function DeleteConfirmDialog({
                 </div>
               </div>
 
-              {/* Error */}
               {error && (
                 <p className="mx-6 mb-3 text-xs text-rose-600 font-medium text-center">
                   ⚠ {error}
                 </p>
               )}
 
-              {/* Actions */}
               <div className="flex gap-3 px-6 pb-6">
                 <button
                   id="cancel-delete-btn"

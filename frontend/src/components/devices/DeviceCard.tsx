@@ -134,7 +134,6 @@ export default function DeviceCard({
           )}
         </div>
 
-        {/* Right Section: Last Seen & Action Buttons */}
         <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center md:items-end lg:items-center justify-between md:justify-end gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border">
           <div className="flex items-center gap-1.5 text-xs text-gray-400">
             <MdAccessTime size={13} className="shrink-0" />

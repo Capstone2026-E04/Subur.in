@@ -385,7 +385,6 @@ export default function AnalyticsPage() {
               <option value="1h">Tiap 1 Jam</option>
             </select>
 
-            {/* Refresh Button */}
             <button
               id="refresh-analytics-btn"
               onClick={loadHistory}
@@ -398,7 +397,6 @@ export default function AnalyticsPage() {
           </div>
         </CardHeader>
 
-        {/* Chart Canvas Area */}
         <div className="flex-1 p-5 min-h-[360px] relative">
           {isHistoryLoading && history.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center bg-white/75 z-10 animate-pulse">
@@ -449,7 +447,6 @@ export default function AnalyticsPage() {
                     dy={10}
                   />
 
-                  {/* pH Axis */}
                   {(viewMode === "ph" || viewMode === "both") && (
                     <YAxis
                       yAxisId="ph-axis"
@@ -462,7 +459,6 @@ export default function AnalyticsPage() {
                     />
                   )}
 
-                  {/* Moisture Axis */}
                   {viewMode === "moisture" ? (
                     <YAxis
                       yAxisId="moisture-axis"
@@ -495,7 +491,6 @@ export default function AnalyticsPage() {
                     wrapperStyle={{ fontSize: 11, fontWeight: 700, color: "#475569" }}
                   />
 
-                  {/* pH Line */}
                   {(viewMode === "ph" || viewMode === "both") && (
                     <Line
                       yAxisId="ph-axis"
@@ -509,7 +504,6 @@ export default function AnalyticsPage() {
                     />
                   )}
 
-                  {/* Moisture Line */}
                   {(viewMode === "moisture" || viewMode === "both") && (
                     <Line
                       yAxisId="moisture-axis"

@@ -107,7 +107,6 @@ export default function ConnectDeviceModal({
         setPolybags(pb);
       })
       .catch(() => {
-        // non-critical — form still partially usable
       });
 
     return () => clearTimeout(timer);

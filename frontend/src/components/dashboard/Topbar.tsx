@@ -47,7 +47,6 @@ export default function Topbar({ user }: TopbarProps) {
     loadUnreadCount();
   }, [loadUnreadCount]);
 
-  // Sync real-time count dari telemetri SSE
   useEffect(() => {
     if (devices.length === 0 || !token) return;
 
@@ -62,7 +61,6 @@ export default function Topbar({ user }: TopbarProps) {
             loadUnreadCount();
           }
         } catch (e) {
-          // ignore
         }
       };
       return es;
@@ -89,7 +87,6 @@ export default function Topbar({ user }: TopbarProps) {
 
   return (
     <header className="flex h-16 items-center justify-between gap-3 border-b border-black/5 bg-background px-4 sm:px-6">
-      {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs sm:text-sm font-medium min-w-0 overflow-x-auto">
         {breadcrumbs.map((crumb, idx) => (
           <div key={crumb.href} className="flex items-center gap-1.5 shrink-0">
@@ -106,12 +103,10 @@ export default function Topbar({ user }: TopbarProps) {
       </nav>
 
       <div className="flex items-center gap-3 shrink-0">
-        {/* Greeting */}
         <span className="hidden md:block text-sm sm:text-md font-semibold text-gray-700 truncate max-w-[160px]">
           Halo, {user?.name || "Pengguna"}
         </span>
 
-        {/* Notification Bell */}
         <Link
           href="/dashboard/notifications"
           aria-label="Notifikasi"
@@ -125,7 +120,6 @@ export default function Topbar({ user }: TopbarProps) {
           )}
         </Link>
 
-        {/* Profile Avatar */}
         <Link
           href="/dashboard/profile"
           aria-label="Profil"

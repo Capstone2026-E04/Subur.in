@@ -77,7 +77,6 @@ export function useSensorRealtime(deviceId: string): SensorData {
         if (payload?.timestamp) setLastUpdated(payload.timestamp);
         setConnectionStatus("connected");
       } catch {
-        // malformed JSON — ignore
       }
     };
 
@@ -87,10 +86,8 @@ export function useSensorRealtime(deviceId: string): SensorData {
       es.close();
       esRef.current = null;
 
-      // Fetch via REST as fallback
       fetchLatest();
 
-      // Schedule reconnect
       reconnectTimerRef.current = setTimeout(() => {
         if (isMountedRef.current) openStreamRef.current?.();
       }, RECONNECT_DELAY_MS);
@@ -104,7 +101,6 @@ export function useSensorRealtime(deviceId: string): SensorData {
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Run async to avoid synchronous setState inside effect
     const initTimer = setTimeout(() => {
       fetchLatest();
       openStream();

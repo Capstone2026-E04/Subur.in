@@ -135,7 +135,7 @@ model Notification {
   deviceId  String   @map("device_id") @db.VarChar(50)
   title     String   @db.VarChar(100)
   message   String   @db.Text
-  type      String   @db.VarChar(20) // "warning", "success", "info"
+  type      String   @db.VarChar(20)
   isRead    Boolean  @default(false) @map("is_read")
   createdAt DateTime @default(now()) @map("created_at")
 
