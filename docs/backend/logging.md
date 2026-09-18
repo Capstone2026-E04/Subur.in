@@ -25,10 +25,6 @@ Controller-level errors are logged with a descriptive label matching the operati
 - Cron: partition creation/skip decisions, cleanup results.
 - Server boot ([`server.js`](../../backend/src/server.js)): one line per subsystem init attempt, success or caught failure — this is the fastest way to tell which optional subsystem (MQTT/Redis/cron) failed to come up without the whole process crashing.
 
-## Metrics
-
-Separately from logs, [`routes/api.js`](../../backend/src/routes/api.js) exposes `GET /api/metrics` via `prom-client` with Node.js default metrics registered (`collectDefaultMetrics`) — no custom application metrics are defined yet. Point a Prometheus scraper at this endpoint for process-level monitoring (event loop lag, memory, GC). The endpoint is protected by [`metrics_auth.middleware.js`](../../backend/src/middlewares/metrics_auth.middleware.js) — requests need `Authorization: Bearer <METRICS_PASSWORD>`.
-
 ## Adding Logging to New Code
 
 - Background/infrastructure code (new MQTT topic, new cron job): pick a `[Subsystem]` prefix and stay consistent within that file.

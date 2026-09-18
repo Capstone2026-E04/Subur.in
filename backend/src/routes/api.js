@@ -1,13 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const client = require('prom-client');
 const prisma = require('../database/connections/prisma_client');
 const { getRedisClient } = require('../database/connections/redis');
 const authRoutes = require('./auth.routes');
-const metricsAuthMiddleware = require('../middlewares/metrics_auth.middleware');
-
-const metricsRegister = new client.Registry();
-client.collectDefaultMetrics({ register: metricsRegister });
 const userRoutes = require('./user.routes');
 const sensorRoutes = require('./sensor.routes');
 const deviceRoutes = require('./device.routes');
@@ -51,18 +46,12 @@ router.get('/health', async (req, res) => {
   }
 });
 
-router.get('/metrics', metricsAuthMiddleware, async (req, res) => {
-  res.set('Content-Type', metricsRegister.contentType);
-  res.end(await metricsRegister.metrics());
-});
-
 router.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Subur.in API Router v1 aktif!',
     endpoints: {
       health: 'GET /api/health',
-      metrics: 'GET /api/metrics',
       auth: '/api/auth/google',
       users: {
         getProfile: 'GET /api/users/me',

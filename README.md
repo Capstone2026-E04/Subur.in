@@ -30,7 +30,6 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 | Cache         | Redis (self-hosted)                                                         |
 | Pesan IoT     | MQTT (EMQX Cloud, TLS)                                                      |
 | Realtime Web  | Server-Sent Events (SSE)                                                    |
-| Observability | Prometheus (`prom-client`)                                                  |
 | Deployment    | Docker, GitHub Actions, GHCR, VPS                                           |
 
 ## Arsitektur Singkat
