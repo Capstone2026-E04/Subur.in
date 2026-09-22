@@ -116,7 +116,10 @@ async function startSimulation() {
     console.log('====================================================');
 
   } catch (error) {
-    console.error(' Terjadi kesalahan selama simulasi:', error.message);
+    console.error('[Simulate] Terjadi kesalahan selama simulasi:', {
+      message: error.message,
+      stack: error.stack,
+    });
     if (error.message.includes("Can't reach database server") || error.code === 'P1001') {
       console.error('\n Hubungan ke database gagal.');
       console.error(' Pastikan database Supabase Anda sedang aktif (tidak dalam status paused/ditangguhkan).');

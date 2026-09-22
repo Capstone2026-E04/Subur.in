@@ -32,7 +32,10 @@ async function checkIsPartitioned() {
     `);
     return result.length > 0 && result[0].partstrat === 'r';
   } catch (err) {
-    console.error("[Cron] Gagal memeriksa tipe partisi tabel:", err.message);
+    console.error("[DatabaseCleanupCron] Gagal memeriksa tipe partisi tabel:", {
+      message: err.message,
+      stack: err.stack,
+    });
     return false;
   }
 }
@@ -57,7 +60,11 @@ async function createPartitionForMonth(date) {
     `);
     console.log(`[Cron] Sukses membuat tabel partisi ${partitionName}.`);
   } catch (err) {
-    console.error(`[Cron] Gagal memproses pembuatan partisi ${partitionName}:`, err.message);
+    console.error("[DatabaseCleanupCron] Gagal memproses pembuatan partisi:", {
+      message: err.message,
+      stack: err.stack,
+      partitionName,
+    });
   }
 }
 
@@ -120,7 +127,10 @@ async function cleanupOldLogs() {
     console.log(`[Cron] Hapus notifications selesai. Jumlah baris dihapus: ${deletedNotifications.count}`);
 
   } catch (err) {
-    console.error("[Cron] Gagal melakukan pembersihan log lama:", err.message);
+    console.error("[DatabaseCleanupCron] Gagal melakukan pembersihan log lama:", {
+      message: err.message,
+      stack: err.stack,
+    });
   }
 }
 
@@ -154,7 +164,11 @@ async function checkOfflineDevices() {
               }
             });
           } catch (dbErr) {
-            console.error(`[Cron] Gagal menyimpan notifikasi offline device ${device.id} ke DB:`, dbErr.message);
+            console.error("[DatabaseCleanupCron] Gagal menyimpan notifikasi offline device ke DB:", {
+              message: dbErr.message,
+              stack: dbErr.stack,
+              deviceId: device.id,
+            });
           }
 
           broadcastToDevice(device.id, {
@@ -171,7 +185,10 @@ async function checkOfflineDevices() {
       }
     }
   } catch (err) {
-    console.error("[Cron] Gagal memeriksa status offline device:", err.message);
+    console.error("[DatabaseCleanupCron] Gagal memeriksa status offline device:", {
+      message: err.message,
+      stack: err.stack,
+    });
   }
 }
 
@@ -180,19 +197,28 @@ function initCronJobs() {
   
   cron.schedule("0 0 * * *", () => {
     cleanupOldLogs().catch(err => {
-      console.error("[Cron Job] Gagal menjalankan pembersihan harian:", err);
+      console.error("[DatabaseCleanupCron] Gagal menjalankan pembersihan harian:", {
+        message: err.message,
+        stack: err.stack,
+      });
     });
   });
-  
+
   cron.schedule("0 1 * * *", () => {
     managePartitions().catch(err => {
-      console.error("[Cron Job] Gagal menjalankan pengecekan partisi harian:", err);
+      console.error("[DatabaseCleanupCron] Gagal menjalankan pengecekan partisi harian:", {
+        message: err.message,
+        stack: err.stack,
+      });
     });
   });
-  
+
   cron.schedule("*/1 * * * *", () => {
     checkOfflineDevices().catch(err => {
-      console.error("[Cron Job] Gagal menjalankan pengecekan device offline:", err);
+      console.error("[DatabaseCleanupCron] Gagal menjalankan pengecekan device offline:", {
+        message: err.message,
+        stack: err.stack,
+      });
     });
   });
   
@@ -225,7 +251,10 @@ function initCronJobs() {
   }
 
   runStartupJobs().catch(err => {
-    console.error("[Cron] Error tidak terduga pada inisialisasi startup:", err);
+    console.error("[DatabaseCleanupCron] Error tidak terduga pada inisialisasi startup:", {
+      message: err.message,
+      stack: err.stack,
+    });
   });
 }
 

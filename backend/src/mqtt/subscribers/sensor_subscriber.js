@@ -22,10 +22,11 @@ const SENSOR_TOPIC = "suburin/devices/+/telemetry";
 function registerSensorSubscriber(mqttClient) {
   mqttClient.subscribe(SENSOR_TOPIC, { qos: 1 }, (err) => {
     if (err) {
-      console.error(
-        `[MQTT Subscriber]  Gagal subscribe ke topic "${SENSOR_TOPIC}":`,
-        err.message
-      );
+      console.error("[SensorSubscriber] Gagal subscribe ke topic MQTT:", {
+        message: err.message,
+        stack: err.stack,
+        topic: SENSOR_TOPIC,
+      });
       return;
     }
     console.log(
@@ -47,11 +48,12 @@ function registerSensorSubscriber(mqttClient) {
     let data;
     try {
       data = JSON.parse(payload.toString());
-    } catch {
-      console.error(
-        `[MQTT Subscriber]  Payload bukan JSON valid dari device "${deviceId}":`,
-        payload.toString()
-      );
+    } catch (parseErr) {
+      console.error("[SensorSubscriber] Payload MQTT bukan JSON valid:", {
+        message: parseErr.message,
+        deviceId,
+        rawPayload: payload.toString(),
+      });
       return;
     }
 
@@ -76,7 +78,11 @@ function registerSensorSubscriber(mqttClient) {
           await redis.setex(invalidNotifiedKey, 3600, "1");
         }
       } catch (err) {
-        console.error("[MQTT Subscriber] Gagal menyimpan notifikasi data tidak valid:", err.message);
+        console.error("[SensorSubscriber] Gagal menyimpan notifikasi data sensor tidak valid:", {
+          message: err.message,
+          stack: err.stack,
+          deviceId,
+        });
       }
       return;
     }
@@ -197,10 +203,11 @@ function registerSensorSubscriber(mqttClient) {
           await redis.del(phAlkalineNotifiedKey);
         }
       } catch (recErr) {
-        console.error(
-          `[MQTT Subscriber] ️ Gagal membuat/menyimpan rekomendasi otomatis untuk device "${deviceId}":`,
-          recErr.message
-        );
+        console.error("[SensorSubscriber] Gagal membuat/menyimpan rekomendasi otomatis:", {
+          message: recErr.message,
+          stack: recErr.stack,
+          deviceId,
+        });
       }
 
       const allowWrite = await shouldSaveToDatabase(deviceId);
@@ -212,10 +219,11 @@ function registerSensorSubscriber(mqttClient) {
         );
       }
     } catch (err) {
-      console.error(
-        `[MQTT Subscriber]  Error saat memproses data dari device "${deviceId}":`,
-        err.message
-      );
+      console.error("[SensorSubscriber] Gagal memproses data sensor dari device:", {
+        message: err.message,
+        stack: err.stack,
+        deviceId,
+      });
     }
   });
 }

@@ -36,11 +36,13 @@ router.get('/health', async (req, res) => {
       timestamp: new Date(),
     });
   } catch (error) {
-    console.error("Database connection error:", error);
-    return res.status(500).json({
+    console.error("[API] Health check gagal, koneksi database bermasalah:", {
+      message: error.message,
+      stack: error.stack,
+    });
+    return res.status(503).json({
       status: "DOWN",
       message: "Server berjalan, namun GAGAL terkoneksi ke database Supabase.",
-      error: error.message,
       timestamp: new Date(),
     });
   }

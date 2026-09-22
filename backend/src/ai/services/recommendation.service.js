@@ -1,4 +1,5 @@
 const prisma = require('../../database/connections/prisma_client');
+const { AppError }               = require('../../errors/AppError');
 const { runInference }           = require('../core/engine');
 const { interpretCategory }      = require('../utils/interpreter');
 const { calculateWaterVolume }   = require('../dosage/water_calculator');
@@ -9,19 +10,19 @@ const { THETA_TARGET }           = require('../config/treatment_constants');
 
 async function generateRecommendation({ phValue, moistureValue, polybagPreset, plantIdOrName }) {
   if (typeof phValue !== 'number' || typeof moistureValue !== 'number') {
-    throw new TypeError('phValue dan moistureValue harus berupa angka.');
+    throw new AppError('phValue dan moistureValue harus berupa angka.', 400);
   }
   if (phValue < 0 || phValue > 14) {
-    throw new RangeError('phValue harus berada dalam rentang 0 sampai 14.');
+    throw new AppError('phValue harus berada dalam rentang 0 sampai 14.', 400);
   }
   if (moistureValue < 0 || moistureValue > 100) {
-    throw new RangeError('moistureValue harus berada dalam rentang 0 sampai 100.');
+    throw new AppError('moistureValue harus berada dalam rentang 0 sampai 100.', 400);
   }
   if (!polybagPreset) {
-    throw new Error('polybagPreset wajib diisi.');
+    throw new AppError('polybagPreset wajib diisi.', 400);
   }
   if (!plantIdOrName) {
-    throw new Error('plantIdOrName wajib diisi.');
+    throw new AppError('plantIdOrName wajib diisi.', 400);
   }
 
   const preset = await getPhysicalPreset(polybagPreset);
@@ -45,11 +46,16 @@ async function generateRecommendation({ phValue, moistureValue, polybagPreset, p
       });
     }
   } catch (dbError) {
-    throw new Error(`Database error saat memuat data tanaman: "${dbError.message}".`);
+    console.error('[RecommendationService] Gagal query data tanaman:', {
+      message: dbError.message,
+      stack: dbError.stack,
+      plantIdOrName,
+    });
+    throw dbError;
   }
 
   if (!plant) {
-    throw new Error(`Data tanaman dengan identitas "${plantIdOrName}" tidak ditemukan di database.`);
+    throw new AppError(`Data tanaman dengan identitas "${plantIdOrName}" tidak ditemukan di database.`, 404);
   }
 
   const phTarget = plant.phTarget;

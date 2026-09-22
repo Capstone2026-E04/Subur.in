@@ -2,7 +2,7 @@ const prisma = require('../database/connections/prisma_client');
 const { generateRecommendation } = require('../ai/services/recommendation.service');
 
 
-exports.simulateRecommendation = async (req, res) => {
+exports.simulateRecommendation = async (req, res, next) => {
   try {
     const { phValue, moistureValue, polybagPreset, plantIdOrName } = req.body;
 
@@ -65,16 +65,16 @@ exports.simulateRecommendation = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Simulate Recommendation Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Gagal menjalankan simulasi fuzzy logic.',
-      error: error.message
+    console.error('[RecommendationController] Gagal menjalankan simulasi fuzzy logic:', {
+      message: error.message,
+      stack: error.stack,
+      body: req.body,
     });
+    return next(error);
   }
 };
 
-exports.getRecommendationHistory = async (req, res) => {
+exports.getRecommendationHistory = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { deviceId } = req.query;
@@ -124,11 +124,11 @@ exports.getRecommendationHistory = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get Recommendation History Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Gagal mengambil riwayat rekomendasi.',
-      error: error.message
+    console.error('[RecommendationController] Gagal mengambil riwayat rekomendasi:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };

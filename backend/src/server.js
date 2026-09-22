@@ -6,6 +6,7 @@ const apiRouter = require("./routes/api");
 const { connectMQTT } = require("./mqtt/connection");
 const { registerSensorSubscriber } = require("./mqtt/subscribers/sensor_subscriber");
 const { initCronJobs } = require("./cron/database_cleanup_cron");
+const errorMiddleware = require("./middlewares/error.middleware");
 
 
 const app = express();
@@ -23,6 +24,8 @@ app.get("/", (req, res) => {
   );
 });
 
+app.use(errorMiddleware);
+
 app.listen(PORT, () => {
   console.log(`Server berjalan di http://localhost:${PORT}`);
   console.log(process.env.DATABASE_URL)
@@ -30,7 +33,10 @@ app.listen(PORT, () => {
   try {
     initCronJobs();
   } catch (err) {
-    console.error("[Cron] Gagal menginisialisasi cron jobs:", err.message);
+    console.error("[Server] Gagal menginisialisasi cron jobs:", {
+      message: err.message,
+      stack: err.stack,
+    });
   }
 
 
@@ -38,7 +44,10 @@ app.listen(PORT, () => {
     getRedisClient();
     console.log("[Redis] Inisialisasi Redis dimulai...");
   } catch (err) {
-    console.error("[Redis] Gagal menginisialisasi Redis:", err.message);
+    console.error("[Server] Gagal menginisialisasi Redis:", {
+      message: err.message,
+      stack: err.stack,
+    });
   }
 
   try {
@@ -50,6 +59,9 @@ app.listen(PORT, () => {
 
     console.log("[MQTT] Inisialisasi MQTT dimulai...");
   } catch (err) {
-    console.error("[MQTT] Gagal menginisialisasi MQTT:", err.message);
+    console.error("[Server] Gagal menginisialisasi MQTT:", {
+      message: err.message,
+      stack: err.stack,
+    });
   }
 });

@@ -9,7 +9,7 @@ const WELCOME_MESSAGE =
 const HELP_MESSAGE =
   "Perintah tidak dikenali. Kirim /link KODE_ANDA untuk menghubungkan akun Subur.in Anda ke Telegram.";
 
-exports.handleWebhook = async (req, res) => {
+exports.handleWebhook = async (req, res, next) => {
   try {
     const message = req.body?.message;
     const text = message?.text;
@@ -77,7 +77,10 @@ exports.handleWebhook = async (req, res) => {
     await telegramService.sendMessage(chatId, HELP_MESSAGE);
     return res.status(200).send();
   } catch (error) {
-    console.error("[Telegram Controller] Gagal memproses webhook:", error.message);
+    console.error("[TelegramController] Gagal memproses webhook:", {
+      message: error.message,
+      stack: error.stack,
+    });
     return res.status(200).send();
   }
 };

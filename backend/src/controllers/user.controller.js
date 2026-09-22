@@ -2,7 +2,7 @@ const prisma = require('../database/connections/prisma_client');
 const telegramService = require('../services/telegram.service');
 
 
-exports.getProfile = async (req, res) => {
+exports.getProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -35,17 +35,17 @@ exports.getProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get Profile Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat mengambil data profil.',
-      error: error.message
+    console.error('[UserController] Gagal mengambil data profil:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };
 
 
-exports.updateProfile = async (req, res) => {
+exports.updateProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -95,17 +95,17 @@ exports.updateProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Update Profile Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat memperbarui profil.',
-      error: error.message
+    console.error('[UserController] Gagal memperbarui profil:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };
 
 
-exports.deleteAccount = async (req, res) => {
+exports.deleteAccount = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -131,17 +131,17 @@ exports.deleteAccount = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Delete Account Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat menghapus akun.',
-      error: error.message
+    console.error('[UserController] Gagal menghapus akun:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };
 
 
-exports.getTelegramLinkCode = async (req, res) => {
+exports.getTelegramLinkCode = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const code = telegramService.generateLinkCode();
@@ -158,17 +158,17 @@ exports.getTelegramLinkCode = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get Telegram Link Code Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat membuat kode penghubung Telegram.',
-      error: error.message
+    console.error('[UserController] Gagal membuat kode penghubung Telegram:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };
 
 
-exports.unlinkTelegram = async (req, res) => {
+exports.unlinkTelegram = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -183,11 +183,11 @@ exports.unlinkTelegram = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Unlink Telegram Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat memutuskan koneksi Telegram.',
-      error: error.message
+    console.error('[UserController] Gagal memutuskan koneksi Telegram:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };

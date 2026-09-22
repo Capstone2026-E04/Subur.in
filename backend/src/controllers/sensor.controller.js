@@ -27,14 +27,14 @@ exports.streamSensorData = (req, res) => {
   });
 };
 
-exports.getLatestSensor = async (req, res) => {
+exports.getLatestSensor = async (req, res, next) => {
   const { deviceId } = req.params;
 
   try {
     let data = await getLatestSensorData(deviceId);
 
     if (!data) {
-      console.log(`[Sensor Controller] Cache miss atau Redis down. Mencari data terbaru di database untuk device "${deviceId}"...`);
+      console.log(`[SensorController] Cache miss atau Redis down. Mencari data terbaru di database untuk device "${deviceId}"...`);
       const dbLog = await getLatestSensorLog(deviceId);
       if (dbLog) {
         data = {
@@ -54,16 +54,16 @@ exports.getLatestSensor = async (req, res) => {
     }
     return res.status(200).json({ success: true, data });
   } catch (err) {
-    console.error("[Sensor Controller]  Error getLatestSensor:", err.message);
-    return res.status(500).json({
-      success: false,
-      message: "Gagal mengambil data sensor.",
-      error: err.message,
+    console.error("[SensorController] Gagal mengambil data sensor terbaru:", {
+      message: err.message,
+      stack: err.stack,
+      deviceId,
     });
+    return next(err);
   }
 };
 
-exports.getSensorHistory = async (req, res) => {
+exports.getSensorHistory = async (req, res, next) => {
   const { deviceId } = req.params;
   const limit = parseInt(req.query.limit) || 30;
 
@@ -80,7 +80,7 @@ exports.getSensorHistory = async (req, res) => {
       lastError = err;
       if (i < retries - 1) {
         console.warn(
-          `[Prisma History Query] ️ Gagal mengambil riwayat (percobaan ke-${i + 1}/${retries}). Mencoba kembali dalam ${delay}ms...`
+          `[SensorController] Gagal mengambil riwayat (percobaan ke-${i + 1}/${retries}). Mencoba kembali dalam ${delay}ms...`
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -94,10 +94,10 @@ exports.getSensorHistory = async (req, res) => {
     });
   }
 
-  console.error("[Sensor Controller]  Error getSensorHistory:", lastError.message);
-  return res.status(500).json({
-    success: false,
-    message: "Gagal mengambil riwayat sensor setelah beberapa percobaan.",
-    error: lastError.message,
+  console.error("[SensorController] Gagal mengambil riwayat sensor setelah beberapa percobaan:", {
+    message: lastError.message,
+    stack: lastError.stack,
+    deviceId,
   });
+  return next(lastError);
 };

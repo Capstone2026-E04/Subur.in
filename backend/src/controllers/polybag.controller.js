@@ -1,7 +1,7 @@
 const prisma = require('../database/connections/prisma_client');
 
 
-exports.getAllPolybags = async (req, res) => {
+exports.getAllPolybags = async (req, res, next) => {
   try {
     const polybags = await prisma.polybag.findMany({
       include: {
@@ -24,11 +24,10 @@ exports.getAllPolybags = async (req, res) => {
       data: mappedPolybags
     });
   } catch (error) {
-    console.error('Get All Polybags Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat mengambil daftar polybag.',
-      error: error.message
+    console.error('[PolybagController] Gagal mengambil daftar polybag:', {
+      message: error.message,
+      stack: error.stack,
     });
+    return next(error);
   }
 };

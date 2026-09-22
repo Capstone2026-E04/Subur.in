@@ -21,11 +21,13 @@ module.exports = (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Auth Middleware JWT Verification Error:', error.message);
+    console.error('[AuthMiddleware] Verifikasi JWT gagal:', {
+      message: error.message,
+      path: req.originalUrl,
+    });
     return res.status(401).json({
       success: false,
-      message: 'Token autentikasi tidak valid atau sudah kedaluwarsa.',
-      error: error.message
+      message: 'Token autentikasi tidak valid atau sudah kedaluwarsa.'
     });
   }
 };

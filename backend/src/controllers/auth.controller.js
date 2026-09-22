@@ -5,7 +5,7 @@ const prisma = require('../database/connections/prisma_client');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development';
 
-exports.googleSignIn = async (req, res) => {
+exports.googleSignIn = async (req, res, next) => {
   try {
     const { idToken } = req.body;
 
@@ -24,11 +24,12 @@ exports.googleSignIn = async (req, res) => {
       });
       payload = ticket.getPayload();
     } catch (verifyError) {
-      console.error('Google token verification failed:', verifyError.message);
+      console.error('[AuthController] Verifikasi Google ID Token gagal:', {
+        message: verifyError.message,
+      });
       return res.status(401).json({
         success: false,
         message: 'Google ID Token tidak valid atau kedaluwarsa.',
-        error: verifyError.message
       });
     }
 
@@ -97,11 +98,10 @@ exports.googleSignIn = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Google Sign-In Controller Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan sistem saat memproses login Google.',
-      error: error.message
+    console.error('[AuthController] Gagal memproses login Google:', {
+      message: error.message,
+      stack: error.stack,
     });
+    return next(error);
   }
 };

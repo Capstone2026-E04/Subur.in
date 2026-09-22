@@ -3,7 +3,7 @@
 const prisma = require('../database/connections/prisma_client');
 const { notifyDevice } = require('../services/notification.service');
 
-exports.getUserNotifications = async (req, res) => {
+exports.getUserNotifications = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -31,16 +31,16 @@ exports.getUserNotifications = async (req, res) => {
       data: { notifications }
     });
   } catch (error) {
-    console.error('Get User Notifications Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat mengambil daftar notifikasi.',
-      error: error.message
+    console.error('[NotificationController] Gagal mengambil daftar notifikasi:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };
 
-exports.markAllAsRead = async (req, res) => {
+exports.markAllAsRead = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -61,16 +61,16 @@ exports.markAllAsRead = async (req, res) => {
       message: 'Semua notifikasi berhasil ditandai telah dibaca.'
     });
   } catch (error) {
-    console.error('Mark All As Read Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat menandai notifikasi.',
-      error: error.message
+    console.error('[NotificationController] Gagal menandai notifikasi sebagai dibaca:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };
 
-exports.deleteNotification = async (req, res) => {
+exports.deleteNotification = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
@@ -99,16 +99,17 @@ exports.deleteNotification = async (req, res) => {
       message: 'Notifikasi berhasil dihapus.'
     });
   } catch (error) {
-    console.error('Delete Notification Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat menghapus notifikasi.',
-      error: error.message
+    console.error('[NotificationController] Gagal menghapus notifikasi:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+      notificationId: req.params?.id,
     });
+    return next(error);
   }
 };
 
-exports.createTestNotification = async (req, res) => {
+exports.createTestNotification = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -151,11 +152,11 @@ exports.createTestNotification = async (req, res) => {
       data: { notification }
     });
   } catch (error) {
-    console.error('Create Test Notification Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan saat memicu notifikasi uji coba.',
-      error: error.message
+    console.error('[NotificationController] Gagal memicu notifikasi uji coba:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
     });
+    return next(error);
   }
 };

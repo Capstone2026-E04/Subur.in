@@ -1,8 +1,9 @@
 const prisma = require('../../database/connections/prisma_client');
+const { AppError } = require('../../errors/AppError');
 
 async function getPhysicalPreset(presetNameOrId) {
   if (!presetNameOrId) {
-    throw new Error('Identifikasi preset polybag (ID atau Nama) wajib diisi.');
+    throw new AppError('Identifikasi preset polybag (ID atau Nama) wajib diisi.', 400);
   }
 
   let polybag = null;
@@ -29,11 +30,16 @@ async function getPhysicalPreset(presetNameOrId) {
       });
     }
   } catch (dbError) {
-    throw new Error(`Database error saat memuat data polybag: "${dbError.message}".`);
+    console.error('[PhysicalPresets] Gagal query data polybag:', {
+      message: dbError.message,
+      stack: dbError.stack,
+      presetNameOrId,
+    });
+    throw dbError;
   }
 
   if (!polybag || !polybag.polybagType) {
-    throw new Error(`Data polybag dengan identitas "${presetNameOrId}" tidak ditemukan di database.`);
+    throw new AppError(`Data polybag dengan identitas "${presetNameOrId}" tidak ditemukan di database.`, 404);
   }
 
   const diameterCm = polybag.polybagType.diameter;

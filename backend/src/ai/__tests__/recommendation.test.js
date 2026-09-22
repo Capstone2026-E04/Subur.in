@@ -70,7 +70,7 @@ async function runTests() {
         plantIdOrName: targetPlant.id
       }),
       {
-        name: 'RangeError',
+        statusCode: 400,
         message: 'phValue harus berada dalam rentang 0 sampai 14.'
       }
     );
@@ -83,7 +83,7 @@ async function runTests() {
         plantIdOrName: targetPlant.id
       }),
       {
-        name: 'RangeError',
+        statusCode: 400,
         message: 'moistureValue harus berada dalam rentang 0 sampai 100.'
       }
     );

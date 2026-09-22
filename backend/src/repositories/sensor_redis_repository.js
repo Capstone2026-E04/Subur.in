@@ -18,7 +18,11 @@ async function setLatestSensorData(deviceId, ph, moisture) {
     });
     await redis.set(key, payload, "EX", SENSOR_TTL_SECONDS);
   } catch (err) {
-    console.error(`[Redis Cache] ️ Gagal setLatestSensorData (Fallback aktif):`, err.message);
+    console.error("[SensorRedisRepository] Gagal setLatestSensorData (fallback aktif, tulis DB tetap lanjut):", {
+      message: err.message,
+      stack: err.stack,
+      deviceId,
+    });
   }
 }
 
@@ -29,7 +33,11 @@ async function getLatestSensorData(deviceId) {
     const raw = await redis.get(key);
     return raw ? JSON.parse(raw) : null;
   } catch (err) {
-    console.error(`[Redis Cache] ️ Gagal getLatestSensorData (Fallback aktif):`, err.message);
+    console.error("[SensorRedisRepository] Gagal getLatestSensorData (fallback aktif, caller akan query DB):", {
+      message: err.message,
+      stack: err.stack,
+      deviceId,
+    });
     return null;
   }
 }
@@ -39,7 +47,7 @@ async function shouldSaveToDatabase(deviceId) {
     const redis = getRedisClient();
     const throttleSeconds = parseInt(
       process.env.SENSOR_THROTTLE_SECONDS || "30",
-      10
+      10,
     );
     const key = `${THROTTLE_KEY_PREFIX}${deviceId}`;
     const exists = await redis.exists(key);
@@ -47,7 +55,11 @@ async function shouldSaveToDatabase(deviceId) {
     await redis.set(key, "1", "EX", throttleSeconds);
     return true;
   } catch (err) {
-    console.error(`[Redis Cache] ️ Gagal shouldSaveToDatabase (Fallback: izinkan simpan ke DB):`, err.message);
+    console.error("[SensorRedisRepository] Gagal shouldSaveToDatabase (fallback: izinkan simpan ke DB):", {
+      message: err.message,
+      stack: err.stack,
+      deviceId,
+    });
     return true;
   }
 }

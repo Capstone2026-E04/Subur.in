@@ -21,16 +21,17 @@ async function sendMessage(chatId, text, parseMode) {
     const result = await response.json();
 
     if (!result.ok) {
-      console.error(
-        `[Telegram Service] Gagal mengirim pesan ke chatId "${chatId}":`,
-        result.description
-      );
+      console.error("[TelegramService] Telegram API menolak pesan (fallback: gagal senyap, tidak menghambat caller):", {
+        chatId,
+        description: result.description,
+      });
     }
   } catch (error) {
-    console.error(
-      `[Telegram Service] Error saat mengirim pesan ke chatId "${chatId}":`,
-      error.message
-    );
+    console.error("[TelegramService] Gagal mengirim pesan ke Telegram (fallback: gagal senyap, tidak menghambat caller):", {
+      message: error.message,
+      stack: error.stack,
+      chatId,
+    });
   }
 }
 
