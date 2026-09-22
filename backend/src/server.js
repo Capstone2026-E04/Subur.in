@@ -7,22 +7,14 @@ const { connectMQTT } = require("./mqtt/connection");
 const { registerSensorSubscriber } = require("./mqtt/subscribers/sensor_subscriber");
 const { initCronJobs } = require("./cron/database_cleanup_cron");
 const errorMiddleware = require("./middlewares/error.middleware");
-const { sendSuccess } = require("./utils/response");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const startedAt = new Date();
+app.locals.startedAt = new Date();
 
 app.use(cors());
 
 app.use(express.json());
-
-app.get("/version", (req, res) => {
-  return sendSuccess(res, 200, "Informasi versi build.", {
-    commit: process.env.GIT_COMMIT_SHA || "unknown",
-    deployedAt: startedAt,
-  });
-});
 
 app.use("/api", apiRouter);
 

@@ -13,6 +13,13 @@ const notificationRoutes = require('./notification.routes');
 const telegramRoutes = require('./telegram.routes');
 const { sendSuccess, sendError } = require('../utils/response');
 
+router.get('/version', (req, res) => {
+  return sendSuccess(res, 200, 'Informasi versi build.', {
+    commit: process.env.GIT_COMMIT_SHA || 'unknown',
+    deployedAt: req.app.locals.startedAt,
+  });
+});
+
 router.get('/health', async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
