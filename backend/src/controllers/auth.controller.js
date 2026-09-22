@@ -1,6 +1,8 @@
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const prisma = require('../database/connections/prisma_client');
+const { AppError } = require('../errors/AppError');
+const { sendSuccess, sendError } = require('../utils/response');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development';
@@ -10,10 +12,7 @@ exports.googleSignIn = async (req, res, next) => {
     const { idToken } = req.body;
 
     if (!idToken) {
-      return res.status(400).json({
-        success: false,
-        message: 'Google ID Token wajib dikirimkan!'
-      });
+      return sendError(res, 400, 'Google ID Token wajib dikirimkan!');
     }
 
     let payload;
@@ -26,20 +25,15 @@ exports.googleSignIn = async (req, res, next) => {
     } catch (verifyError) {
       console.error('[AuthController] Verifikasi Google ID Token gagal:', {
         message: verifyError.message,
+        stack: verifyError.stack,
       });
-      return res.status(401).json({
-        success: false,
-        message: 'Google ID Token tidak valid atau kedaluwarsa.',
-      });
+      return next(new AppError('Google ID Token tidak valid atau kedaluwarsa.', 401, true));
     }
 
     const { sub: googleId, name, email, picture: avatarUrl } = payload;
 
     if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Akun Google Anda tidak menyediakan alamat email.'
-      });
+      return sendError(res, 400, 'Akun Google Anda tidak menyediakan alamat email.');
     }
 
     let user = await prisma.user.findUnique({
@@ -83,17 +77,13 @@ exports.googleSignIn = async (req, res, next) => {
       { expiresIn: '7d' }
     );
 
-    return res.status(200).json({
-      success: true,
-      message: 'Autentikasi Google berhasil!',
-      data: {
-        token: sessionToken,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          avatarUrl: user.avatarUrl
-        }
+    return sendSuccess(res, 200, 'Autentikasi Google berhasil!', {
+      token: sessionToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl
       }
     });
 

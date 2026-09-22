@@ -1,4 +1,5 @@
 const prisma = require('../database/connections/prisma_client');
+const { sendSuccess } = require('../utils/response');
 
 
 exports.getAllPolybags = async (req, res, next) => {
@@ -18,11 +19,7 @@ exports.getAllPolybags = async (req, res, next) => {
       soilVolumeLiter: pb.soilVolumeLiter
     }));
 
-    return res.status(200).json({
-      success: true,
-      message: 'Daftar polybag berhasil diambil.',
-      data: mappedPolybags
-    });
+    return sendSuccess(res, 200, 'Daftar polybag berhasil diambil.', mappedPolybags);
   } catch (error) {
     console.error('[PolybagController] Gagal mengambil daftar polybag:', {
       message: error.message,

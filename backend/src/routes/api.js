@@ -11,6 +11,7 @@ const polybagRoutes = require('./polybag.routes');
 const recommendationRoutes = require('./recommendation.routes');
 const notificationRoutes = require('./notification.routes');
 const telegramRoutes = require('./telegram.routes');
+const { sendSuccess, sendError } = require('../utils/response');
 
 router.get('/health', async (req, res) => {
   try {
@@ -25,14 +26,15 @@ router.get('/health', async (req, res) => {
       redisStatus = `ERROR: ${redisErr.message}`;
     }
 
-    return res.status(200).json({
+    const message =
+      redisStatus === "CONNECTED"
+        ? "Server Subur.in-Backend berjalan normal dan terkoneksi ke Supabase & Redis!"
+        : "Server berjalan normal, terkoneksi ke Supabase, namun bermasalah dengan Redis.";
+
+    return sendSuccess(res, 200, message, {
       status: "UP",
       database: "CONNECTED",
       redis: redisStatus,
-      message:
-        redisStatus === "CONNECTED"
-          ? "Server Subur.in-Backend berjalan normal dan terkoneksi ke Supabase & Redis!"
-          : "Server berjalan normal, terkoneksi ke Supabase, namun bermasalah dengan Redis.",
       timestamp: new Date(),
     });
   } catch (error) {
@@ -40,18 +42,12 @@ router.get('/health', async (req, res) => {
       message: error.message,
       stack: error.stack,
     });
-    return res.status(503).json({
-      status: "DOWN",
-      message: "Server berjalan, namun GAGAL terkoneksi ke database Supabase.",
-      timestamp: new Date(),
-    });
+    return sendError(res, 503, "Server berjalan, namun GAGAL terkoneksi ke database Supabase.");
   }
 });
 
 router.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Subur.in API Router v1 aktif!',
+  return sendSuccess(res, 200, 'Subur.in API Router v1 aktif!', {
     endpoints: {
       health: 'GET /api/health',
       auth: '/api/auth/google',

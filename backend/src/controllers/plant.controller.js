@@ -1,4 +1,5 @@
 const prisma = require('../database/connections/prisma_client');
+const { sendSuccess } = require('../utils/response');
 
 
 exports.getAllPlants = async (req, res, next) => {
@@ -7,11 +8,7 @@ exports.getAllPlants = async (req, res, next) => {
       orderBy: { name: 'asc' }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Daftar tanaman berhasil diambil.',
-      data: plants
-    });
+    return sendSuccess(res, 200, 'Daftar tanaman berhasil diambil.', plants);
   } catch (error) {
     console.error('[PlantController] Gagal mengambil daftar tanaman:', {
       message: error.message,

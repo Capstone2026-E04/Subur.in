@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { AppError } = require('../errors/AppError');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development';
 
@@ -7,10 +8,7 @@ module.exports = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        success: false,
-        message: 'Akses ditolak. Token autentikasi tidak disediakan atau format salah (gunakan Bearer <token>).'
-      });
+      return next(new AppError('Akses ditolak. Token autentikasi tidak disediakan atau format salah (gunakan Bearer <token>).', 401, true));
     }
 
     const token = authHeader.split(' ')[1];
@@ -23,11 +21,9 @@ module.exports = (req, res, next) => {
   } catch (error) {
     console.error('[AuthMiddleware] Verifikasi JWT gagal:', {
       message: error.message,
+      stack: error.stack,
       path: req.originalUrl,
     });
-    return res.status(401).json({
-      success: false,
-      message: 'Token autentikasi tidak valid atau sudah kedaluwarsa.'
-    });
+    return next(new AppError('Token autentikasi tidak valid atau sudah kedaluwarsa.', 401, true));
   }
 };

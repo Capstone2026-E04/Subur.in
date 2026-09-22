@@ -9,7 +9,7 @@ const WELCOME_MESSAGE =
 const HELP_MESSAGE =
   "Perintah tidak dikenali. Kirim /link KODE_ANDA untuk menghubungkan akun Subur.in Anda ke Telegram.";
 
-exports.handleWebhook = async (req, res, next) => {
+exports.handleWebhook = async (req, res) => {
   try {
     const message = req.body?.message;
     const text = message?.text;

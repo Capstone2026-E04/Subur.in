@@ -1,5 +1,6 @@
 const prisma = require('../database/connections/prisma_client');
 const telegramService = require('../services/telegram.service');
+const { sendSuccess, sendError } = require('../utils/response');
 
 
 exports.getProfile = async (req, res, next) => {
@@ -20,18 +21,13 @@ exports.getProfile = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pengguna tidak ditemukan.'
-      });
+      return sendError(res, 404, 'Pengguna tidak ditemukan.');
     }
 
     const { telegramChatId, ...userWithoutChatId } = user;
 
-    return res.status(200).json({
-      success: true,
-      message: 'Data profil berhasil diambil.',
-      data: { user: { ...userWithoutChatId, isTelegramLinked: Boolean(telegramChatId) } }
+    return sendSuccess(res, 200, 'Data profil berhasil diambil.', {
+      user: { ...userWithoutChatId, isTelegramLinked: Boolean(telegramChatId) }
     });
 
   } catch (error) {
@@ -52,24 +48,15 @@ exports.updateProfile = async (req, res, next) => {
     const { name, avatarUrl } = req.body;
 
     if (!name && !avatarUrl) {
-      return res.status(400).json({
-        success: false,
-        message: 'Minimal satu field (name atau avatarUrl) harus dikirimkan untuk diperbarui.'
-      });
+      return sendError(res, 400, 'Minimal satu field (name atau avatarUrl) harus dikirimkan untuk diperbarui.');
     }
 
     if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Nama tidak boleh kosong.'
-      });
+      return sendError(res, 400, 'Nama tidak boleh kosong.');
     }
 
     if (name !== undefined && name.trim().length > 100) {
-      return res.status(400).json({
-        success: false,
-        message: 'Nama tidak boleh melebihi 100 karakter.'
-      });
+      return sendError(res, 400, 'Nama tidak boleh melebihi 100 karakter.');
     }
 
     const updateData = {};
@@ -88,11 +75,7 @@ exports.updateProfile = async (req, res, next) => {
       }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Profil berhasil diperbarui.',
-      data: { user: updatedUser }
-    });
+    return sendSuccess(res, 200, 'Profil berhasil diperbarui.', { user: updatedUser });
 
   } catch (error) {
     console.error('[UserController] Gagal memperbarui profil:', {
@@ -115,20 +98,14 @@ exports.deleteAccount = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pengguna tidak ditemukan.'
-      });
+      return sendError(res, 404, 'Pengguna tidak ditemukan.');
     }
 
     await prisma.user.delete({
       where: { id: userId }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Akun berhasil dihapus secara permanen.'
-    });
+    return sendSuccess(res, 200, 'Akun berhasil dihapus secara permanen.');
 
   } catch (error) {
     console.error('[UserController] Gagal menghapus akun:', {
@@ -151,11 +128,7 @@ exports.getTelegramLinkCode = async (req, res, next) => {
       data: { telegramLinkCode: code }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Kode penghubung Telegram berhasil dibuat.',
-      data: { linkCode: code }
-    });
+    return sendSuccess(res, 200, 'Kode penghubung Telegram berhasil dibuat.', { linkCode: code });
 
   } catch (error) {
     console.error('[UserController] Gagal membuat kode penghubung Telegram:', {
@@ -177,10 +150,7 @@ exports.unlinkTelegram = async (req, res, next) => {
       data: { telegramChatId: null, telegramLinkCode: null }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Koneksi Telegram berhasil diputuskan.'
-    });
+    return sendSuccess(res, 200, 'Koneksi Telegram berhasil diputuskan.');
 
   } catch (error) {
     console.error('[UserController] Gagal memutuskan koneksi Telegram:', {

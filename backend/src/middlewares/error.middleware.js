@@ -1,5 +1,7 @@
 "use strict";
 
+const { sendError } = require("../utils/response");
+
 function errorMiddleware(err, req, res, next) {
   const statusCode = err.statusCode || 500;
   const isOperational = err.isOperational ?? false;
@@ -12,10 +14,12 @@ function errorMiddleware(err, req, res, next) {
     userId: req.user?.id,
   });
 
-  return res.status(statusCode).json({
-    success: false,
-    message: isOperational ? err.message : "Terjadi kesalahan pada server",
-  });
+  return sendError(
+    res,
+    statusCode,
+    isOperational ? err.message : "Terjadi kesalahan pada server",
+    err.validationErrors || null,
+  );
 }
 
 module.exports = errorMiddleware;

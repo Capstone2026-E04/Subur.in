@@ -4,6 +4,7 @@ const { generateRecommendation } = require('../ai/services/recommendation.servic
 const { getLatestSensorData } = require('../repositories/sensor_redis_repository');
 const { getLatestSensorLog } = require('../repositories/sensor_repository');
 const { publishDeviceConfig } = require('../mqtt/publishers/config_publisher');
+const { sendSuccess, sendError } = require('../utils/response');
 
 
 exports.getDiscoveredDevices = async (req, res, next) => {
@@ -14,11 +15,7 @@ exports.getDiscoveredDevices = async (req, res, next) => {
     const keys = await redis.keys('sensor:latest:*');
 
     if (keys.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: 'Tidak ada device aktif baru yang terdeteksi.',
-        data: { devices: [] }
-      });
+      return sendSuccess(res, 200, 'Tidak ada device aktif baru yang terdeteksi.', { devices: [] });
     }
 
 
@@ -46,11 +43,7 @@ exports.getDiscoveredDevices = async (req, res, next) => {
 
     const unclaimedDevices = activeDevices.filter(d => !registeredIds.has(d.deviceId));
 
-    return res.status(200).json({
-      success: true,
-      message: 'Berhasil mendeteksi device aktif yang belum terdaftar.',
-      data: { devices: unclaimedDevices }
-    });
+    return sendSuccess(res, 200, 'Berhasil mendeteksi device aktif yang belum terdaftar.', { devices: unclaimedDevices });
 
   } catch (error) {
     console.error('[DeviceController] Gagal mencari device aktif:', {
@@ -69,10 +62,7 @@ exports.registerDevice = async (req, res, next) => {
     const { deviceId, label, plantId, polybagId, sensorInterval } = req.body;
 
     if (!deviceId || !label || !plantId || !polybagId) {
-      return res.status(400).json({
-        success: false,
-        message: 'deviceId, label, plantId, dan polybagId wajib diisi.'
-      });
+      return sendError(res, 400, 'deviceId, label, plantId, dan polybagId wajib diisi.');
     }
 
 
@@ -81,10 +71,7 @@ exports.registerDevice = async (req, res, next) => {
     });
 
     if (existingDevice) {
-      return res.status(400).json({
-        success: false,
-        message: 'Device dengan ID ini sudah terdaftar di sistem.'
-      });
+      return sendError(res, 400, 'Device dengan ID ini sudah terdaftar di sistem.');
     }
 
 
@@ -108,14 +95,14 @@ exports.registerDevice = async (req, res, next) => {
 
     const intervalMin = sensorInterval !== undefined ? Number(sensorInterval) : 15;
     publishDeviceConfig(deviceId, intervalMin).catch(err => {
-      console.error(`[MQTT Publish] Gagal mengirim config awal saat registrasi device:`, err.message);
+      console.error(`[MQTT Publish] Gagal mengirim config awal saat registrasi device:`, {
+        message: err.message,
+        stack: err.stack,
+        deviceId,
+      });
     });
 
-    return res.status(201).json({
-      success: true,
-      message: 'Device berhasil didaftarkan dan dihubungkan ke akun Anda.',
-      data: { device: newDevice }
-    });
+    return sendSuccess(res, 201, 'Device berhasil didaftarkan dan dihubungkan ke akun Anda.', { device: newDevice });
 
   } catch (error) {
     console.error('[DeviceController] Gagal mendaftarkan device:', {
@@ -143,11 +130,7 @@ exports.getMyDevices = async (req, res, next) => {
       }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Daftar device Anda berhasil diambil.',
-      data: { devices }
-    });
+    return sendSuccess(res, 200, 'Daftar device Anda berhasil diambil.', { devices });
 
   } catch (error) {
     console.error('[DeviceController] Gagal mengambil daftar device:', {
@@ -172,10 +155,7 @@ exports.updateDevice = async (req, res, next) => {
     });
 
     if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: 'Device tidak ditemukan atau Anda tidak memiliki akses.'
-      });
+      return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
     }
 
     const updatedDevice = await prisma.device.update({
@@ -200,15 +180,15 @@ exports.updateDevice = async (req, res, next) => {
       const intervalMin = Number(sensorInterval);
       console.log(`[DeviceController] Mengirim data interval baru ke MQTT: ${intervalMin} menit`);
       publishDeviceConfig(id, intervalMin).catch(err => {
-        console.error(`[MQTT Publish] Gagal mengirim config saat update device:`, err.message);
+        console.error(`[MQTT Publish] Gagal mengirim config saat update device:`, {
+          message: err.message,
+          stack: err.stack,
+          deviceId: id,
+        });
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: 'Info device berhasil diperbarui.',
-      data: { device: updatedDevice }
-    });
+    return sendSuccess(res, 200, 'Info device berhasil diperbarui.', { device: updatedDevice });
 
   } catch (error) {
     console.error('[DeviceController] Gagal memperbarui device:', {
@@ -233,20 +213,14 @@ exports.deleteDevice = async (req, res, next) => {
     });
 
     if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: 'Device tidak ditemukan atau Anda tidak memiliki akses.'
-      });
+      return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
     }
 
     await prisma.device.delete({
       where: { id: id }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Device berhasil dihapus dari akun Anda.'
-    });
+    return sendSuccess(res, 200, 'Device berhasil dihapus dari akun Anda.');
 
   } catch (error) {
     console.error('[DeviceController] Gagal menghapus device:', {
@@ -275,10 +249,7 @@ exports.getDeviceRecommendation = async (req, res, next) => {
     });
 
     if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: 'Device tidak ditemukan atau Anda tidak memiliki akses.'
-      });
+      return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
     }
 
 
@@ -295,11 +266,7 @@ exports.getDeviceRecommendation = async (req, res, next) => {
     }
 
     if (!sensorData) {
-      return res.status(200).json({
-        success: true,
-        message: 'Belum ada data sensor tercatat untuk alat ini.',
-        data: null
-      });
+      return sendSuccess(res, 200, 'Belum ada data sensor tercatat untuk alat ini.', null);
     }
 
 
@@ -326,14 +293,10 @@ exports.getDeviceRecommendation = async (req, res, next) => {
       }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Rekomendasi Fuzzy Logic berhasil dibuat.',
-      data: {
-        ...recommendation,
-        logId: savedLog.id,
-        timestamp: sensorData.timestamp
-      }
+    return sendSuccess(res, 200, 'Rekomendasi Fuzzy Logic berhasil dibuat.', {
+      ...recommendation,
+      logId: savedLog.id,
+      timestamp: sensorData.timestamp
     });
 
   } catch (error) {
@@ -354,18 +317,12 @@ exports.sendDeviceConfig = async (req, res, next) => {
     const { delay_ms } = req.body;
 
     if (delay_ms === undefined || delay_ms === null) {
-      return res.status(400).json({
-        success: false,
-        message: 'Field "delay_ms" wajib diisi.'
-      });
+      return sendError(res, 400, 'Field "delay_ms" wajib diisi.');
     }
 
     const parsedDelay = Number(delay_ms);
     if (!Number.isInteger(parsedDelay) || parsedDelay < 100) {
-      return res.status(400).json({
-        success: false,
-        message: '"delay_ms" harus berupa bilangan bulat dan minimal 100 ms.'
-      });
+      return sendError(res, 400, '"delay_ms" harus berupa bilangan bulat dan minimal 100 ms.');
     }
 
     const device = await prisma.device.findFirst({
@@ -373,22 +330,15 @@ exports.sendDeviceConfig = async (req, res, next) => {
     });
 
     if (!device) {
-      return res.status(404).json({
-        success: false,
-        message: 'Device tidak ditemukan atau Anda tidak memiliki akses.'
-      });
+      return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
     }
 
     const result = await publishDeviceConfig(id, parsedDelay);
 
-    return res.status(200).json({
-      success: true,
-      message: `Konfigurasi delay berhasil dikirim ke device "${id}".`,
-      data: {
-        deviceId: id,
-        topic: result.topic,
-        payload: result.payload
-      }
+    return sendSuccess(res, 200, `Konfigurasi delay berhasil dikirim ke device "${id}".`, {
+      deviceId: id,
+      topic: result.topic,
+      payload: result.payload
     });
   } catch (error) {
     console.error('[DeviceController] Gagal mengirim konfigurasi ke device:', {

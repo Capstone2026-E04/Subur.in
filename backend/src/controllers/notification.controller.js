@@ -2,6 +2,7 @@
 
 const prisma = require('../database/connections/prisma_client');
 const { notifyDevice } = require('../services/notification.service');
+const { sendSuccess, sendError } = require('../utils/response');
 
 exports.getUserNotifications = async (req, res, next) => {
   try {
@@ -25,11 +26,7 @@ exports.getUserNotifications = async (req, res, next) => {
       }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Daftar notifikasi berhasil diambil.',
-      data: { notifications }
-    });
+    return sendSuccess(res, 200, 'Daftar notifikasi berhasil diambil.', { notifications });
   } catch (error) {
     console.error('[NotificationController] Gagal mengambil daftar notifikasi:', {
       message: error.message,
@@ -56,10 +53,7 @@ exports.markAllAsRead = async (req, res, next) => {
       }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Semua notifikasi berhasil ditandai telah dibaca.'
-    });
+    return sendSuccess(res, 200, 'Semua notifikasi berhasil ditandai telah dibaca.');
   } catch (error) {
     console.error('[NotificationController] Gagal menandai notifikasi sebagai dibaca:', {
       message: error.message,
@@ -84,20 +78,14 @@ exports.deleteNotification = async (req, res, next) => {
     });
 
     if (!notification) {
-      return res.status(404).json({
-        success: false,
-        message: 'Notifikasi tidak ditemukan atau Anda tidak memiliki akses.'
-      });
+      return sendError(res, 404, 'Notifikasi tidak ditemukan atau Anda tidak memiliki akses.');
     }
 
     await prisma.notification.delete({
       where: { id: id }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Notifikasi berhasil dihapus.'
-    });
+    return sendSuccess(res, 200, 'Notifikasi berhasil dihapus.');
   } catch (error) {
     console.error('[NotificationController] Gagal menghapus notifikasi:', {
       message: error.message,
@@ -122,10 +110,7 @@ exports.createTestNotification = async (req, res, next) => {
       const polybag = await prisma.polybag.findFirst();
 
       if (!plant || !polybag) {
-        return res.status(400).json({
-          success: false,
-          message: 'Database tanaman atau polybag kosong. Harap jalankan seed data terlebih dahulu.'
-        });
+        return sendError(res, 400, 'Database tanaman atau polybag kosong. Harap jalankan seed data terlebih dahulu.');
       }
 
       device = await prisma.device.create({
@@ -146,11 +131,7 @@ exports.createTestNotification = async (req, res, next) => {
       type: 'info',
     });
 
-    return res.status(201).json({
-      success: true,
-      message: 'Notifikasi uji coba berhasil dibuat dan dikirim ke seluruh kanal (dashboard & Telegram jika terhubung).',
-      data: { notification }
-    });
+    return sendSuccess(res, 201, 'Notifikasi uji coba berhasil dibuat dan dikirim ke seluruh kanal (dashboard & Telegram jika terhubung).', { notification });
   } catch (error) {
     console.error('[NotificationController] Gagal memicu notifikasi uji coba:', {
       message: error.message,

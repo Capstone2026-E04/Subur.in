@@ -3,6 +3,7 @@
 const { addClient, removeClient } = require("../sse/sse_manager");
 const { getLatestSensorData } = require("../repositories/sensor_redis_repository");
 const { getLatestSensorLog, getSensorHistory } = require("../repositories/sensor_repository");
+const { sendSuccess, sendError } = require("../utils/response");
 
 exports.streamSensorData = (req, res) => {
   const { deviceId } = req.params;
@@ -47,12 +48,9 @@ exports.getLatestSensor = async (req, res, next) => {
     }
 
     if (!data) {
-      return res.status(404).json({
-        success: false,
-        message: `Belum ada data sensor untuk device "${deviceId}".`,
-      });
+      return sendError(res, 404, `Belum ada data sensor untuk device "${deviceId}".`);
     }
-    return res.status(200).json({ success: true, data });
+    return sendSuccess(res, 200, 'Data sensor terbaru berhasil diambil.', data);
   } catch (err) {
     console.error("[SensorController] Gagal mengambil data sensor terbaru:", {
       message: err.message,
@@ -88,10 +86,7 @@ exports.getSensorHistory = async (req, res, next) => {
   }
 
   if (history !== null) {
-    return res.status(200).json({
-      success: true,
-      data: history,
-    });
+    return sendSuccess(res, 200, 'Riwayat sensor berhasil diambil.', history);
   }
 
   console.error("[SensorController] Gagal mengambil riwayat sensor setelah beberapa percobaan:", {

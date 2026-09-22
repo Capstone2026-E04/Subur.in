@@ -1,5 +1,6 @@
 const prisma = require('../database/connections/prisma_client');
 const { generateRecommendation } = require('../ai/services/recommendation.service');
+const { sendSuccess, sendError } = require('../utils/response');
 
 
 exports.simulateRecommendation = async (req, res, next) => {
@@ -7,48 +8,30 @@ exports.simulateRecommendation = async (req, res, next) => {
     const { phValue, moistureValue, polybagPreset, plantIdOrName } = req.body;
 
     if (phValue === undefined || moistureValue === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: 'Parameter phValue dan moistureValue wajib dikirimkan!'
-      });
+      return sendError(res, 400, 'Parameter phValue dan moistureValue wajib dikirimkan!');
     }
 
     if (!polybagPreset) {
-      return res.status(400).json({
-        success: false,
-        message: 'Parameter polybagPreset wajib diisi (misal: "STANDAR", "BESAR", atau UUID).'
-      });
+      return sendError(res, 400, 'Parameter polybagPreset wajib diisi (misal: "STANDAR", "BESAR", atau UUID).');
     }
 
     if (!plantIdOrName) {
-      return res.status(400).json({
-        success: false,
-        message: 'Parameter plantIdOrName wajib diisi (misal: "Pakcoy", "Selada", "Bayam", atau UUID).'
-      });
+      return sendError(res, 400, 'Parameter plantIdOrName wajib diisi (misal: "Pakcoy", "Selada", "Bayam", atau UUID).');
     }
 
     const ph = parseFloat(phValue);
     const moisture = parseFloat(moistureValue);
 
     if (isNaN(ph) || isNaN(moisture)) {
-      return res.status(400).json({
-        success: false,
-        message: 'phValue dan moistureValue harus berupa angka valid.'
-      });
+      return sendError(res, 400, 'phValue dan moistureValue harus berupa angka valid.');
     }
 
     if (ph < 0 || ph > 14) {
-      return res.status(400).json({
-        success: false,
-        message: 'Nilai pH harus berada dalam rentang 0 sampai 14.'
-      });
+      return sendError(res, 400, 'Nilai pH harus berada dalam rentang 0 sampai 14.');
     }
 
     if (moisture < 0 || moisture > 100) {
-      return res.status(400).json({
-        success: false,
-        message: 'Nilai kelembapan harus berada dalam rentang 0 sampai 100.'
-      });
+      return sendError(res, 400, 'Nilai kelembapan harus berada dalam rentang 0 sampai 100.');
     }
 
     const result = await generateRecommendation({
@@ -58,11 +41,7 @@ exports.simulateRecommendation = async (req, res, next) => {
       plantIdOrName
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Simulasi Fuzzy Logic berhasil dijalankan!',
-      data: result
-    });
+    return sendSuccess(res, 200, 'Simulasi Fuzzy Logic berhasil dijalankan!', result);
 
   } catch (error) {
     console.error('[RecommendationController] Gagal menjalankan simulasi fuzzy logic:', {
@@ -84,10 +63,7 @@ exports.getRecommendationHistory = async (req, res, next) => {
         where: { id: deviceId, userId }
       });
       if (!device) {
-        return res.status(404).json({
-          success: false,
-          message: 'Device tidak ditemukan atau Anda tidak memiliki akses.'
-        });
+        return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
       }
     }
 
@@ -117,11 +93,7 @@ exports.getRecommendationHistory = async (req, res, next) => {
       }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Riwayat rekomendasi berhasil diambil.',
-      data: { logs }
-    });
+    return sendSuccess(res, 200, 'Riwayat rekomendasi berhasil diambil.', { logs });
 
   } catch (error) {
     console.error('[RecommendationController] Gagal mengambil riwayat rekomendasi:', {
