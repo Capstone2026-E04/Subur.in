@@ -81,24 +81,30 @@ async function managePartitions() {
   console.log("[Cron] Pengecekan partisi selesai.");
 }
 
+function getSixMonthsAgo() {
+  const cutoff = new Date();
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - 6);
+  return cutoff;
+}
+
 async function cleanupOldLogs() {
-  console.log("[Cron] Memulai pembersihan log lama (>30 hari)...");
+  console.log("[Cron] Memulai pembersihan log lama (>6 bulan)...");
   try {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    
+    const sixMonthsAgo = getSixMonthsAgo();
+
     const deletedRecommendations = await prisma.recommendationLog.deleteMany({
       where: {
         createdAt: {
-          lt: thirtyDaysAgo
+          lt: sixMonthsAgo
         }
       }
     });
     console.log(`[Cron] Hapus recommendation_logs selesai. Jumlah baris dihapus: ${deletedRecommendations.count}`);
-    
+
     const deletedSensors = await prisma.rawSensorLog.deleteMany({
       where: {
         timestamp: {
-          lt: thirtyDaysAgo
+          lt: sixMonthsAgo
         }
       }
     });
@@ -107,12 +113,12 @@ async function cleanupOldLogs() {
     const deletedNotifications = await prisma.notification.deleteMany({
       where: {
         createdAt: {
-          lt: thirtyDaysAgo
+          lt: sixMonthsAgo
         }
       }
     });
     console.log(`[Cron] Hapus notifications selesai. Jumlah baris dihapus: ${deletedNotifications.count}`);
-    
+
   } catch (err) {
     console.error("[Cron] Gagal melakukan pembersihan log lama:", err.message);
   }
