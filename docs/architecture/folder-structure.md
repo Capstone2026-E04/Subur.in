@@ -15,8 +15,7 @@ Subur.in/
 │       │   ├── dosage/          # Kalkulator dosis air/kapur/sulfur
 │       │   ├── services/        # recommendation.service.js, mengorkestrasi engine + lookup Prisma
 │       │   ├── utils/           # interpreter.js (kategori -> teks aksi), mathematical.js
-│       │   ├── simulate.js      # Entrypoint simulasi CLI/manual
-│       │   └── __tests__/       # Unit test untuk engine dan kalkulator
+│       │   └── simulate.js      # Entrypoint simulasi CLI/manual
 │       ├── controllers/         # Handler request Express, satu file per resource
 │       ├── cron/                # Job node-cron (manajemen partisi, pembersihan log lama)
 │       ├── database/connections/# Singleton Prisma client, Redis client (ioredis)
@@ -28,9 +27,22 @@ Subur.in/
 │       │   └── subscribers/         # Berlangganan topik telemetri, memvalidasi + menyimpan pembacaan
 │       ├── repositories/        # Akses data: sensor_repository (Postgres), sensor_redis_repository (cache)
 │       ├── routes/              # Router Express, dipasang di bawah /api pada routes/api.js
-│       ├── services/            # notification.service.js (fan-out notifyDevice), telegram.service.js (client Bot API)
+│       ├── services/            # notification.service.js (fan-out notifyDevice)
 │       ├── sse/                 # Registry client Server-Sent Events in-memory + broadcaster
+│       ├── telegram/            # Modul bot Telegram (feature-based, lihat api/telegram.md)
+│       │   ├── bot.js               # Entrypoint: processUpdate(update), dipanggil oleh controller webhook
+│       │   ├── router.js            # Satu-satunya tempat yang membedakan message vs callback_query
+│       │   ├── telegram_api.service.js # Client Bot API mentah (sendMessage/sendPhoto/answerCallbackQuery/...)
+│       │   ├── commands/            # Satu file per perintah (/status, /threshold, dst), didaftarkan di index.js
+│       │   ├── callbacks/           # Handler callback_query untuk wizard multi-step (tanaman, threshold)
+│       │   ├── keyboards/           # Builder inline keyboard per domain
+│       │   ├── session/             # Sesi wizard berbasis Redis (bot_session:{telegramUserId}, TTL 5 menit)
+│       │   ├── middlewares/         # require_linked_device.middleware.js (guard akun/device tertaut)
+│       │   └── utils/                # parse_callback_data, format_message, format_chart (quickchart.io)
 │       ├── utils/               # response.js (sendSuccess/sendError, envelope response bersama)
+│       ├── __tests__/           # Test Jest tersentralisasi, mencerminkan struktur src/ (lihat backend/coding-standards.md)
+│       │   ├── ai/                  # dosage/, services/ - mencerminkan src/ai/
+│       │   └── telegram/            # session/, commands/, router.test.js - mencerminkan src/telegram/
 │       └── server.js            # Bootstrap aplikasi: Express, CORS, MQTT, Redis, inisialisasi cron
 │
 ├── frontend/

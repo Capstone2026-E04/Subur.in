@@ -6,7 +6,8 @@
 
 - **Routes** (`src/routes/*.routes.js`) hanya menghubungkan verb/path HTTP ke fungsi controller dan memasang `authMiddleware` di tempat resource memerlukan auth (`router.use(authMiddleware)` di bagian atas router, atau per-route).
 - **Controllers** (`src/controllers/*.controller.js`) mem-parsing/memvalidasi `req.body`/`req.params`/`req.query`, memanggil Prisma secara langsung untuk CRUD sederhana, atau mendelegasikan ke service (misalnya `ai/services/recommendation.service.js`, `services/notification.service.js`) untuk logika bisnis, dan membentuk response JSON lewat `sendSuccess`/`sendError` (`utils/response.js`). Setiap handler dibungkus dalam `try/catch`; error yang bisa ditangani lokal (validasi, "tidak ditemukan") langsung dibalas dari situ, error tak terduga diteruskan lewat `next(error)` ke [middleware error terpusat](../api/error-response.md).
-- **Services** menampung logika yang tidak terikat pada satu bentuk request/response HTTP, dan dipisah berdasarkan concern: `src/ai/services` (pembuatan rekomendasi, berdampingan dengan mesin AI murni) dan `src/services` (concern lintas-fungsi yang digunakan dari banyak call site: `notification.service.js` menyebarkan notifikasi ke Postgres/SSE/Telegram, `telegram.service.js` membungkus Bot API).
+- **Services** menampung logika yang tidak terikat pada satu bentuk request/response HTTP, dan dipisah berdasarkan concern: `src/ai/services` (pembuatan rekomendasi, berdampingan dengan mesin AI murni) dan `src/services` (concern lintas-fungsi yang digunakan dari banyak call site: `notification.service.js` menyebarkan notifikasi ke Postgres/SSE/Telegram).
+- **Modul feature-based untuk domain kompleks** (`src/ai/`, `src/telegram/`) memecah domain menjadi sub-folder per concern (`config/core/dosage/services/utils` untuk AI; `commands/callbacks/keyboards/session/middlewares/utils` untuk bot Telegram) alih-alih satu file besar per layer generik. Test-nya tetap tersentralisasi di `src/__tests__/ai/` dan `src/__tests__/telegram/` (lihat bagian Testing di bawah), bukan `__tests__/` per modul. Lihat [api/telegram.md](../api/telegram.md) dan [ADR-007](../decisions/adr-007-telegram-bot-command-module.md) untuk struktur modul Telegram.
 - **Repositories** (`src/repositories`) membungkus panggilan Prisma/Redis mentah khusus untuk data sensor, memberikan controller pola baca cache-lalu-db (`getLatestSensorData` -> fallback `getLatestSensorLog`) tanpa menduplikasi logika fallback tersebut di setiap pemanggil.
 - **AI engine** (`src/ai/core`, `src/ai/dosage`, `src/ai/utils`) adalah logika murni tanpa I/O (tanpa import Prisma/Express), sehingga tetap dapat diuji secara terisolasi.
 
@@ -27,4 +28,8 @@
 
 ## Testing
 
-Saat ini hanya `src/ai/__tests__` yang memiliki test (mesin fuzzy dan kalkulator dosis, fungsi murni yang mudah diuji). `npm test` di root backend belum terhubung ke apa pun (script `test` pada `package.json` masih placeholder).
+`npm test` menjalankan **Jest** (`jest.config.js`), yang mencari seluruh `src/__tests__/**/*.test.js` — satu folder test tersentralisasi yang mencerminkan struktur `src/`, bukan `__tests__/` yang tersebar di tiap modul. Lihat [database/prisma.md](../database/prisma.md) untuk cara mocking Prisma dan [ADR-008](../decisions/adr-008-jest-for-testing.md) untuk konteks migrasi dari test `assert`+`node` manual sebelumnya ke Jest.
+
+- Mock Prisma (`jest.mock('.../database/connections/prisma_client')`) dan Redis (`jest.mock('.../database/connections/redis')`) di unit test — jangan menyentuh database/Redis sungguhan.
+- Satu file test per file sumber di mana masuk akal (`status.command.js` -> `__tests__/telegram/commands/status.command.test.js`), dengan `describe()` per fungsi/modul dan `it()` per perilaku spesifik.
+- Fungsi murni tanpa I/O (kalkulator dosis, mesin fuzzy) diuji langsung tanpa mocking apa pun.

@@ -2,6 +2,14 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-09-23
+
+- **test(backend):** Migrasi seluruh testing backend ke **Jest**, menggantikan script `assert`+`node` manual (`src/ai/__tests__/*.test.js`, yang sebagiannya menghantam database Supabase sungguhan dan skip diam-diam tanpa data seed). Test dipindahkan ke folder tersentralisasi `src/__tests__/`, mencerminkan struktur `src/`, dengan Prisma/Redis di-mock lewat `jest.mock(...)` alih-alih dependency sungguhan. `npm test` sekarang menjalankan `jest` dan benar-benar gagal (exit non-zero) saat assertion gagal. Lihat [ADR-008](decisions/adr-008-jest-for-testing.md).
+- **refactor(telegram):** Memindahkan seluruh penanganan bot Telegram dari `controllers/telegram.controller.js` (rantai `if/else` tunggal) menjadi modul feature-based [`src/telegram/`](../backend/src/telegram/) (`router.js`, `commands/`, `callbacks/`, `keyboards/`, `session/`, `middlewares/`, `utils/`), mengikuti pola yang sama dengan `src/ai/`. `services/telegram.service.js` dipindahkan menjadi `telegram/telegram_api.service.js`. Lihat [ADR-007](decisions/adr-007-telegram-bot-command-module.md).
+- **feat(telegram):** Menambahkan perintah bot baru: `/status`, `/riwayat [7d|30d]` (grafik via quickchart.io), `/rekomendasi`, `/unlink` (dengan konfirmasi inline keyboard), `/device`, `/tanaman` (memilih tanaman aktif untuk device multi-unit), `/notifikasi on|off`, `/threshold` (wizard inline keyboard + input teks untuk ambang batas notifikasi kustom pH/kelembapan per device), `/help` (dihasilkan otomatis dari registry perintah), dan `/laporan` (ringkasan on-demand 7 hari). `/start` dan `/link` dipindahkan tanpa perubahan perilaku. Lihat [api/telegram.md](api/telegram.md).
+- **feat(db):** Menambahkan `User.telegramNotifyEnabled` (dipakai oleh `/notifikasi` dan `notifyDevice` untuk gating channel Telegram) serta `Device.customPhMin`/`customPhMax`/`customMoistureMin`/`customMoistureMax` (dipakai oleh `/threshold` untuk meng-override ambang batas notifikasi transisi kategori bawaan di `sensor_subscriber.js`). Lihat [architecture/database-schema.md](architecture/database-schema.md).
+- **test(telegram):** Menambahkan unit test Jest untuk `session.service.js`, `router.js`, dan command dengan logic paling kompleks (`status`, `threshold`, `notifikasi`), lihat entri migrasi Jest di atas.
+
 ## 2026-09-22
 
 - **refactor(error-handling):** Menambahkan `AppError` dan middleware error Express terpusat ([`middlewares/error.middleware.js`](../backend/src/middlewares/error.middleware.js)) sehingga error tak terduga tidak lagi ditangani manual di tiap controller dan membocorkan `error.message` mentah ke client; `recommendation.service.js`/`physical_presets.js` sekarang melempar `AppError` berstatus 400/404 alih-alih `Error`/`TypeError`/`RangeError` generik yang selalu jatuh ke 500.
