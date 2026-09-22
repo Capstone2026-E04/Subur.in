@@ -19,6 +19,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Resolve commit hash
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -31,6 +34,8 @@ jobs:
           context: ./backend
           push: true
           tags: ghcr.io/capstone2026-e04/subur-in-backend:latest
+          build-args: |
+            GIT_COMMIT_SHA=${{ steps.commit.outputs.sha }}
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
         with:
