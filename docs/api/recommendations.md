@@ -1,12 +1,12 @@
-# Recommendations API
+# API Recommendations
 
-Exposes the fuzzy-logic recommendation engine ([architecture/system-design.md](../architecture/system-design.md#why-fuzzy-logic)) both as a standalone simulator and as device-bound history. To generate a fresh recommendation for a real device, see `GET /api/devices/:id/recommendation` in [devices.md](devices.md).
+Mengekspos mesin rekomendasi fuzzy logic ([architecture/system-design.md](../architecture/system-design.md#why-fuzzy-logic)) baik sebagai simulator mandiri maupun sebagai riwayat yang terikat ke device. Untuk menghasilkan rekomendasi baru bagi device sungguhan, lihat `GET /api/devices/:id/recommendation` pada [devices.md](devices.md).
 
 ## `POST /api/recommendations/simulate`
 
-Runs the fuzzy inference + dosage calculators with arbitrary inputs, without touching a real device or saving a log. Useful for testing plant/polybag combinations.
+Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyentuh device sungguhan atau menyimpan log. Berguna untuk menguji kombinasi plant/polybag.
 
-**Auth required:** No
+**Perlu autentikasi:** Tidak
 
 **Request body:**
 ```json
@@ -18,14 +18,14 @@ Runs the fuzzy inference + dosage calculators with arbitrary inputs, without tou
 }
 ```
 
-`polybagPreset` and `plantIdOrName` each accept either a UUID or a case-insensitive name.
+`polybagPreset` dan `plantIdOrName` masing-masing dapat berupa UUID atau nama (tidak case-sensitive).
 
-**Validation:**
-- `phValue`, `moistureValue` required and numeric.
-- `phValue` in `[0, 14]`, `moistureValue` in `[0, 100]`.
-- `polybagPreset`, `plantIdOrName` required.
+**Validasi:**
+- `phValue`, `moistureValue` wajib diisi dan berupa angka.
+- `phValue` pada rentang `[0, 14]`, `moistureValue` pada rentang `[0, 100]`.
+- `polybagPreset`, `plantIdOrName` wajib diisi.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -57,22 +57,22 @@ Runs the fuzzy inference + dosage calculators with arbitrary inputs, without tou
 }
 ```
 
-`_debug` exposes the intermediate fuzzy-inference state (membership degrees, active rules, defuzzified index) and is intended for developer/QA inspection, not end-user display.
+`_debug` mengekspos state fuzzy inference antara (derajat keanggotaan, rule aktif, indeks defuzzifikasi) dan dimaksudkan untuk pemeriksaan developer/QA, bukan untuk ditampilkan ke end user.
 
-**Error responses:** `400` (missing/invalid input), `500`.
+**Response error:** `400` (input tidak ada/tidak valid), `500`.
 
 ## `GET /api/recommendations`
 
-**Auth required:** Yes (`Authorization: Bearer <jwt>`)
+**Perlu autentikasi:** Ya (`Authorization: Bearer <jwt>`)
 
-Lists the authenticated user's recommendation history, newest first. Optionally filter by `deviceId`.
+Menampilkan riwayat rekomendasi milik user yang terautentikasi, terbaru lebih dulu. Dapat difilter berdasarkan `deviceId`.
 
 **Query params:**
-| Param | Type | Description |
+| Param | Tipe | Deskripsi |
 |---|---|---|
-| `deviceId` | string | Optional. Restrict to one device (must be owned by the caller). |
+| `deviceId` | string | Opsional. Membatasi ke satu device (harus dimiliki oleh pemanggil). |
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -103,4 +103,4 @@ Lists the authenticated user's recommendation history, newest first. Optionally 
 }
 ```
 
-**Error responses:** `404` (`deviceId` given but not owned by caller), `401`, `500`.
+**Response error:** `404` (`deviceId` diberikan tapi bukan milik pemanggil), `401`, `500`.

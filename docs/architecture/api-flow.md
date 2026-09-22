@@ -1,8 +1,8 @@
-# API Flow
+# Alur API
 
-## Authenticated REST Request
+## Request REST terautentikasi
 
-Most endpoints require a JWT issued by `POST /api/auth/google`, sent as `Authorization: Bearer <token>` and verified by [`auth.middleware.js`](../../backend/src/middlewares/auth.middleware.js).
+Sebagian besar endpoint memerlukan JWT yang diterbitkan oleh `POST /api/auth/google`, dikirim sebagai `Authorization: Bearer <token>` dan diverifikasi oleh [`auth.middleware.js`](../../backend/src/middlewares/auth.middleware.js).
 
 ```mermaid
 sequenceDiagram
@@ -49,7 +49,7 @@ sequenceDiagram
     NextAuth-->>Browser: session with backendToken
 ```
 
-## Device Telemetry (MQTT -> DB/Cache -> SSE)
+## Telemetri perangkat (MQTT -> DB/Cache -> SSE)
 
 ```mermaid
 sequenceDiagram
@@ -75,7 +75,7 @@ sequenceDiagram
     end
 ```
 
-## Recommendation Generation
+## Pembuatan rekomendasi
 
 ```mermaid
 sequenceDiagram
@@ -99,4 +99,4 @@ sequenceDiagram
     Controller-->>Client: 200 { data: recommendation }
 ```
 
-See [error-response.md](../api/error-response.md) for the shared error envelope and [authentication.md](../api/authentication.md) for token details.
+Lihat [error-response.md](../api/error-response.md) untuk format error bersama dan [authentication.md](../api/authentication.md) untuk detail token.

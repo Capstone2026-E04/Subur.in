@@ -2,7 +2,7 @@
 
 **Platform monitoring & rekomendasi tanaman pintar berbasis IoT dan Fuzzy Logic.**
 
-Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lalu menghasilkan rekomendasi perawatan (penyiraman, kapur dolomit, sulfur elemental) yang dihitung secara dinamis menggunakan mesin inferensi fuzzy logic Mamdani — disesuaikan dengan jenis tanaman dan ukuran media tanam yang digunakan.
+Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lalu menghasilkan rekomendasi perawatan (penyiraman, kapur dolomit, sulfur elemental) yang dihitung secara dinamis menggunakan mesin inferensi fuzzy logic Mamdani, disesuaikan dengan jenis tanaman dan ukuran media tanam yang digunakan.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-306D29.svg)](LICENSE)
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-0D530E)
@@ -11,14 +11,14 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 
 ---
 
-## Fitur Utama
+## Fitur utama
 
-- 🌱 **Monitoring Real-Time** — pH & kelembapan tanah dari perangkat IoT, di-streaming ke dashboard lewat Server-Sent Events.
-- 🧠 **Rekomendasi Berbasis Fuzzy Logic** — mesin inferensi Mamdani menerjemahkan kondisi tanah menjadi aksi konkret: volume air, dosis kapur, atau dosis sulfur, dipersonalisasi per tanaman dan per ukuran polybag.
-- 🔐 **Login dengan Google** — autentikasi OAuth2 tanpa kelola password, disinkronkan ke sesi JWT backend.
-- 📊 **Riwayat & Analitik** — riwayat rekomendasi dan grafik histori sensor per perangkat.
-- 🔔 **Notifikasi Otomatis** — peringatan real-time saat data sensor tidak valid atau perangkat bermasalah.
-- 📡 **Manajemen Perangkat** — klaim perangkat baru yang terdeteksi, atur interval pengiriman data, dan kelola beberapa perangkat sekaligus.
+- Monitoring real-time: pH & kelembapan tanah dari perangkat IoT, di-streaming ke dashboard lewat Server-Sent Events.
+- Rekomendasi berbasis fuzzy logic: mesin inferensi Mamdani menerjemahkan kondisi tanah menjadi aksi konkret (volume air, dosis kapur, atau dosis sulfur), dipersonalisasi per tanaman dan ukuran polybag.
+- Login dengan Google: autentikasi OAuth2 tanpa kelola password, disinkronkan ke sesi JWT backend.
+- Riwayat & analitik: riwayat rekomendasi dan grafik histori sensor per perangkat.
+- Notifikasi otomatis: peringatan real-time saat data sensor tidak valid atau perangkat bermasalah.
+- Manajemen perangkat: klaim perangkat baru yang terdeteksi, atur interval pengiriman data, dan kelola beberapa perangkat sekaligus.
 
 ## Tech Stack
 
@@ -32,7 +32,7 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 | Realtime Web  | Server-Sent Events (SSE)                                                    |
 | Deployment    | Docker, GitHub Actions, GHCR, VPS                                           |
 
-## Arsitektur Singkat
+## Arsitektur singkat
 
 ```mermaid
 flowchart LR
@@ -47,7 +47,7 @@ flowchart LR
 
 Detail lengkap ada di [`docs/architecture/system-design.md`](docs/architecture/system-design.md).
 
-## Struktur Proyek
+## Struktur proyek
 
 ```text
 Subur.in/
@@ -59,7 +59,7 @@ Subur.in/
 
 Rincian folder: [`docs/architecture/folder-structure.md`](docs/architecture/folder-structure.md).
 
-## Mulai Cepat
+## Mulai cepat
 
 Butuh Node.js 18+, PostgreSQL, Redis, broker MQTT, dan Google OAuth Client ID. Panduan lengkap: [`docs/setup/installation.md`](docs/setup/installation.md).
 

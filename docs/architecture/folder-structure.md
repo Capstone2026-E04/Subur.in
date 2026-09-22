@@ -1,64 +1,64 @@
-# Folder Structure
+# Struktur folder
 
-Monorepo with two independently deployable apps, `backend/` and `frontend/`, plus shared root-level Docker/CI config.
+Monorepo dengan dua aplikasi yang dapat dideploy secara independen, `backend/` dan `frontend/`, ditambah konfigurasi Docker/CI bersama di level root.
 
 ```
 Subur.in/
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma        # Data model (see database-schema.md)
-│   │   └── seed.js              # Seeds plants + polybag types/instances
+│   │   ├── schema.prisma        # Model data (lihat database-schema.md)
+│   │   └── seed.js              # Mengisi data awal plants + polybag types/instances
 │   └── src/
-│       ├── ai/                  # Fuzzy logic recommendation engine (pure logic, no I/O)
-│       │   ├── config/          # Fuzzy set parameters, physical presets, treatment constants
+│       ├── ai/                  # Mesin rekomendasi fuzzy logic (logika murni, tanpa I/O)
+│       │   ├── config/          # Parameter fuzzy set, preset fisik, konstanta treatment
 │       │   ├── core/            # engine.js (inference), membership.js, rules.js
-│       │   ├── dosage/          # water/lime/sulfur dosage calculators
-│       │   ├── services/        # recommendation.service.js — orchestrates engine + Prisma lookups
-│       │   ├── utils/           # interpreter.js (category -> action text), mathematical.js
-│       │   ├── simulate.js      # CLI/manual simulation entrypoint
-│       │   └── __tests__/       # Unit tests for the engine and calculators
-│       ├── controllers/         # Express request handlers, one file per resource
-│       ├── cron/                # node-cron jobs (partition mgmt, downsampling)
-│       ├── database/connections/# Prisma client singleton, Redis client (ioredis)
-│       ├── middlewares/         # auth.middleware.js — JWT verification
+│       │   ├── dosage/          # Kalkulator dosis air/kapur/sulfur
+│       │   ├── services/        # recommendation.service.js, mengorkestrasi engine + lookup Prisma
+│       │   ├── utils/           # interpreter.js (kategori -> teks aksi), mathematical.js
+│       │   ├── simulate.js      # Entrypoint simulasi CLI/manual
+│       │   └── __tests__/       # Unit test untuk engine dan kalkulator
+│       ├── controllers/         # Handler request Express, satu file per resource
+│       ├── cron/                # Job node-cron (manajemen partisi, downsampling)
+│       ├── database/connections/# Singleton Prisma client, Redis client (ioredis)
+│       ├── middlewares/         # auth.middleware.js, verifikasi JWT
 │       ├── mqtt/
-│       │   ├── connection.js        # MQTT client setup (EMQX over TLS)
-│       │   ├── publishers/          # Publishes device config (sensor interval) to devices
-│       │   └── subscribers/         # Subscribes to telemetry topic, validates + persists readings
-│       ├── repositories/        # Data access: sensor_repository (Postgres), sensor_redis_repository (cache)
-│       ├── routes/              # Express routers, mounted under /api in routes/api.js
-│       ├── services/            # notification.service.js (notifyDevice fan-out), telegram.service.js (Bot API client)
-│       ├── sse/                 # In-memory Server-Sent Events client registry + broadcaster
-│       └── server.js            # App bootstrap: Express, CORS, MQTT, Redis, cron init
+│       │   ├── connection.js        # Setup MQTT client (EMQX via TLS)
+│       │   ├── publishers/          # Mempublikasikan konfigurasi device (interval sensor) ke perangkat
+│       │   └── subscribers/         # Berlangganan topik telemetri, memvalidasi + menyimpan pembacaan
+│       ├── repositories/        # Akses data: sensor_repository (Postgres), sensor_redis_repository (cache)
+│       ├── routes/              # Router Express, dipasang di bawah /api pada routes/api.js
+│       ├── services/            # notification.service.js (fan-out notifyDevice), telegram.service.js (client Bot API)
+│       ├── sse/                 # Registry client Server-Sent Events in-memory + broadcaster
+│       └── server.js            # Bootstrap aplikasi: Express, CORS, MQTT, Redis, inisialisasi cron
 │
 ├── frontend/
 │   └── src/
 │       ├── app/
-│       │   ├── (auth)/login/        # Public login route group
-│       │   ├── (dashboard)/dashboard/ # Protected route group: overview, devices, plants,
+│       │   ├── (auth)/login/        # Route group login publik
+│       │   ├── (dashboard)/dashboard/ # Route group terproteksi: overview, devices, plants,
 │       │   │                          # recommendations, analytics, notifications, settings, profile
-│       │   ├── api/nextauth/[...nextauth]/route.ts  # NextAuth v5 handler
+│       │   ├── api/nextauth/[...nextauth]/route.ts  # Handler NextAuth v5
 │       │   ├── layout.tsx / page.tsx
-│       │   └── globals.css          # Tailwind v4 theme tokens (colors, fonts)
+│       │   └── globals.css          # Token tema Tailwind v4 (warna, font)
 │       ├── components/
-│       │   ├── common/              # Legacy stubs (Header/Sidebar/LoadingSpinner) — currently empty, unused
-│       │   ├── ui/                  # shadcn-style primitives (Card, collapsible Sidebar) built on class-variance-authority
-│       │   ├── dashboard/           # Dashboard-specific widgets (StatCard, SensorGaugeCard, charts, nav)
-│       │   └── devices/             # Device management modals/cards
+│       │   ├── common/              # Stub lama (Header/Sidebar/LoadingSpinner), saat ini kosong dan tidak dipakai
+│       │   ├── ui/                  # Primitif bergaya shadcn (Card, Sidebar collapsible) dibangun di atas class-variance-authority
+│       │   ├── dashboard/           # Widget khusus dashboard (StatCard, SensorGaugeCard, chart, nav)
+│       │   └── devices/             # Modal/card manajemen device
 │       ├── context/                 # AuthContext.tsx
-│       ├── hooks/                   # useDevices, useDeviceStatus, usePlants, useSensorRealtime (SSE client)
-│       ├── lib/auth.ts              # NextAuth v5 config (Google provider, backend token exchange)
-│       ├── services/                # Axios/fetch wrappers per backend resource
-│       ├── types/                   # Shared TypeScript types
+│       ├── hooks/                   # useDevices, useDeviceStatus, usePlants, useSensorRealtime (client SSE)
+│       ├── lib/auth.ts              # Konfigurasi NextAuth v5 (Google provider, pertukaran token backend)
+│       ├── services/                # Wrapper Axios/fetch per resource backend
+│       ├── types/                   # Tipe TypeScript bersama
 │       └── utils/helpers.ts
 │
 ├── .github/workflows/           # deploy-backend.yml, deploy-frontend.yml (build image -> GHCR -> VPS)
-├── docker-compose.yml           # Production compose: pulls prebuilt backend/frontend images
-└── docs/                        # This documentation tree
+├── docker-compose.yml           # Compose produksi: menarik image backend/frontend yang sudah dibangun
+└── docs/                        # Pohon dokumentasi ini
 ```
 
-## Conventions
+## Konvensi
 
-- Backend follows a **controller -> service/repository -> Prisma** layering; controllers never talk to Redis/MQTT/Prisma detail beyond simple queries, business logic (fuzzy inference, dosage math) lives in `src/ai`.
-- Frontend follows **App Router route groups** (`(auth)`, `(dashboard)`) to separate public and protected layouts, with data access centralized in `src/services/*` and consumed through `src/hooks/*`.
-- Each backend resource has a matching route file, controller file, and (where relevant) a `docs/api/*.md` file.
+- Backend mengikuti layering **controller -> service/repository -> Prisma**; controller tidak pernah langsung berbicara dengan detail Redis/MQTT/Prisma di luar query sederhana, logika bisnis (fuzzy inference, perhitungan dosis) berada di `src/ai`.
+- Frontend mengikuti **App Router route group** (`(auth)`, `(dashboard)`) untuk memisahkan layout publik dan terproteksi, dengan akses data dipusatkan di `src/services/*` dan dikonsumsi melalui `src/hooks/*`.
+- Setiap resource backend memiliki file route, file controller yang sesuai, dan (jika relevan) file `docs/api/*.md`.

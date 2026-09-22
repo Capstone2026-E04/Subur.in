@@ -1,12 +1,12 @@
-# Telegram API
+# API Telegram
 
-Handles the Telegram Bot webhook and the account-linking flow. See [ADR-006](../decisions/adr-006-telegram-notification-channel.md) for why Telegram is the sole external push channel, and [backend/authentication.md](../backend/authentication.md) for how `POST /api/users/me/telegram/link-code` and `DELETE /api/users/me/telegram` fit into the authenticated user endpoints (documented alongside profile in [users.md](users.md)).
+Menangani webhook Telegram Bot dan alur penautan akun. Lihat [ADR-006](../decisions/adr-006-telegram-notification-channel.md) untuk alasan mengapa Telegram menjadi satu-satunya kanal push eksternal, dan [backend/authentication.md](../backend/authentication.md) untuk bagaimana `POST /api/users/me/telegram/link-code` dan `DELETE /api/users/me/telegram` sesuai dalam endpoint user yang terautentikasi (didokumentasikan bersama profil di [users.md](users.md)).
 
 ## `POST /api/telegram/webhook`
 
-**No `Authorization` header** — this endpoint is called by Telegram's servers, not the frontend. Receives a Telegram [`Update`](https://core.telegram.org/bots/api#update) object.
+**Tidak ada header `Authorization`**: endpoint ini dipanggil oleh server Telegram, bukan oleh frontend. Menerima object [`Update`](https://core.telegram.org/bots/api#update) dari Telegram.
 
-**Request body (from Telegram):**
+**Request body (dari Telegram):**
 ```json
 {
   "message": {
@@ -16,21 +16,21 @@ Handles the Telegram Bot webhook and the account-linking flow. See [ADR-006](../
 }
 ```
 
-**Behavior:**
+**Perilaku:**
 
-| Message text | Action |
+| Teks pesan | Aksi |
 |---|---|
-| `/start` | Replies with a short welcome message explaining how to get a link code from the Subur.in settings page. |
-| `/link <CODE>` | Looks up a `User` by `telegramLinkCode`. If found, sets that user's `telegramChatId` to the sender's chat ID and clears `telegramLinkCode` (one-time use), then replies with a confirmation. If not found, replies that the code is invalid or expired. |
-| Anything else | Replies with a short help message. |
+| `/start` | Membalas dengan pesan sambutan singkat yang menjelaskan cara mendapatkan kode penghubung dari halaman pengaturan Subur.in. |
+| `/link <CODE>` | Mencari `User` berdasarkan `telegramLinkCode`. Jika ditemukan, mengatur `telegramChatId` user tersebut ke chat ID pengirim dan menghapus `telegramLinkCode` (sekali pakai), lalu membalas dengan konfirmasi. Jika tidak ditemukan, membalas bahwa kode tidak valid atau sudah kedaluwarsa. |
+| Selain itu | Membalas dengan pesan bantuan singkat. |
 
-**Response:** Always `200` with an empty body, regardless of outcome — Telegram retries indefinitely on any non-200 response, and a failure here (bad code, DB error) is communicated back to the user via a chat reply, not an HTTP error.
+**Response:** Selalu `200` dengan body kosong, apa pun hasilnya. Telegram akan terus mencoba ulang (retry) tanpa batas pada response non-200 mana pun, dan kegagalan di sini (kode salah, error DB) dikomunikasikan kembali ke user melalui balasan chat, bukan melalui error HTTP.
 
 ## `POST /api/users/me/telegram/link-code`
 
-Requires `Authorization: Bearer <jwt>`. Generates a 6-character alphanumeric code, stores it on the caller's `telegramLinkCode`, and returns it for display in the UI.
+Memerlukan `Authorization: Bearer <jwt>`. Membuat kode alfanumerik 6 karakter, menyimpannya pada `telegramLinkCode` milik pemanggil, dan mengembalikannya untuk ditampilkan di UI.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -41,14 +41,14 @@ Requires `Authorization: Bearer <jwt>`. Generates a 6-character alphanumeric cod
 
 ## `DELETE /api/users/me/telegram`
 
-Requires `Authorization: Bearer <jwt>`. Clears both `telegramChatId` and `telegramLinkCode` on the caller's account, disconnecting Telegram notifications.
+Memerlukan `Authorization: Bearer <jwt>`. Menghapus `telegramChatId` dan `telegramLinkCode` pada akun pemanggil, memutuskan notifikasi Telegram.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 { "success": true, "message": "Koneksi Telegram berhasil diputuskan." }
 ```
 
-## Notes
+## Catatan
 
-- `sendMessage` in [`services/telegram.service.js`](../../backend/src/services/telegram.service.js) never throws — a failed Telegram API call is logged and swallowed so it can never break the database/SSE side of [`notifyDevice`](../../backend/src/services/notification.service.js).
-- Only `notifyDevice`'s notification-title messages are sent with `parse_mode: "Markdown"`; webhook replies are sent as plain text on purpose, since they may contain a user-typed code with unescaped Markdown special characters (see the [changelog](../changelog.md)).
+- `sendMessage` pada [`services/telegram.service.js`](../../backend/src/services/telegram.service.js) tidak pernah melempar error. Panggilan API Telegram yang gagal akan dicatat (log) dan diredam sehingga tidak dapat memutus sisi database/SSE dari [`notifyDevice`](../../backend/src/services/notification.service.js).
+- Hanya pesan judul notifikasi dari `notifyDevice` yang dikirim dengan `parse_mode: "Markdown"`; balasan webhook sengaja dikirim sebagai plain text, karena bisa saja berisi kode yang diketik user dengan karakter khusus Markdown yang tidak di-escape (lihat [changelog](../changelog.md)).

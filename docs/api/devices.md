@@ -1,12 +1,12 @@
-# Devices API
+# API Devices
 
-All endpoints require `Authorization: Bearer <jwt>` (see [authentication.md](authentication.md)). A device is only visible/mutable by the user who registered it.
+Semua endpoint memerlukan `Authorization: Bearer <jwt>` (lihat [authentication.md](authentication.md)). Sebuah device hanya dapat dilihat/diubah oleh user yang mendaftarkannya.
 
 ## `GET /api/devices/discovered`
 
-Lists devices that have sent MQTT telemetry (present in Redis as `sensor:latest:*`) but are **not yet registered** to any user — used to let a user "claim" a physical device they just powered on.
+Menampilkan daftar device yang telah mengirim telemetri MQTT (tersimpan di Redis sebagai `sensor:latest:*`) tetapi **belum terdaftar** ke user manapun. Digunakan agar user dapat "mengklaim" perangkat fisik yang baru saja dinyalakan.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -21,7 +21,7 @@ Lists devices that have sent MQTT telemetry (present in Redis as `sensor:latest:
 
 ## `POST /api/devices`
 
-Registers (claims) a device to the authenticated user's account.
+Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
 
 **Request body:**
 ```json
@@ -34,9 +34,9 @@ Registers (claims) a device to the authenticated user's account.
 }
 ```
 
-`sensorInterval` (minutes) is optional, defaults to `15`. On success, the backend also publishes the interval to the device over MQTT (see [backend authentication/config publisher](../architecture/api-flow.md)).
+`sensorInterval` (dalam menit) bersifat opsional, defaultnya `15`. Jika berhasil, backend juga mempublikasikan interval tersebut ke device melalui MQTT (lihat [backend authentication/config publisher](../architecture/api-flow.md)).
 
-**Success response `201`:**
+**Response sukses `201`:**
 ```json
 {
   "success": true,
@@ -57,59 +57,59 @@ Registers (claims) a device to the authenticated user's account.
 }
 ```
 
-**Error responses:** `400` (missing required field, device ID already registered), `401`, `500`.
+**Response error:** `400` (field wajib tidak ada, device ID sudah terdaftar), `401`, `500`.
 
 ## `GET /api/devices`
 
-Lists all devices owned by the authenticated user, with `plant` and `polybag` (+`polybagType`) included.
+Menampilkan semua device milik user yang sedang login, beserta `plant` dan `polybag` (+`polybagType`).
 
-**Success response `200`:** same `device` shape as above, under `data.devices` (array).
+**Response sukses `200`:** bentuk `device` sama seperti di atas, di dalam `data.devices` (array).
 
 ## `PATCH /api/devices/:id`
 
-Updates a device the caller owns. Any of `label`, `plantId`, `polybagId`, `status`, `sensorInterval` may be provided; unset fields keep their current value. If `sensorInterval` changes, the backend re-publishes the new interval to the device over MQTT.
+Memperbarui device milik pemanggil. Salah satu dari `label`, `plantId`, `polybagId`, `status`, `sensorInterval` dapat diberikan; field yang tidak diset akan mempertahankan nilai saat ini. Jika `sensorInterval` berubah, backend akan mempublikasikan ulang interval baru ke device melalui MQTT.
 
-**Request body (partial):**
+**Request body (parsial):**
 ```json
 { "label": "Pakcoy Balkon Barat", "sensorInterval": 30 }
 ```
 
-**Success response `200`:** updated `device` object under `data.device`.
+**Response sukses `200`:** object `device` yang telah diperbarui, di dalam `data.device`.
 
-**Error responses:** `404` (not found or not owned), `500`.
+**Response error:** `404` (tidak ditemukan atau bukan milik user), `500`.
 
 ## `DELETE /api/devices/:id`
 
-Deletes a device the caller owns (cascades to its recommendation logs and notifications).
+Menghapus device milik pemanggil (menghapus juga secara cascade log rekomendasi dan notifikasi terkait).
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 { "success": true, "message": "Device berhasil dihapus dari akun Anda." }
 ```
 
-**Error responses:** `404`, `500`.
+**Response error:** `404`, `500`.
 
 ## `GET /api/devices/:id/recommendation`
 
-Runs the fuzzy-logic engine against the device's latest sensor reading (Redis, falling back to the most recent `RawSensorLog` row) and persists the result as a `RecommendationLog`. See [recommendations.md](recommendations.md) for the response shape and [architecture/api-flow.md](../architecture/api-flow.md) for the sequence diagram.
+Menjalankan mesin fuzzy logic terhadap pembacaan sensor terbaru dari device (Redis, dengan fallback ke baris `RawSensorLog` terbaru) dan menyimpan hasilnya sebagai `RecommendationLog`. Lihat [recommendations.md](recommendations.md) untuk bentuk response dan [architecture/api-flow.md](../architecture/api-flow.md) untuk diagram alurnya.
 
-**Success response `200` (no sensor data yet):**
+**Response sukses `200` (belum ada data sensor):**
 ```json
 { "success": true, "message": "Belum ada data sensor tercatat untuk alat ini.", "data": null }
 ```
 
 ## `POST /api/devices/:id/config`
 
-Sends an ad-hoc MQTT config message (currently the telemetry publish delay, in milliseconds) to a device the caller owns.
+Mengirim pesan konfigurasi MQTT ad-hoc (saat ini berupa delay publikasi telemetri, dalam milidetik) ke device milik pemanggil.
 
 **Request body:**
 ```json
 { "delay_ms": 5000 }
 ```
 
-**Validation:** `delay_ms` must be an integer `>= 100`.
+**Validasi:** `delay_ms` harus berupa integer `>= 100`.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -122,4 +122,4 @@ Sends an ad-hoc MQTT config message (currently the telemetry publish delay, in m
 }
 ```
 
-**Error responses:** `400` (missing/invalid `delay_ms`), `404`, `500`.
+**Response error:** `400` (`delay_ms` tidak ada/tidak valid), `404`, `500`.

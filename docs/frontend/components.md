@@ -1,47 +1,47 @@
 # Components
 
-Everything under `src/components` is Tailwind-styled, organized by scope rather than by atomic-design tier, with a thin shadcn/ui-style primitive layer under `components/ui/`.
+Semua yang ada di `src/components` menggunakan styling Tailwind, diorganisasikan berdasarkan scope, bukan berdasarkan tier atomic-design, dengan lapisan primitive tipis bergaya shadcn/ui di bawah `components/ui/`.
 
 ## `components/ui/`
 
-Local shadcn/ui-style primitives (not installed from a registry — hand-built with `class-variance-authority` for variants), reused across dashboard pages:
+Primitive lokal bergaya shadcn/ui (bukan diinstal dari registry, dibuat manual dengan `class-variance-authority` untuk variants), digunakan berulang kali di seluruh halaman dashboard:
 
-| Component | Purpose |
+| Component | Tujuan |
 |---|---|
-| `card.tsx` | `Card` / `CardHeader` / `CardContent` / `CardFooter` / `CardTitle` primitives with a `default`/`accent` variant, used as the base for nearly every dashboard panel |
-| `sidebar.tsx` | Collapsible desktop sidebar + slide-in mobile drawer primitives (`Sidebar`, `SidebarBody`, `SidebarLink`, `useSidebar`), consumed by `components/dashboard/Sidebar.tsx` |
+| `card.tsx` | Primitive `Card` / `CardHeader` / `CardContent` / `CardFooter` / `CardTitle` dengan variant `default`/`accent`, digunakan sebagai basis untuk hampir semua panel dashboard |
+| `sidebar.tsx` | Primitive sidebar desktop yang dapat di-collapse + drawer mobile slide-in (`Sidebar`, `SidebarBody`, `SidebarLink`, `useSidebar`), digunakan oleh `components/dashboard/Sidebar.tsx` |
 
 ## `components/common/`
 
-Legacy stub files (`Header.tsx`, `Sidebar.tsx`, `LoadingSpinner.tsx`) left over from before the `components/dashboard/` + `components/ui/` layout landed. All three are currently empty and not imported anywhere — the real dashboard chrome lives in `components/dashboard/Sidebar.tsx` / `Topbar.tsx` on top of `components/ui/sidebar.tsx`. Safe to delete in a future cleanup; not removed here to keep this doc pass scoped to documentation.
+File stub lama (`Header.tsx`, `Sidebar.tsx`, `LoadingSpinner.tsx`) peninggalan sebelum struktur `components/dashboard/` + `components/ui/` diterapkan. Ketiganya saat ini kosong dan tidak di-import di mana pun. Chrome dashboard yang sebenarnya berada di `components/dashboard/Sidebar.tsx` / `Topbar.tsx` di atas `components/ui/sidebar.tsx`. Aman untuk dihapus pada pembersihan berikutnya; tidak dihapus di sini agar dokumentasi ini tetap fokus pada dokumentasi saja.
 
 ## `components/dashboard/`
 
-Dashboard-specific widgets, most driven by [`navConfig.ts`](../../frontend/src/components/dashboard/navConfig.ts) or the sensor/device hooks:
+Widget khusus dashboard, sebagian besar digerakkan oleh [`navConfig.ts`](../../frontend/src/components/dashboard/navConfig.ts) atau hook sensor/device:
 
-| Component | Purpose |
+| Component | Tujuan |
 |---|---|
-| `Sidebar.tsx` / `Topbar.tsx` | Dashboard navigation chrome, rendered from `NAV_ITEMS` in `navConfig.ts` |
-| `StatCard.tsx` | Reusable stat/metric tile (e.g. device count, active sensors) |
-| `SensorGaugeCard.tsx` | Gauge-style display for a single live sensor value (pH or moisture) |
-| `SensorHistoryChart.tsx` | Recharts-based time series for sensor history (`GET /api/sensors/:id/history`) |
-| `SensorMonitorPanel.tsx` | Composes gauge + chart + live status for one device |
-| `LiveLocationTracker.tsx` | Live-updating status indicator, driven by `useSensorRealtime`/`useDeviceStatus` |
-| `EditNameForm.tsx` | Inline form for editing the user's display name (`PATCH /api/users/me`) |
+| `Sidebar.tsx` / `Topbar.tsx` | Chrome navigasi dashboard, dirender dari `NAV_ITEMS` di `navConfig.ts` |
+| `StatCard.tsx` | Tile stat/metrik yang dapat digunakan ulang (misalnya jumlah device, sensor aktif) |
+| `SensorGaugeCard.tsx` | Tampilan gaya gauge untuk satu nilai sensor live (pH atau kelembapan) |
+| `SensorHistoryChart.tsx` | Time series berbasis Recharts untuk riwayat sensor (`GET /api/sensors/:id/history`) |
+| `SensorMonitorPanel.tsx` | Menggabungkan gauge + chart + status live untuk satu device |
+| `LiveLocationTracker.tsx` | Indikator status yang diperbarui secara live, digerakkan oleh `useSensorRealtime`/`useDeviceStatus` |
+| `EditNameForm.tsx` | Form inline untuk mengedit nama tampilan pengguna (`PATCH /api/users/me`) |
 
 ## `components/devices/`
 
-Device management UI, all backed by [`useDevices`](../../frontend/src/hooks/useDevices.ts):
+UI manajemen device, semuanya didukung oleh [`useDevices`](../../frontend/src/hooks/useDevices.ts):
 
-| Component | Purpose |
+| Component | Tujuan |
 |---|---|
-| `DeviceCard.tsx` | Summary card for one registered device |
-| `ConnectDeviceModal.tsx` | Claim flow for a newly discovered device (`POST /api/devices`) |
+| `DeviceCard.tsx` | Kartu ringkasan untuk satu device terdaftar |
+| `ConnectDeviceModal.tsx` | Alur klaim untuk device yang baru ditemukan (`POST /api/devices`) |
 | `EditDeviceModal.tsx` | Edit label/plant/polybag/interval (`PATCH /api/devices/:id`) |
-| `DeleteConfirmDialog.tsx` | Generic confirm-delete dialog, reused for device deletion |
+| `DeleteConfirmDialog.tsx` | Dialog konfirmasi hapus generik, digunakan ulang untuk penghapusan device |
 
-## Conventions
+## Konvensi
 
-- Add navigation entries by editing `navConfig.ts` — the Sidebar and Topbar render from that array automatically rather than needing per-component route wiring. Set `hidden: true` for routes that should be reachable but not shown in nav (e.g. `/dashboard/profile`).
-- Components that need live backend data fetch through `src/services/*` (Axios/fetch wrappers), not inline `fetch()` calls — see [state-management.md](state-management.md).
-- All dashboard components assume an authenticated NextAuth session; they are rendered under the `(dashboard)` route group layout, which is the enforcement point for auth (see [routing.md](routing.md)).
+- Tambahkan entri navigasi dengan mengedit `navConfig.ts`; Sidebar dan Topbar dirender dari array tersebut secara otomatis tanpa perlu wiring route per-komponen. Set `hidden: true` untuk route yang harus dapat diakses tetapi tidak ditampilkan di nav (misalnya `/dashboard/profile`).
+- Komponen yang membutuhkan data backend live melakukan fetch melalui `src/services/*` (wrapper Axios/fetch), bukan pemanggilan `fetch()` inline, lihat [state-management.md](state-management.md).
+- Semua komponen dashboard mengasumsikan sesi NextAuth yang sudah terautentikasi; komponen tersebut dirender di bawah layout route group `(dashboard)`, yang merupakan titik penegakan (enforcement) untuk autentikasi (lihat [routing.md](routing.md)).

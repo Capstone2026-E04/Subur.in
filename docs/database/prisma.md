@@ -1,25 +1,25 @@
-# Prisma Conventions
+# Konvensi Prisma
 
-Schema: [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma). Client singleton: [`backend/src/database/connections/prisma_client.js`](../../backend/src/database/connections/prisma_client.js) — always import that shared instance (`const prisma = require('.../prisma_client')`) rather than instantiating `new PrismaClient()` in controllers/services, to avoid exhausting the connection pool.
+Schema: [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma). Client singleton: [`backend/src/database/connections/prisma_client.js`](../../backend/src/database/connections/prisma_client.js). Selalu import instance bersama tersebut (`const prisma = require('.../prisma_client')`) daripada membuat `new PrismaClient()` baru di controller/service, untuk menghindari habisnya connection pool.
 
-## Naming
+## Penamaan
 
-- Models use `PascalCase` (e.g. `RecommendationLog`); tables are mapped to `snake_case` via `@@map` (e.g. `@@map("recommendation_logs")`).
-- Fields use `camelCase` in Prisma/JS; columns map to `snake_case` via `@map` (e.g. `phValue @map("ph_value")`). Always add both when adding a new field — the JS-facing name should read naturally in TypeScript/JS, the DB column should match the project's snake_case SQL convention.
-- IDs are `@default(uuid()) @db.Uuid` for most models. `Device.id` is the exception — a natural `varchar(50)` key matching the physical device identifier (see [architecture/database-schema.md](../architecture/database-schema.md)).
+- Model menggunakan `PascalCase` (misalnya `RecommendationLog`); tabel dipetakan ke `snake_case` melalui `@@map` (misalnya `@@map("recommendation_logs")`).
+- Field menggunakan `camelCase` di Prisma/JS; kolom dipetakan ke `snake_case` melalui `@map` (misalnya `phValue @map("ph_value")`). Selalu tambahkan keduanya saat menambah field baru. Nama yang menghadap JS harus terbaca alami dalam TypeScript/JS, kolom DB harus sesuai konvensi SQL snake_case proyek ini.
+- ID menggunakan `@default(uuid()) @db.Uuid` untuk sebagian besar model. `Device.id` adalah pengecualian: sebuah natural key `varchar(50)` yang sesuai dengan identifier fisik perangkat (lihat [architecture/database-schema.md](../architecture/database-schema.md)).
 
-## Query Patterns
+## Pola query
 
-- **Ownership-scoped reads/writes:** `prisma.device.findFirst({ where: { id, userId } })` before any update/delete on a user-owned resource — never trust `id` alone from the URL. See [backend/coding-standards.md](../backend/coding-standards.md).
-- **Case-insensitive name lookup:** `where: { name: { equals: value, mode: 'insensitive' } }`, used by the AI layer to resolve a plant/polybag by human-readable name as an alternative to UUID (see [`ai/services/recommendation.service.js`](../../backend/src/ai/services/recommendation.service.js)).
-- **Selective includes:** controllers `include` only the relations a response actually needs (e.g. `plant`, `polybag: { include: { polybagType: true } }`) rather than a blanket include, to keep payloads and queries lean.
-- **Raw SQL for partition management:** `prisma.$queryRawUnsafe`/`$executeRawUnsafe` are used in [`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js) to manage Postgres table partitions, since Prisma's schema DSL doesn't model partitioning. Table/partition names interpolated into these raw queries are generated internally (year/month), never taken from user input — do not extend this pattern to accept external strings without parameterization.
+- **Ownership-scoped reads/writes:** `prisma.device.findFirst({ where: { id, userId } })` sebelum melakukan update/delete apa pun pada resource milik user. Jangan pernah percaya `id` saja dari URL. Lihat [backend/coding-standards.md](../backend/coding-standards.md).
+- **Pencarian nama case-insensitive:** `where: { name: { equals: value, mode: 'insensitive' } }`, digunakan oleh layer AI untuk me-resolve plant/polybag berdasarkan nama yang human-readable sebagai alternatif dari UUID (lihat [`ai/services/recommendation.service.js`](../../backend/src/ai/services/recommendation.service.js)).
+- **Selective includes:** controller melakukan `include` hanya untuk relasi yang benar-benar dibutuhkan response (misalnya `plant`, `polybag: { include: { polybagType: true } }`) daripada blanket include, agar payload dan query tetap ringan.
+- **Raw SQL untuk manajemen partisi:** `prisma.$queryRawUnsafe`/`$executeRawUnsafe` digunakan di [`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js) untuk mengelola partisi tabel Postgres, karena schema DSL Prisma tidak memodelkan partitioning. Nama tabel/partisi yang di-interpolasi ke dalam raw query ini dihasilkan secara internal (year/month), tidak pernah diambil dari input user. Jangan memperluas pola ini untuk menerima string eksternal tanpa parameterisasi.
 
-## Regenerating the Client
+## Meregenerasi client
 
-After any `schema.prisma` change:
+Setelah perubahan apa pun pada `schema.prisma`:
 ```bash
 cd backend
 npx prisma generate
 ```
-`npm run db:generate` in `package.json` is a shortcut for this.
+`npm run db:generate` di `package.json` adalah shortcut untuk ini.

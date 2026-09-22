@@ -1,14 +1,14 @@
-# Polybags API
+# API Polybags
 
-Read-only reference data used when registering a device. A "polybag" is a specific soil-volume instance derived from a `PolybagType` (physical dimensions).
+Data referensi read-only yang digunakan saat mendaftarkan device. Sebuah "polybag" adalah instance volume tanah tertentu yang diturunkan dari sebuah `PolybagType` (dimensi fisik).
 
 ## `GET /api/polybags`
 
-**Auth required:** Yes (`Authorization: Bearer <jwt>`)
+**Perlu autentikasi:** Ya (`Authorization: Bearer <jwt>`)
 
-Lists all polybag instances with their type's dimensions flattened into the response.
+Menampilkan semua instance polybag beserta dimensi dari tipenya yang diratakan (flattened) ke dalam response.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -25,4 +25,4 @@ Lists all polybag instances with their type's dimensions flattened into the resp
 }
 ```
 
-`soilVolumeLiter` and dimensions are used by [`ai/config/physical_presets.js`](../../backend/src/ai/config/physical_presets.js) to compute the fillable soil volume used in dosage calculations. Seed data (`Kecil`, `Standar`) lives in [`backend/prisma/seed.js`](../../backend/prisma/seed.js).
+`soilVolumeLiter` dan dimensi digunakan oleh [`ai/config/physical_presets.js`](../../backend/src/ai/config/physical_presets.js) untuk menghitung volume tanah yang dapat diisi, yang digunakan dalam perhitungan dosis. Data seed (`Kecil`, `Standar`) berada di [`backend/prisma/seed.js`](../../backend/prisma/seed.js).

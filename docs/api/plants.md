@@ -1,14 +1,14 @@
-# Plants API
+# API Plants
 
-Read-only reference data used when registering a device.
+Data referensi read-only yang digunakan saat mendaftarkan device.
 
 ## `GET /api/plants`
 
-**Auth required:** Yes (`Authorization: Bearer <jwt>`)
+**Perlu autentikasi:** Ya (`Authorization: Bearer <jwt>`)
 
-Lists all plant species, ordered by name ascending.
+Menampilkan semua spesies tanaman, diurutkan berdasarkan nama secara ascending.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -29,4 +29,4 @@ Lists all plant species, ordered by name ascending.
 }
 ```
 
-`minPh`/`maxPh`/`phTarget` feed directly into the fuzzy recommendation engine — see [architecture/system-design.md](../architecture/system-design.md#why-fuzzy-logic). Seed data (`Bayam`, `Pakcoy`, `Selada`) lives in [`backend/prisma/seed.js`](../../backend/prisma/seed.js).
+`minPh`/`maxPh`/`phTarget` langsung digunakan sebagai input mesin rekomendasi fuzzy, lihat [architecture/system-design.md](../architecture/system-design.md#why-fuzzy-logic). Data seed (`Bayam`, `Pakcoy`, `Selada`) berada di [`backend/prisma/seed.js`](../../backend/prisma/seed.js).

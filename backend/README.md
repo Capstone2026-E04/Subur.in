@@ -8,7 +8,7 @@ Backend service untuk proyek **Subur.in**.
 - Express.js
 - Supabase (Database)
 
-## Cara Menjalankan
+## Cara menjalankan
 
 1. Install dependencies:
    ```bash
@@ -21,9 +21,9 @@ Backend service untuk proyek **Subur.in**.
 
 ## API Endpoints
 
-Berikut adalah daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
+Daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
 
-### 1. Health Check
+### 1. Health check
 * **Endpoint:** `GET /api/health`
 * **Deskripsi:** Memeriksa status kesehatan server backend dan koneksi database Supabase secara real-time.
 * **Format Response:**
@@ -61,7 +61,7 @@ Berikut adalah daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
   }
   ```
 
-### 3. Simulasi Fuzzy Logic & Rekomendasi
+### 3. Simulasi fuzzy logic & rekomendasi
 * **Endpoint:** `POST /api/recommendations/simulate`
 * **Deskripsi:** Menyimulasikan kalkulasi logika fuzzy Mamdani dan menghitung dosis penyiraman air, kapur dolomit, dan sulfur elemental secara dinamis berdasarkan jenis tanaman dan ukuran polybag yang aktif di database.
 * **Request Body:**
@@ -101,9 +101,9 @@ Berikut adalah daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
   }
   ```
 
-## Dokumentasi Lengkap
+## Dokumentasi lengkap
 
-Dokumentasi arsitektur, referensi API penuh, environment variable, dan konvensi kode ada di [`../docs`](../docs) — mulai dari [`docs/api/`](../docs/api) untuk semua endpoint dan [`docs/backend/`](../docs/backend) untuk konvensi coding.
+Dokumentasi arsitektur, referensi API penuh, environment variable, dan konvensi kode ada di [`../docs`](../docs), mulai dari [`docs/api/`](../docs/api) untuk semua endpoint dan [`docs/backend/`](../docs/backend) untuk konvensi coding.
 
 ## Author
 

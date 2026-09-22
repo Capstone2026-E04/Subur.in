@@ -1,15 +1,15 @@
-# ADR-003: Backend-Issued JWT Bridged Through NextAuth
+# ADR-003: JWT terbitan backend yang dijembatani melalui NextAuth
 
 ## Status
-Accepted
+Diterima
 
-## Context
-The frontend uses NextAuth v5 purely for the Google OAuth handshake (consent screen, token exchange, session cookie). The backend is a separate Express service with its own database and no NextAuth integration, and needs to authenticate every API request independently of the frontend's session mechanism (e.g. for future non-browser clients, or if the frontend is ever replaced).
+## Konteks
+Frontend menggunakan NextAuth v5 murni untuk proses handshake Google OAuth (consent screen, token exchange, session cookie). Backend adalah service Express terpisah dengan database sendiri dan tanpa integrasi NextAuth, serta perlu mengautentikasi setiap request API secara independen dari mekanisme session frontend (misalnya untuk client non-browser di masa depan, atau jika frontend suatu saat diganti).
 
-## Decision
-On successful Google sign-in, NextAuth's `signIn` callback ([`lib/auth.ts`](../../frontend/src/lib/auth.ts)) immediately exchanges the Google ID token for a backend-issued JWT by calling `POST /api/auth/google`. That backend JWT is stored inside the NextAuth session (`session.user.backendToken`) and is the token actually sent as `Authorization: Bearer` on every backend API call — the Google ID token itself is never reused after this exchange.
+## Keputusan
+Saat sign-in Google berhasil, callback `signIn` milik NextAuth ([`lib/auth.ts`](../../frontend/src/lib/auth.ts)) langsung menukar Google ID token dengan JWT terbitan backend dengan memanggil `POST /api/auth/google`. JWT backend tersebut disimpan di dalam session NextAuth (`session.user.backendToken`) dan adalah token yang benar-benar dikirim sebagai `Authorization: Bearer` pada setiap pemanggilan backend API. Google ID token itu sendiri tidak pernah digunakan ulang setelah pertukaran ini.
 
-## Consequences
-- The backend stays a self-contained auth authority (its own `JWT_SECRET`, its own user table keyed by `googleId`/`email`) — it doesn't need to trust or validate NextAuth session cookies, so it could serve non-Next.js clients unchanged.
-- Sign-in fails closed: if the backend exchange call fails (network error, backend down, `GOOGLE_CLIENT_ID` mismatch), `signIn` returns `false` and the user is never granted a NextAuth session, even though Google's own OAuth step succeeded.
-- Two token lifetimes exist (NextAuth session vs. the 7-day backend JWT nested inside it) — if they drift out of sync, a user could have a live NextAuth session with an expired backend token, seeing 401s on API calls until they re-authenticate. There is currently no proactive refresh of the backend token before its 7-day expiry.
+## Konsekuensi
+- Backend tetap menjadi otoritas autentikasi yang mandiri (`JWT_SECRET` sendiri, tabel user sendiri yang diindeks dengan `googleId`/`email`): backend tidak perlu mempercayai atau memvalidasi session cookie NextAuth, sehingga bisa melayani client non-Next.js tanpa perubahan.
+- Sign-in gagal secara fail-closed: jika pemanggilan pertukaran ke backend gagal (error jaringan, backend down, `GOOGLE_CLIENT_ID` tidak cocok), `signIn` mengembalikan `false` dan user tidak pernah diberikan session NextAuth, meskipun langkah OAuth Google sendiri berhasil.
+- Ada dua masa hidup token (session NextAuth vs. JWT backend berumur 7 hari yang tersimpan di dalamnya): jika keduanya tidak sinkron, seorang user bisa memiliki session NextAuth yang aktif dengan token backend yang sudah kedaluwarsa, sehingga mendapat 401 pada pemanggilan API sampai mereka melakukan autentikasi ulang. Saat ini belum ada refresh proaktif untuk token backend sebelum masa berlaku 7 harinya habis.

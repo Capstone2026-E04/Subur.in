@@ -1,23 +1,23 @@
-# System Design
+# Desain sistem
 
-## Overview
+## Gambaran umum
 
-Subur.in is an IoT-based smart plant monitoring and recommendation platform. An ESP-class device measures soil pH and moisture, publishes the readings over MQTT, and the backend turns those readings into actionable irrigation/fertilization advice using a Mamdani fuzzy-logic engine. Users manage their devices and view recommendations through a Next.js web dashboard.
+Subur.in adalah platform pemantauan dan rekomendasi tanaman pintar berbasis IoT. Perangkat kelas ESP mengukur pH tanah dan kelembaban, mempublikasikan pembacaan tersebut melalui MQTT, dan backend mengubah pembacaan tersebut menjadi saran irigasi/pemupukan yang dapat ditindaklanjuti menggunakan mesin fuzzy logic Mamdani. Pengguna mengelola perangkat mereka dan melihat rekomendasi melalui dashboard web Next.js.
 
-## Components
+## Komponen
 
-| Component | Tech | Responsibility |
+| Komponen | Teknologi | Tanggung Jawab |
 |---|---|---|
-| IoT device | ESP32/ESP8266 (external) | Reads soil pH/moisture, publishes telemetry over MQTT |
-| MQTT broker | EMQX Cloud (managed) | Transport between device and backend |
-| Backend API | Node.js, Express, Prisma | Auth, device/plant/polybag CRUD, fuzzy recommendation engine, SSE, cron jobs |
-| Database | PostgreSQL (Supabase) | Users, devices, plants, polybags, recommendation logs, raw sensor logs (partitioned) |
-| Cache | Redis (self-hosted, ioredis client) | Latest sensor readings per device, throttling, dedupe locks |
-| Notifications | Telegram Bot API | Push channel for device alerts, alongside in-app SSE + notification history |
-| Frontend | Next.js 16 (App Router), NextAuth v5 | Dashboard for monitoring, device management, recommendations |
-| Deployment | Docker, GHCR, GitHub Actions, VPS | Containers built by CI and pulled onto a VPS running docker-compose |
+| Perangkat IoT | ESP32/ESP8266 (eksternal) | Membaca pH/kelembaban tanah, mempublikasikan telemetri melalui MQTT |
+| MQTT broker | EMQX Cloud (terkelola) | Transport antara perangkat dan backend |
+| Backend API | Node.js, Express, Prisma | Auth, CRUD device/plant/polybag, mesin rekomendasi fuzzy, SSE, cron job |
+| Database | PostgreSQL (Supabase) | Users, devices, plants, polybags, recommendation log, raw sensor log (dipartisi) |
+| Cache | Redis (self-hosted, client ioredis) | Pembacaan sensor terbaru per device, throttling, lock dedupe |
+| Notifikasi | Telegram Bot API | Kanal push untuk peringatan device, berdampingan dengan SSE in-app + riwayat notifikasi |
+| Frontend | Next.js 16 (App Router), NextAuth v5 | Dashboard untuk pemantauan, manajemen device, rekomendasi |
+| Deployment | Docker, GHCR, GitHub Actions, VPS | Container dibangun oleh CI dan ditarik ke VPS yang menjalankan docker-compose |
 
-## High-Level Flow
+## Alur tingkat tinggi
 
 ```mermaid
 flowchart LR
@@ -33,23 +33,23 @@ flowchart LR
     Broker -- suburin/devices/+/config --> Device
 ```
 
-## Backend Subsystems
+## Subsistem backend
 
-- **HTTP API** (`src/routes`, `src/controllers`) — REST resources for auth, users, devices, plants, polybags, recommendations, notifications, and sensor reads. See [api-flow.md](api-flow.md).
-- **MQTT layer** (`src/mqtt`) — subscribes to device telemetry, validates payloads, writes to Redis + Postgres, triggers notifications on invalid data, and publishes config changes (sensor interval) back to devices.
-- **AI recommendation engine** (`src/ai`) — a Mamdani fuzzy-logic system (pH x moisture -> 9-category action) plus deterministic dosage calculators for irrigation water, dolomite lime, and elemental sulfur. Pure functions, no I/O, safe to unit test in isolation ([`src/ai/__tests__`](../../backend/src/ai/__tests__)).
-- **SSE manager** (`src/sse`) — keeps per-device `EventSource` client lists in memory and broadcasts live sensor + notification events to connected dashboards.
-- **Notification dispatch** (`src/services/notification.service.js`, `src/services/telegram.service.js`) — the single entry point (`notifyDevice`) every notification-creating call site uses, fanning a notification out to Postgres, SSE, and Telegram (if the device owner has linked their account) in one call. See [api/telegram.md](../api/telegram.md).
-- **Cron jobs** (`src/cron`) — monthly Postgres partition management/cleanup for `raw_sensor_logs`, and a downsampling job.
-- **Repositories** (`src/repositories`) — thin data-access layer over Prisma (Postgres) and Redis for sensor reads.
+- **HTTP API** (`src/routes`, `src/controllers`): resource REST untuk auth, users, devices, plants, polybags, recommendations, notifications, dan pembacaan sensor. Lihat [api-flow.md](api-flow.md).
+- **Lapisan MQTT** (`src/mqtt`): berlangganan telemetri perangkat, memvalidasi payload, menulis ke Redis + Postgres, memicu notifikasi saat data tidak valid, dan mempublikasikan perubahan konfigurasi (interval sensor) kembali ke perangkat.
+- **Mesin rekomendasi AI** (`src/ai`): sistem fuzzy logic Mamdani (pH x kelembaban -> 9 kategori aksi) ditambah kalkulator dosis deterministik untuk air irigasi, kapur dolomit, dan sulfur elemental. Fungsi murni, tanpa I/O, aman untuk diuji secara terisolasi ([`src/ai/__tests__`](../../backend/src/ai/__tests__)).
+- **SSE manager** (`src/sse`): menyimpan daftar client `EventSource` per device di memori dan menyiarkan event sensor langsung + notifikasi ke dashboard yang terhubung.
+- **Dispatch notifikasi** (`src/services/notification.service.js`, `src/services/telegram.service.js`): satu titik masuk (`notifyDevice`) yang digunakan setiap call site pembuat notifikasi, menyebarkan notifikasi ke Postgres, SSE, dan Telegram (jika pemilik device telah menautkan akunnya) dalam satu panggilan. Lihat [api/telegram.md](../api/telegram.md).
+- **Cron job** (`src/cron`): manajemen/pembersihan partisi Postgres bulanan untuk `raw_sensor_logs`, dan job downsampling.
+- **Repositories** (`src/repositories`): lapisan akses data tipis di atas Prisma (Postgres) dan Redis untuk pembacaan sensor.
 
-## Why Fuzzy Logic
+## Mengapa fuzzy logic
 
-Soil pH and moisture interact non-linearly with plant health — a single hard threshold per variable misses combined states (e.g. "slightly acidic and moderately dry" needs a different response than "very acidic and very dry"). A Mamdani fuzzy inference system lets the rule base ([`src/ai/core/rules.js`](../../backend/src/ai/core/rules.js)) express these combinations declaratively, and the defuzzified output index (0-8) maps to one of 9 action categories interpreted in [`src/ai/utils/interpreter.js`](../../backend/src/ai/utils/interpreter.js). See [ADR-004](../decisions/adr-004-fuzzy-logic-engine.md).
+pH tanah dan kelembaban berinteraksi secara non-linear dengan kesehatan tanaman. Satu ambang batas tegas per variabel akan melewatkan kondisi gabungan (misalnya "sedikit asam dan cukup kering" memerlukan respons berbeda dibanding "sangat asam dan sangat kering"). Sistem inferensi fuzzy Mamdani memungkinkan rule base ([`src/ai/core/rules.js`](../../backend/src/ai/core/rules.js)) mengekspresikan kombinasi ini secara deklaratif, dan indeks output hasil defuzzifikasi (0-8) dipetakan ke salah satu dari 9 kategori aksi yang diinterpretasikan di [`src/ai/utils/interpreter.js`](../../backend/src/ai/utils/interpreter.js). Lihat [ADR-004](../decisions/adr-004-fuzzy-logic-engine.md).
 
-## Related Docs
+## Dokumen terkait
 
-- [Folder structure](folder-structure.md)
-- [Database schema](database-schema.md)
-- [API flow](api-flow.md)
-- [Backend authentication](../backend/authentication.md)
+- [Struktur folder](folder-structure.md)
+- [Skema database](database-schema.md)
+- [Alur API](api-flow.md)
+- [Autentikasi backend](../backend/authentication.md)

@@ -1,32 +1,32 @@
 # Logging
 
-There is no structured logging library (no Winston/Pino) — logging is plain `console.log`/`console.error`, with a `[Subsystem]` prefix convention so log lines can be grepped by origin.
+Tidak ada library logging terstruktur (tidak ada Winston/Pino). Logging menggunakan `console.log`/`console.error` biasa, dengan konvensi prefix `[Subsystem]` agar baris log dapat di-grep berdasarkan asalnya.
 
-## Prefix Convention
+## Konvensi prefix
 
-| Prefix | Subsystem |
+| Prefix | Subsistem |
 |---|---|
-| `[MQTT]` | Connection lifecycle ([`mqtt/connection.js`](../../backend/src/mqtt/connection.js)) |
-| `[MQTT Subscriber]` | Telemetry ingestion ([`mqtt/subscribers/sensor_subscriber.js`](../../backend/src/mqtt/subscribers/sensor_subscriber.js)) |
-| `[MQTT Publish]` | Outgoing config publishes ([`mqtt/publishers/config_publisher.js`](../../backend/src/mqtt/publishers/config_publisher.js)) |
-| `[Redis]` | Redis client init ([`database/connections/redis.js`](../../backend/src/database/connections/redis.js)) |
-| `[Cron]` | Scheduled jobs ([`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) |
-| `[Telegram Service]` | Outgoing Bot API calls ([`services/telegram.service.js`](../../backend/src/services/telegram.service.js)) |
-| `[Telegram Controller]` | Webhook processing errors ([`controllers/telegram.controller.js`](../../backend/src/controllers/telegram.controller.js)) |
-| `[Sensor Controller]` | `sensor.controller.js` request handlers |
-| `[Update Device]` / `[Prisma History Query]` | Ad-hoc per-operation prefixes in device/sensor controllers |
+| `[MQTT]` | Siklus hidup koneksi ([`mqtt/connection.js`](../../backend/src/mqtt/connection.js)) |
+| `[MQTT Subscriber]` | Ingesti telemetri ([`mqtt/subscribers/sensor_subscriber.js`](../../backend/src/mqtt/subscribers/sensor_subscriber.js)) |
+| `[MQTT Publish]` | Publikasi konfigurasi keluar ([`mqtt/publishers/config_publisher.js`](../../backend/src/mqtt/publishers/config_publisher.js)) |
+| `[Redis]` | Inisialisasi Redis client ([`database/connections/redis.js`](../../backend/src/database/connections/redis.js)) |
+| `[Cron]` | Job terjadwal ([`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) |
+| `[Telegram Service]` | Panggilan Bot API keluar ([`services/telegram.service.js`](../../backend/src/services/telegram.service.js)) |
+| `[Telegram Controller]` | Error pemrosesan webhook ([`controllers/telegram.controller.js`](../../backend/src/controllers/telegram.controller.js)) |
+| `[Sensor Controller]` | Handler request `sensor.controller.js` |
+| `[Update Device]` / `[Prisma History Query]` | Prefix ad-hoc per-operasi di controller device/sensor |
 
-Controller-level errors are logged with a descriptive label matching the operation (e.g. `console.error('Get Device Recommendation Error:', error)`) rather than the `[Subsystem]` bracket style — reserve brackets for background/infrastructure subsystems (MQTT, Redis, cron) that don't have a request/response to attach the error to.
+Error pada level controller dicatat dengan label deskriptif yang sesuai dengan operasinya (misalnya `console.error('Get Device Recommendation Error:', error)`) alih-alih gaya bracket `[Subsystem]`. Bracket disediakan khusus untuk subsistem background/infrastruktur (MQTT, Redis, cron) yang tidak memiliki siklus request/response untuk melekatkan error tersebut.
 
-## What Gets Logged
+## Apa yang dicatat
 
-- Every controller catch-block logs the raw error via `console.error` before returning the sanitized `message`/`error` response (see [api/error-response.md](../api/error-response.md)).
-- MQTT: subscribe success/failure, invalid payloads (with the raw device ID and data), publish failures.
-- Cron: partition creation/skip decisions, cleanup results.
-- Server boot ([`server.js`](../../backend/src/server.js)): one line per subsystem init attempt, success or caught failure — this is the fastest way to tell which optional subsystem (MQTT/Redis/cron) failed to come up without the whole process crashing.
+- Setiap blok catch controller mencatat error mentah melalui `console.error` sebelum mengembalikan response `message`/`error` yang sudah disanitasi (lihat [api/error-response.md](../api/error-response.md)).
+- MQTT: keberhasilan/kegagalan subscribe, payload tidak valid (beserta ID perangkat dan data mentahnya), kegagalan publish.
+- Cron: keputusan pembuatan/pelewatan partisi, hasil pembersihan.
+- Boot server ([`server.js`](../../backend/src/server.js)): satu baris per percobaan inisialisasi subsistem, baik sukses maupun kegagalan yang tertangkap. Ini cara tercepat untuk mengetahui subsistem opsional mana (MQTT/Redis/cron) yang gagal berjalan tanpa membuat seluruh proses crash.
 
-## Adding Logging to New Code
+## Menambahkan logging pada kode baru
 
-- Background/infrastructure code (new MQTT topic, new cron job): pick a `[Subsystem]` prefix and stay consistent within that file.
-- Request handlers: log the error object in the `catch` block with a short label describing the operation, matching the existing controllers.
-- Never log secrets (`JWT_SECRET`, tokens, MQTT/Redis credentials) — `server.js` currently logs `process.env.DATABASE_URL` on boot for debugging; avoid extending that pattern to files carrying application secrets and consider removing it before hardening logs for a shared environment.
+- Kode background/infrastruktur (topik MQTT baru, cron job baru): pilih prefix `[Subsystem]` dan jaga konsistensi dalam file tersebut.
+- Request handler: catat objek error di blok `catch` dengan label singkat yang mendeskripsikan operasinya, selaras dengan controller yang sudah ada.
+- Jangan pernah mencatat secret (`JWT_SECRET`, token, kredensial MQTT/Redis). `server.js` saat ini mencatat `process.env.DATABASE_URL` saat boot untuk keperluan debugging; hindari memperluas pola ini ke file yang membawa secret aplikasi dan pertimbangkan untuk menghapusnya sebelum mengeraskan (harden) log untuk environment bersama.

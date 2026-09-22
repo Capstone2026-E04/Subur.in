@@ -1,12 +1,12 @@
 # Installation
 
-## Prerequisites
+## Prasyarat
 
-- Node.js 18+ and npm
-- A PostgreSQL database (the project targets Supabase in production, but any Postgres works locally)
-- A Redis instance (self-hosted `redis-server` in production; any local Redis works for development)
-- An MQTT broker reachable over TLS (the project targets EMQX Cloud)
-- A Google Cloud OAuth 2.0 Client ID (Web application) for Google Sign-In
+- Node.js 18+ dan npm
+- Database PostgreSQL (project ini menargetkan Supabase di produksi, tetapi Postgres apa pun bisa digunakan secara lokal)
+- Instance Redis (self-hosted `redis-server` di produksi; Redis lokal apa pun bisa digunakan untuk development)
+- Broker MQTT yang dapat diakses melalui TLS (project ini menargetkan EMQX Cloud)
+- Google Cloud OAuth 2.0 Client ID (Web application) untuk Google Sign-In
 
 ## 1. Clone
 
@@ -20,10 +20,10 @@ cd Subur.in
 ```bash
 cd backend
 npm install
-cp .env.example .env    # fill in the values, see setup/environment.md
+cp .env.example .env    # isi nilainya, lihat setup/environment.md
 npx prisma generate
-npx prisma db push       # or: npx prisma migrate dev, see database/migration.md
-npm run db:seed          # seeds plants + polybag types
+npx prisma db push       # atau: npx prisma migrate dev, lihat database/migration.md
+npm run db:seed          # seed data plants + polybag types
 npm run dev              # nodemon, http://localhost:3000
 ```
 
@@ -32,16 +32,16 @@ npm run dev              # nodemon, http://localhost:3000
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local   # fill in the values, see setup/environment.md
-npm run dev                  # http://localhost:3001 (or PORT from .env.local)
+cp .env.example .env.local   # isi nilainya, lihat setup/environment.md
+npm run dev                  # http://localhost:3001 (atau PORT dari .env.local)
 ```
 
-## 4. Verify
+## 4. Verifikasi
 
-- Backend: `GET http://localhost:3000/api/health` should return `{"status":"UP", ...}`.
-- Backend: `GET http://localhost:3000/api` lists all available endpoints.
-- Frontend: open the dev server URL, you should land on `/login`; signing in with Google should sync a session with the backend.
+- Backend: `GET http://localhost:3000/api/health` seharusnya mengembalikan `{"status":"UP", ...}`.
+- Backend: `GET http://localhost:3000/api` menampilkan daftar semua endpoint yang tersedia.
+- Frontend: buka URL dev server, Anda seharusnya diarahkan ke `/login`; sign in dengan Google seharusnya menyinkronkan sesi dengan backend.
 
-## Running Both with Docker Compose
+## Menjalankan Keduanya dengan Docker Compose
 
-The root [`docker-compose.yml`](../../docker-compose.yml) is a **production** compose file — it pulls prebuilt images from GHCR rather than building from source, and is meant for the deployment VPS, not local development. For local development, run each app with `npm run dev` as above. See [deployment.md](deployment.md) for how images are built and shipped.
+[`docker-compose.yml`](../../docker-compose.yml) di root repo adalah file compose **produksi**: file ini menarik image prebuilt dari GHCR alih-alih membangun dari source, dan ditujukan untuk VPS deployment, bukan development lokal. Untuk development lokal, jalankan setiap aplikasi dengan `npm run dev` seperti di atas. Lihat [deployment.md](deployment.md) untuk cara image dibangun dan dikirim.

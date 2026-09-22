@@ -1,19 +1,19 @@
-# Database Schema
+# Skema database
 
-PostgreSQL (hosted on Supabase), accessed via Prisma. Schema source: [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma).
+PostgreSQL (dihosting di Supabase), diakses melalui Prisma. Sumber skema: [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma).
 
-## Entities
+## Entitas
 
-| Model | Purpose |
-|---|---|
-| `User` | Account created/synced via Google Sign-In |
-| `Device` | A registered IoT sensor unit, owned by a user, linked to a plant and a polybag |
-| `Plant` | Plant species reference data (pH tolerance range/target) |
-| `PolybagType` | Physical polybag dimensions (diameter, height) |
-| `Polybag` | A polybag instance derived from a `PolybagType`, with computed soil volume |
-| `RecommendationLog` | One fuzzy-logic recommendation result, tied to a device |
-| `RawSensorLog` | Raw pH/moisture telemetry, partitioned by month for retention/cleanup |
-| `Notification` | Device-scoped user-facing alert (e.g. invalid sensor data) |
+| Model               | Tujuan                                                                                       |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| `User`              | Akun yang dibuat/disinkronkan melalui Google Sign-In                                         |
+| `Device`            | Unit sensor IoT terdaftar, dimiliki oleh seorang user, terhubung ke sebuah plant dan polybag |
+| `Plant`             | Data referensi spesies tanaman (rentang/target toleransi pH)                                 |
+| `PolybagType`       | Dimensi fisik polybag (diameter, tinggi)                                                     |
+| `Polybag`           | Instance polybag yang diturunkan dari `PolybagType`, dengan volume tanah yang dihitung       |
+| `RecommendationLog` | Satu hasil rekomendasi fuzzy logic, terkait dengan sebuah device                             |
+| `RawSensorLog`      | Telemetri pH/kelembaban mentah, dipartisi per bulan untuk retensi/pembersihan                |
+| `Notification`      | Peringatan yang ditujukan ke user, terikat pada device (misalnya data sensor tidak valid)    |
 
 ## ERD
 
@@ -95,13 +95,13 @@ erDiagram
     }
 ```
 
-## Notes
+## Catatan
 
-- `Device.id` is a natural key (varchar), matching the physical device's identifier rather than a generated UUID, since MQTT topics and hardware provisioning reference it directly.
-- `Device` -> `Plant`/`Polybag` relations use `onDelete: Restrict` — a plant or polybag in use by a device cannot be deleted, preventing orphaned devices.
-- `Device` -> `User` uses `onDelete: Cascade` — deleting a user removes their devices (and transitively their recommendation logs and notifications).
-- `RawSensorLog` is keyed on `(timestamp, id)` and range-partitioned by month at the database level (managed by [`src/cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) to keep high-frequency telemetry writes and retention cleanup cheap.
-- `DeviceStatus` enum: `ACTIVE`, `INACTIVE`, `OFFLINE`.
-- `User.telegramChatId` and `User.telegramLinkCode` are both nullable and unique — `telegramLinkCode` is a one-time code cleared as soon as the Telegram webhook consumes it to set `telegramChatId`. See [api/telegram.md](../api/telegram.md).
+- `Device.id` adalah natural key (varchar), yang mencocokkan identifier fisik perangkat alih-alih UUID yang dihasilkan otomatis, karena topik MQTT dan provisioning hardware merujuk langsung padanya.
+- Relasi `Device` -> `Plant`/`Polybag` menggunakan `onDelete: Restrict`: plant atau polybag yang sedang digunakan oleh device tidak dapat dihapus, sehingga device tidak menjadi yatim (orphaned).
+- `Device` -> `User` menggunakan `onDelete: Cascade`: menghapus user akan menghapus device miliknya (dan secara transitif juga recommendation log serta notifikasi terkait).
+- `RawSensorLog` menggunakan kunci `(timestamp, id)` dan dipartisi berdasarkan rentang bulan di level database (dikelola oleh [`src/cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) agar penulisan telemetri berfrekuensi tinggi dan pembersihan retensi tetap murah.
+- Enum `DeviceStatus`: `ACTIVE`, `INACTIVE`, `OFFLINE`.
+- `User.telegramChatId` dan `User.telegramLinkCode` sama-sama bersifat nullable dan unik. `telegramLinkCode` adalah kode sekali pakai yang dihapus segera setelah webhook Telegram mengonsumsinya untuk mengisi `telegramChatId`. Lihat [api/telegram.md](../api/telegram.md).
 
-See [database/prisma.md](../database/prisma.md) for query conventions and [database/migration.md](../database/migration.md) for how schema changes are applied.
+Lihat [database/prisma.md](../database/prisma.md) untuk konvensi query dan [database/migration.md](../database/migration.md) untuk cara perubahan skema diterapkan.

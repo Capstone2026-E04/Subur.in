@@ -1,27 +1,27 @@
 # State Management
 
-There is **no global client-side store** (Zustand is listed in `package.json` but is not currently used anywhere in `src/`) — state is local component/hook state plus the NextAuth session. Keep this in mind before reaching for a store: most new state should follow the same pattern below rather than introducing Zustand.
+Tidak ada **global client-side store** (Zustand tercantum di `package.json` tetapi saat ini tidak digunakan di mana pun dalam `src/`), state berupa state lokal component/hook ditambah sesi NextAuth. Perhatikan hal ini sebelum menggunakan store: sebagian besar state baru sebaiknya mengikuti pola yang sama di bawah ini alih-alih memperkenalkan Zustand.
 
 ## Session State
 
-NextAuth v5's `SessionProvider` (wired in `app/(dashboard)/layout.tsx`) is the source of truth for auth state. Client components read it with `useSession()` from `next-auth/react`, primarily to get `session.user.backendToken` — the JWT used to call the backend API.
+`SessionProvider` dari NextAuth v5 (dipasang di `app/(dashboard)/layout.tsx`) adalah sumber kebenaran (source of truth) untuk state auth. Client component membacanya dengan `useSession()` dari `next-auth/react`, terutama untuk mendapatkan `session.user.backendToken`, JWT yang digunakan untuk memanggil API backend.
 
-## Data-Fetching Hooks
+## Hook Data-Fetching
 
-Each backend resource that needs client-side interactivity gets a small hook in `src/hooks/` that:
-1. Reads `backendToken` via `useSession()`.
-2. Wraps a `src/services/*` function in `useState`/`useCallback`.
-3. Exposes `{ data, isLoading, error, ...actions }` to the component.
+Setiap resource backend yang membutuhkan interaktivitas sisi client mendapatkan hook kecil di `src/hooks/` yang:
+1. Membaca `backendToken` melalui `useSession()`.
+2. Membungkus fungsi `src/services/*` dengan `useState`/`useCallback`.
+3. Mengekspos `{ data, isLoading, error, ...actions }` ke komponen.
 
-| Hook | Backs |
+| Hook | Mendukung |
 |---|---|
-| `useDevices` | List/claim/update/delete devices ([`services/deviceService.ts`](../../frontend/src/services/deviceService.ts)) |
-| `useDeviceStatus` | Per-device online/offline status |
-| `usePlants` | Plant reference list |
-| `useSensorRealtime` | Live pH/moisture via SSE (`EventSource` against `/api/sensors/:id/stream`), with REST fallback (`/latest`) on stream error and auto-reconnect after 5s |
+| `useDevices` | List/klaim/update/hapus device ([`services/deviceService.ts`](../../frontend/src/services/deviceService.ts)) |
+| `useDeviceStatus` | Status online/offline per-device |
+| `usePlants` | Daftar referensi tanaman |
+| `useSensorRealtime` | pH/kelembapan live melalui SSE (`EventSource` terhadap `/api/sensors/:id/stream`), dengan fallback REST (`/latest`) saat stream error dan auto-reconnect setelah 5 detik |
 
-This keeps components simple (they call a hook, render its state) without a global store — each hook owns its own slice of server state and re-fetches/refreshes independently.
+Ini menjaga komponen tetap sederhana (memanggil hook, merender state-nya) tanpa global store; setiap hook memiliki slice server state-nya sendiri dan melakukan fetch ulang/refresh secara independen.
 
-## Adding New Server State
+## Menambahkan Server State Baru
 
-Follow the existing pattern: add a function to the relevant `src/services/*.ts` file (thin wrapper around `fetch`/Axios + `API_URL`), then a hook in `src/hooks/` if a component needs to mutate or subscribe to it. Only introduce a shared store (Zustand, since it's already a dependency) if state genuinely needs to be shared across unrelated component subtrees that can't pass it via props/hooks — not by default.
+Ikuti pola yang sudah ada: tambahkan fungsi ke file `src/services/*.ts` yang relevan (wrapper tipis di sekitar `fetch`/Axios + `API_URL`), lalu tambahkan hook di `src/hooks/` jika sebuah komponen perlu memutasi atau subscribe ke data tersebut. Hanya perkenalkan shared store (Zustand, karena sudah menjadi dependency) jika state benar-benar perlu dibagikan lintas subtree komponen yang tidak berhubungan dan tidak bisa dioper melalui props/hooks, bukan sebagai default.

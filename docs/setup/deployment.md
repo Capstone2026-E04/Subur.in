@@ -2,10 +2,10 @@
 
 ## Pipeline
 
-Each app has its own GitHub Actions workflow, triggered on push to `main` when files under that app's folder change:
+Setiap aplikasi memiliki workflow GitHub Actions sendiri, dipicu saat push ke `main` ketika file di bawah folder aplikasi tersebut berubah:
 
-- [`.github/workflows/deploy-backend.yml`](../../.github/workflows/deploy-backend.yml) — triggers on `backend/**`
-- [`.github/workflows/deploy-frontend.yml`](../../.github/workflows/deploy-frontend.yml) — triggers on `frontend/**`
+- [`.github/workflows/deploy-backend.yml`](../../.github/workflows/deploy-backend.yml): dipicu pada `backend/**`
+- [`.github/workflows/deploy-frontend.yml`](../../.github/workflows/deploy-frontend.yml): dipicu pada `frontend/**`
 
 ```mermaid
 flowchart LR
@@ -17,39 +17,39 @@ flowchart LR
     Up --> Migrate["backend only: docker compose exec backend npx prisma db push"]
 ```
 
-Both workflows:
-1. Build a Docker image from the app's own `Dockerfile`.
-2. Push it to GitHub Container Registry (GHCR) as `:latest`.
-3. SSH into the VPS, `git pull` the repo (for the latest `docker-compose.yml`), pull the new image, and `docker compose up -d` that one service.
+Kedua workflow:
+1. Membangun image Docker dari `Dockerfile` masing-masing aplikasi.
+2. Mendorong image tersebut ke GitHub Container Registry (GHCR) sebagai `:latest`.
+3. SSH ke VPS, `git pull` repo (untuk mendapatkan `docker-compose.yml` terbaru), pull image baru, dan `docker compose up -d` untuk service tersebut.
 
-Both workflows share the concurrency group `deploy-suburin-vps` with `cancel-in-progress: false` — a backend and a frontend deploy triggered close together queue and run one at a time against the shared VPS instead of racing each other. The deploy script also runs under `set -euo pipefail`, so any failed step (bad login, failed `git pull`, failed `prisma db push`) fails the whole job instead of silently continuing.
+Kedua workflow berbagi concurrency group `deploy-suburin-vps` dengan `cancel-in-progress: false`, sehingga deploy backend dan frontend yang dipicu berdekatan waktu akan mengantre dan berjalan satu per satu terhadap VPS yang dibagikan, alih-alih saling bertabrakan. Skrip deploy juga berjalan di bawah `set -euo pipefail`, sehingga langkah mana pun yang gagal (login gagal, `git pull` gagal, `prisma db push` gagal) akan menggagalkan seluruh job alih-alih diam-diam melanjutkan.
 
-The backend workflow additionally runs `prisma db push --skip-generate` against the production database after redeploying, so schema changes in `prisma/schema.prisma` are applied automatically on every backend deploy.
+Workflow backend juga menjalankan `prisma db push --skip-generate` terhadap database produksi setelah redeploy, sehingga perubahan schema di `prisma/schema.prisma` diterapkan secara otomatis pada setiap deploy backend.
 
-The frontend build passes `NEXT_PUBLIC_API_URL_PROD` as a Docker build arg (from the repo's `vars.NEXT_PUBLIC_API_URL_PROD` Actions variable), since Next.js inlines `NEXT_PUBLIC_*` values at build time.
+Build frontend meneruskan `NEXT_PUBLIC_API_URL_PROD` sebagai Docker build arg (dari Actions variable repo `vars.NEXT_PUBLIC_API_URL_PROD`), karena Next.js menyisipkan (inline) nilai `NEXT_PUBLIC_*` pada saat build.
 
-## Runtime Topology
+## Topologi Runtime
 
-[`docker-compose.yml`](../../docker-compose.yml) runs on the VPS and expects `backend/.env` and `frontend/.env.local` to already exist there (not shipped by CI — managed manually on the server):
+[`docker-compose.yml`](../../docker-compose.yml) berjalan di VPS dan mengharapkan `backend/.env` dan `frontend/.env.local` sudah ada di sana (tidak dikirim oleh CI, dikelola secara manual di server):
 
-| Service | Image | Host port | Container port |
+| Service | Image | Port Host | Port Container |
 |---|---|---|---|
 | `backend` | `ghcr.io/capstone2026-e04/subur-in-backend:latest` | `127.0.0.1:3000` | `3000` |
 | `frontend` | `ghcr.io/capstone2026-e04/subur-in-frontend:latest` | `127.0.0.1:3001` | `3000` |
 
-Both are bound to `127.0.0.1` only — a reverse proxy (not part of this repo) is expected to terminate TLS and route public traffic to these ports.
+Keduanya terikat hanya ke `127.0.0.1`; reverse proxy (bukan bagian dari repo ini) diharapkan untuk melakukan terminasi TLS dan merutekan traffic publik ke port-port ini.
 
-## Required GitHub Secrets/Variables
+## Secret/Variable GitHub yang Diperlukan
 
-| Name | Used by |
+| Nama | Digunakan oleh |
 |---|---|
-| `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` | SSH into the deploy target |
-| `VPS_DEPLOY_PATH` | Directory on the VPS containing `docker-compose.yml` |
-| `GHCR_USERNAME`, `GHCR_PAT` | Docker login on the VPS to pull private GHCR images |
-| `vars.NEXT_PUBLIC_API_URL_PROD` | Baked into the frontend build |
+| `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` | SSH ke target deploy |
+| `VPS_DEPLOY_PATH` | Direktori di VPS yang berisi `docker-compose.yml` |
+| `GHCR_USERNAME`, `GHCR_PAT` | Login Docker di VPS untuk menarik image GHCR privat |
+| `vars.NEXT_PUBLIC_API_URL_PROD` | Ditanamkan ke dalam build frontend |
 
-`GITHUB_TOKEN` (auto-provided) is used to push images from the Actions runner itself.
+`GITHUB_TOKEN` (disediakan otomatis) digunakan untuk mendorong image dari runner Actions itu sendiri.
 
-## Manual Deploy / Rollback
+## Deploy Manual / Rollback
 
-To redeploy without a code change (e.g. after fixing a secret), re-run the relevant workflow from the Actions tab, or SSH into the VPS and run the same `docker compose pull && docker compose up -d <service>` commands manually. There is no automated rollback — pin/re-tag a previous image in GHCR and re-run `docker compose up -d` with that tag if you need to revert.
+Untuk melakukan redeploy tanpa perubahan kode (misalnya setelah memperbaiki secret), jalankan ulang workflow terkait dari tab Actions, atau SSH ke VPS dan jalankan perintah `docker compose pull && docker compose up -d <service>` yang sama secara manual. Tidak ada rollback otomatis: pin/re-tag image sebelumnya di GHCR dan jalankan ulang `docker compose up -d` dengan tag tersebut jika perlu melakukan revert.

@@ -1,39 +1,39 @@
 # Troubleshooting
 
-## Backend fails to start / crashes on boot
+## Backend gagal start / crash saat boot
 
-MQTT, Redis, and cron initialization in [`server.js`](../../backend/src/server.js) are each wrapped in their own `try/catch` and only log a warning on failure — the HTTP server still starts. If `/api/health` reports `redis: "ERROR: ..."` or sensor data never updates, check MQTT/Redis credentials in `.env` rather than assuming the whole server crashed.
+Inisialisasi MQTT, Redis, dan cron di [`server.js`](../../backend/src/server.js) masing-masing dibungkus dalam `try/catch` sendiri dan hanya mencatat warning saat gagal; server HTTP tetap berjalan. Jika `/api/health` melaporkan `redis: "ERROR: ..."` atau data sensor tidak pernah diperbarui, periksa kredensial MQTT/Redis di `.env` alih-alih berasumsi seluruh server crash.
 
-## `GET /api/health` reports database `DOWN`
+## `GET /api/health` melaporkan database `DOWN`
 
-Usually a bad `DATABASE_URL`/`DIRECT_URL` or the Supabase project pausing due to inactivity (free tier). Confirm the connection string works with `npx prisma db pull` from `backend/`.
+Biasanya disebabkan oleh `DATABASE_URL`/`DIRECT_URL` yang salah atau project Supabase yang di-pause karena tidak aktif (free tier). Pastikan connection string berfungsi dengan `npx prisma db pull` dari `backend/`.
 
-## Google Sign-In succeeds on the frontend but backend session sync fails
+## Google Sign-In berhasil di frontend tetapi sinkronisasi sesi backend gagal
 
-`lib/auth.ts`'s `signIn` callback POSTs to `${API_URL}/api/auth/google` and returns `false` (silently blocking sign-in) if that call fails. Check:
-- `NEXT_PUBLIC_API_URL_DEV`/`_PROD` points at a reachable backend.
-- Backend's `GOOGLE_CLIENT_ID` matches the frontend's `AUTH_GOOGLE_ID` (the same Google OAuth Client, or an ID whose audience the backend accepts) — a mismatch fails `verifyIdToken` with a `401`.
-- Backend logs (`Google Sign-In Controller Error`) for the underlying cause.
+Callback `signIn` di `lib/auth.ts` mengirim POST ke `${API_URL}/api/auth/google` dan mengembalikan `false` (secara diam-diam memblokir sign-in) jika panggilan tersebut gagal. Periksa:
+- `NEXT_PUBLIC_API_URL_DEV`/`_PROD` mengarah ke backend yang dapat dijangkau.
+- `GOOGLE_CLIENT_ID` backend sesuai dengan `AUTH_GOOGLE_ID` frontend (Google OAuth Client yang sama, atau ID yang audience-nya diterima backend); ketidakcocokan akan membuat `verifyIdToken` gagal dengan `401`.
+- Log backend (`Google Sign-In Controller Error`) untuk mengetahui penyebab yang mendasarinya.
 
-## `401 Unauthorized` on protected endpoints despite a fresh login
+## `401 Unauthorized` pada endpoint terproteksi meskipun baru saja login
 
-- Confirm the header is exactly `Authorization: Bearer <token>` (capital `B`, one space).
-- The JWT expires after 7 days ([`auth.controller.js`](../../backend/src/controllers/auth.controller.js)) — sign in again.
-- `JWT_SECRET` differing between the token-issuing deploy and the token-verifying deploy (e.g. after rotating the secret without invalidating old tokens) breaks verification for tokens issued before the rotation.
+- Pastikan header persis `Authorization: Bearer <token>` (huruf `B` kapital, satu spasi).
+- JWT kedaluwarsa setelah 7 hari ([`auth.controller.js`](../../backend/src/controllers/auth.controller.js)); lakukan sign in lagi.
+- Perbedaan `JWT_SECRET` antara deploy yang menerbitkan token dan deploy yang memverifikasi token (misalnya setelah melakukan rotasi secret tanpa membatalkan token lama) menyebabkan verifikasi gagal untuk token yang diterbitkan sebelum rotasi.
 
-## Sensor data never appears on the dashboard
+## Data sensor tidak pernah muncul di dashboard
 
-Trace the pipeline in order:
-1. Is the device actually publishing? Check the broker's dashboard for connected clients on `suburin/devices/{id}/telemetry`.
-2. Backend MQTT connection: look for `[MQTT Subscriber] Subscribe berhasil...` in backend logs at boot.
-3. Payload validation: [`sensor_subscriber.js`](../../backend/src/mqtt/subscribers/sensor_subscriber.js) drops payloads where `ph`/`moisture` aren't valid numbers in range and creates an "invalid data" notification (rate-limited to once per hour per device).
-4. `GET /api/sensors/:deviceId/latest` — if this 404s, nothing has been cached/persisted yet for that exact device ID (IDs are case-sensitive).
-5. SSE stream (`GET /api/sensors/:deviceId/stream`) not updating live but `/latest` works: check for a proxy buffering `text/event-stream` (needs `X-Accel-Buffering: no` support, already set by the backend) or a browser extension blocking `EventSource`.
+Telusuri pipeline secara berurutan:
+1. Apakah device benar-benar melakukan publish? Periksa dashboard broker untuk client yang terhubung pada `suburin/devices/{id}/telemetry`.
+2. Koneksi MQTT backend: cari `[MQTT Subscriber] Subscribe berhasil...` di log backend saat boot.
+3. Validasi payload: [`sensor_subscriber.js`](../../backend/src/mqtt/subscribers/sensor_subscriber.js) membuang payload jika `ph`/`moisture` bukan angka valid dalam rentang yang ditentukan, dan membuat notifikasi "invalid data" (dibatasi hingga sekali per jam per device).
+4. `GET /api/sensors/:deviceId/latest`: jika mengembalikan 404, berarti belum ada data yang di-cache/disimpan untuk device ID tersebut secara persis (ID bersifat case-sensitive).
+5. Stream SSE (`GET /api/sensors/:deviceId/stream`) tidak update secara live tetapi `/latest` berfungsi: periksa apakah ada proxy yang melakukan buffering pada `text/event-stream` (memerlukan dukungan `X-Accel-Buffering: no`, yang sudah diset oleh backend) atau ekstensi browser yang memblokir `EventSource`.
 
-## Recommendation endpoint returns a 500 with a Prisma "not found" style error message
+## Endpoint rekomendasi mengembalikan 500 dengan pesan error bergaya "not found" dari Prisma
 
-`generateRecommendation` throws when `plantIdOrName` or `polybagPreset` doesn't match a row (by UUID or case-insensitive name) — this bubbles up as a `500` from the controller. Confirm the device's `plantId`/`polybagId` still reference rows that exist (they shouldn't be deletable due to `onDelete: Restrict`, but data seeded/migrated out of band can still be inconsistent).
+`generateRecommendation` melempar error ketika `plantIdOrName` atau `polybagPreset` tidak cocok dengan baris data mana pun (berdasarkan UUID atau nama case-insensitive); ini muncul sebagai `500` dari controller. Pastikan `plantId`/`polybagId` device masih merujuk ke baris data yang ada (seharusnya tidak dapat dihapus karena `onDelete: Restrict`, tetapi data yang di-seed/migrasi di luar jalur normal tetap bisa menjadi tidak konsisten).
 
-## `npx prisma migrate dev` / `db push` fails locally
+## `npx prisma migrate dev` / `db push` gagal secara lokal
 
-Prisma needs `DIRECT_URL` (non-pooled) for schema changes — pooled connection strings (e.g. via PgBouncer/Supabase's pooler) often don't support the session-level locks migrations require. Confirm both `DATABASE_URL` and `DIRECT_URL` are set per [environment.md](environment.md).
+Prisma memerlukan `DIRECT_URL` (non-pooled) untuk perubahan schema; connection string berbasis pool (misalnya melalui PgBouncer/pooler Supabase) sering tidak mendukung session-level lock yang dibutuhkan migrasi. Pastikan `DATABASE_URL` dan `DIRECT_URL` sudah diset sesuai [environment.md](environment.md).

@@ -1,10 +1,10 @@
-# Error Response Format
+# Format Response Error
 
-Every endpoint returns JSON with a consistent `success` envelope. There is no global error-handling middleware — each controller catches its own errors and shapes the response, so the shape below is a convention, not enforced framework-wide.
+Setiap endpoint mengembalikan JSON dengan envelope `success` yang konsisten. Tidak ada middleware penanganan error global, setiap controller menangani errornya sendiri dan membentuk response-nya, sehingga bentuk di bawah ini adalah sebuah konvensi, bukan sesuatu yang dipaksakan di seluruh framework.
 
 ## Envelope
 
-**Success:**
+**Sukses:**
 ```json
 {
   "success": true,
@@ -22,20 +22,20 @@ Every endpoint returns JSON with a consistent `success` envelope. There is no gl
 }
 ```
 
-- `message` is a human-readable string (in Indonesian, matching the rest of the API) safe to show to end users.
-- `error` is only included on some responses and may leak internal error messages (e.g. Prisma/driver errors on 500s) — treat it as debug information, not something to render directly in the UI.
+- `message` adalah string yang mudah dibaca manusia (dalam Bahasa Indonesia, konsisten dengan bagian API lainnya) dan aman ditampilkan ke end user.
+- `error` hanya disertakan pada beberapa response dan berpotensi membocorkan pesan error internal (misalnya error Prisma/driver pada 500). Perlakukan sebagai informasi debug, bukan sesuatu yang langsung ditampilkan di UI.
 
-## Status Codes
+## Kode Status
 
-| Code | Meaning | Example |
+| Kode | Arti | Contoh |
 |---|---|---|
-| `200` | Success | Resource fetched/updated/deleted |
-| `201` | Created | Device registered, test notification created |
-| `400` | Bad request / validation failure | Missing required field, value out of range |
-| `401` | Unauthenticated | Missing/invalid `Authorization` header, invalid Google ID token, expired JWT |
-| `404` | Not found / not owned by caller | Device, notification, or user not found for the authenticated user |
-| `500` | Unhandled server error | Database error, unexpected exception |
+| `200` | Sukses | Resource berhasil diambil/diperbarui/dihapus |
+| `201` | Dibuat | Device berhasil didaftarkan, notifikasi uji coba dibuat |
+| `400` | Bad request / gagal validasi | Field wajib tidak ada, nilai di luar rentang |
+| `401` | Tidak terautentikasi | Header `Authorization` tidak ada/tidak valid, ID token Google tidak valid, JWT kedaluwarsa |
+| `404` | Tidak ditemukan / bukan milik pemanggil | Device, notifikasi, atau user tidak ditemukan untuk user yang terautentikasi |
+| `500` | Error server yang tidak tertangani | Error database, exception yang tidak terduga |
 
 ## Authorization vs. Not Found
 
-Resource-scoped endpoints (devices, notifications) intentionally return `404` rather than `403` when a resource exists but belongs to a different user — this avoids confirming a resource ID exists to a caller who doesn't own it. See [`device.controller.js`](../../backend/src/controllers/device.controller.js) `updateDevice`/`deleteDevice` for the pattern (`findFirst({ where: { id, userId } })`).
+Endpoint yang scoped ke resource (devices, notifications) sengaja mengembalikan `404` alih-alih `403` ketika sebuah resource ada tetapi dimiliki oleh user lain, sehingga keberadaan suatu ID resource tidak terkonfirmasi kepada pemanggil yang bukan pemiliknya. Lihat [`device.controller.js`](../../backend/src/controllers/device.controller.js) pada `updateDevice`/`deleteDevice` untuk pola ini (`findFirst({ where: { id, userId } })`).

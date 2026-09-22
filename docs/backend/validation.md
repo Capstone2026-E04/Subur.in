@@ -1,10 +1,10 @@
-# Validation
+# Validasi
 
-There is no schema validation library (no Joi/Zod/express-validator) — every controller validates `req.body`/`req.params`/`req.query` manually and returns a `400` with a descriptive `message` on failure. This keeps validation logic next to the handler it protects, at the cost of some repetition across controllers.
+Tidak ada library validasi skema (tidak ada Joi/Zod/express-validator). Setiap controller memvalidasi `req.body`/`req.params`/`req.query` secara manual dan mengembalikan `400` dengan `message` deskriptif jika gagal. Ini menjaga logika validasi tetap berada di dekat handler yang dilindunginya, dengan konsekuensi sedikit pengulangan antar controller.
 
-## Common Patterns
+## Pola umum
 
-**Required field check:**
+**Pemeriksaan field wajib:**
 ```javascript
 if (!deviceId || !label || !plantId || !polybagId) {
   return res.status(400).json({
@@ -14,7 +14,7 @@ if (!deviceId || !label || !plantId || !polybagId) {
 }
 ```
 
-**Numeric range check (sensor values):**
+**Pemeriksaan rentang numerik (nilai sensor):**
 ```javascript
 const ph = parseFloat(phValue);
 if (isNaN(ph)) {
@@ -25,7 +25,7 @@ if (ph < 0 || ph > 14) {
 }
 ```
 
-**Integer with a minimum (device config):**
+**Bilangan bulat dengan nilai minimum (konfigurasi device):**
 ```javascript
 const parsedDelay = Number(delay_ms);
 if (!Number.isInteger(parsedDelay) || parsedDelay < 100) {
@@ -33,7 +33,7 @@ if (!Number.isInteger(parsedDelay) || parsedDelay < 100) {
 }
 ```
 
-**String length/emptiness (profile update):**
+**Panjang/kekosongan string (update profil):**
 ```javascript
 if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0)) {
   return res.status(400).json({ success: false, message: 'Nama tidak boleh kosong.' });
@@ -43,12 +43,12 @@ if (name !== undefined && name.trim().length > 100) {
 }
 ```
 
-The AI layer duplicates its own range checks in [`ai/services/recommendation.service.js`](../../backend/src/ai/services/recommendation.service.js) (throwing `TypeError`/`RangeError` instead of returning HTTP responses), since it's called both from `recommendation.controller.js` and `device.controller.js` — controllers only need to validate what a client can pass in directly (e.g. simulate's `phValue`/`moistureValue`), while the service re-validates as a safety net against any caller.
+Lapisan AI menduplikasi pemeriksaan rentangnya sendiri di [`ai/services/recommendation.service.js`](../../backend/src/ai/services/recommendation.service.js) (melempar `TypeError`/`RangeError` alih-alih mengembalikan response HTTP), karena dipanggil baik dari `recommendation.controller.js` maupun `device.controller.js`. Controller hanya perlu memvalidasi apa yang bisa langsung dikirim client (misalnya `phValue`/`moistureValue` pada simulate), sementara service melakukan validasi ulang sebagai jaring pengaman terhadap pemanggil mana pun.
 
-## MQTT Payload Validation
+## Validasi payload MQTT
 
-Telemetry from devices is validated in [`mqtt/subscribers/sensor_subscriber.js`](../../backend/src/mqtt/subscribers/sensor_subscriber.js) rather than via the HTTP layer: `ph` and `moisture` must be finite numbers in range, and malformed JSON is dropped. Invalid payloads trigger a `Notification` (throttled to one per device per hour via a Redis lock key `sensor:invalid_notified:<deviceId>`) instead of a client-facing HTTP error, since there's no request/response cycle for MQTT.
+Telemetri dari perangkat divalidasi di [`mqtt/subscribers/sensor_subscriber.js`](../../backend/src/mqtt/subscribers/sensor_subscriber.js) alih-alih melalui lapisan HTTP: `ph` dan `moisture` harus berupa angka finite dalam rentang yang valid, dan JSON yang salah format akan dibuang. Payload tidak valid memicu `Notification` (dibatasi maksimal satu per device per jam melalui Redis lock key `sensor:invalid_notified:<deviceId>`) alih-alih error HTTP yang ditujukan ke client, karena tidak ada siklus request/response untuk MQTT.
 
-## Adding Validation to a New Endpoint
+## Menambahkan validasi pada endpoint baru
 
-Match the existing style: check required fields first, then type/format, then range/business rules, returning as soon as one fails — don't accumulate multiple errors into one response, controllers here always return on the first failure.
+Ikuti gaya yang sudah ada: periksa field wajib terlebih dahulu, lalu tipe/format, lalu rentang/aturan bisnis, dan langsung return begitu satu pemeriksaan gagal. Jangan mengumpulkan banyak error menjadi satu response; controller di sini selalu return pada kegagalan pertama.

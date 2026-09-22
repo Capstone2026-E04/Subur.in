@@ -1,18 +1,18 @@
-# Backend Authentication
+# Autentikasi backend
 
-Google Sign-In only, with a backend-issued JWT as the session token for the API. See [api/authentication.md](../api/authentication.md) for the endpoint contract and [architecture/api-flow.md](../architecture/api-flow.md) for the sequence diagram.
+Hanya Google Sign-In, dengan JWT yang diterbitkan backend sebagai token sesi untuk API. Lihat [api/authentication.md](../api/authentication.md) untuk kontrak endpoint dan [architecture/api-flow.md](../architecture/api-flow.md) untuk diagram sekuens.
 
-## Sign-In Flow ([`controllers/auth.controller.js`](../../backend/src/controllers/auth.controller.js))
+## Alur Sign-In ([`controllers/auth.controller.js`](../../backend/src/controllers/auth.controller.js))
 
-1. Client sends `{ idToken }` — a Google-issued ID token (obtained by the frontend via NextAuth's Google provider).
-2. Backend verifies it with `google-auth-library`'s `OAuth2Client.verifyIdToken`, checking the audience against `GOOGLE_CLIENT_ID`.
-3. Extracts `sub` (Google user ID), `email`, `name`, `picture` from the verified payload.
-4. Finds the user by `googleId`; if not found, tries to find by `email` and links the Google ID to that existing account (handles a user who existed before Google linking, or a re-auth after `googleId` was somehow cleared); otherwise creates a new `User`.
-5. Signs a JWT (`{ id, email, name }`, `JWT_SECRET`, 7-day expiry) and returns it alongside the user record.
+1. Client mengirim `{ idToken }`, yaitu ID token yang diterbitkan Google (diperoleh frontend melalui Google provider milik NextAuth).
+2. Backend memverifikasinya dengan `OAuth2Client.verifyIdToken` dari `google-auth-library`, memeriksa audience terhadap `GOOGLE_CLIENT_ID`.
+3. Mengekstrak `sub` (ID user Google), `email`, `name`, `picture` dari payload yang telah diverifikasi.
+4. Mencari user berdasarkan `googleId`; jika tidak ditemukan, mencoba mencari berdasarkan `email` dan menautkan Google ID ke akun yang sudah ada tersebut (menangani kasus user yang sudah ada sebelum penautan Google, atau re-auth setelah `googleId` entah bagaimana terhapus); jika tidak, membuat `User` baru.
+5. Menandatangani JWT (`{ id, email, name }`, `JWT_SECRET`, masa berlaku 7 hari) dan mengembalikannya bersama data user.
 
-## Request Authorization ([`middlewares/auth.middleware.js`](../../backend/src/middlewares/auth.middleware.js))
+## Otorisasi request ([`middlewares/auth.middleware.js`](../../backend/src/middlewares/auth.middleware.js))
 
-Applied per-router with `router.use(authMiddleware)` (devices, users, notifications) or per-route (plants, polybags, recommendation history) — see each router file for which routes are public vs. protected.
+Diterapkan per-router dengan `router.use(authMiddleware)` (devices, users, notifications) atau per-route (plants, polybags, recommendation history). Lihat masing-masing file router untuk mengetahui route mana yang publik dan mana yang terproteksi.
 
 ```javascript
 module.exports = (req, res, next) => {
@@ -27,13 +27,13 @@ module.exports = (req, res, next) => {
 };
 ```
 
-On success, `req.user` is the decoded JWT payload (`{ id, email, name }`) — controllers read `req.user.id` to scope queries to the caller. On failure (missing header, malformed header, expired/invalid signature) it short-circuits with `401` before the controller runs.
+Jika berhasil, `req.user` berisi payload JWT yang telah didekode (`{ id, email, name }`), dan controller membaca `req.user.id` untuk membatasi query hanya pada pemanggil (caller). Jika gagal (header hilang, header salah format, signature kedaluwarsa/tidak valid), request dihentikan dengan `401` sebelum controller dijalankan.
 
 ## Secrets
 
-`JWT_SECRET` has a hardcoded fallback (`'fallback_secret_for_development'`) if the env var is unset — **this must never be relied on outside local development**; a missing `JWT_SECRET` in any deployed environment means anyone can forge valid session tokens. Always set a strong `JWT_SECRET` in production (see [setup/environment.md](../setup/environment.md)).
+`JWT_SECRET` memiliki fallback hardcoded (`'fallback_secret_for_development'`) jika env var tidak diset. Ini tidak boleh diandalkan di luar development lokal: `JWT_SECRET` yang hilang pada environment mana pun yang di-deploy berarti siapa pun dapat memalsukan token sesi yang valid. Selalu set `JWT_SECRET` yang kuat di production (lihat [setup/environment.md](../setup/environment.md)).
 
-## What's Not Covered
+## Yang belum dicakup
 
-- No refresh tokens — a JWT is valid for its full 7-day lifetime or until `JWT_SECRET` rotates; there's no server-side revocation list.
-- No role/permission system — every authenticated user has the same capabilities over their own resources; authorization is purely "do you own this row" (see [api/error-response.md](../api/error-response.md#authorization-vs-not-found)).
+- Tidak ada refresh token. JWT valid selama masa berlaku penuh 7 harinya atau sampai `JWT_SECRET` dirotasi; tidak ada daftar revokasi di sisi server.
+- Tidak ada sistem role/permission. Setiap user yang terautentikasi memiliki kemampuan yang sama atas resource miliknya sendiri; otorisasi murni berdasarkan "apakah Anda pemilik baris data ini" (lihat [api/error-response.md](../api/error-response.md#authorization-vs-not-found)).

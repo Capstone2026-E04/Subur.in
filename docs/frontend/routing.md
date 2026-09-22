@@ -1,13 +1,13 @@
 # Routing
 
-Next.js 16 App Router with two route groups separating public and protected areas.
+Next.js 16 App Router dengan dua route group yang memisahkan area publik dan area terproteksi.
 
 ## Route Groups
 
-| Group | Path prefix | Layout auth |
+| Group | Prefix Path | Auth Layout |
 |---|---|---|
-| `(auth)` | `/login` | Public |
-| `(dashboard)` | `/dashboard/*` | Enforced server-side in `layout.tsx` |
+| `(auth)` | `/login` | Publik |
+| `(dashboard)` | `/dashboard/*` | Ditegakkan di sisi server dalam `layout.tsx` |
 
 ```mermaid
 flowchart TD
@@ -23,23 +23,23 @@ flowchart TD
     Dashboard --> Profile["/dashboard/profile (hidden from nav)"]
 ```
 
-## Pages
+## Halaman
 
-| Route | File | Notes |
+| Route | File | Catatan |
 |---|---|---|
-| `/login` | `app/(auth)/login/page.tsx` | Client component, triggers `signIn("google", { callbackUrl: "/dashboard" })` |
+| `/login` | `app/(auth)/login/page.tsx` | Client component, memicu `signIn("google", { callbackUrl: "/dashboard" })` |
 | `/dashboard` | `app/(dashboard)/dashboard/page.tsx` | Overview |
-| `/dashboard/devices` | `.../devices/page.tsx` | Device list/claim/manage |
-| `/dashboard/plants` | `.../plants/page.tsx` | Plant reference browsing |
-| `/dashboard/recommendations` | `.../recommendations/page.tsx` | Recommendation history/simulate |
-| `/dashboard/analytics` | `.../analytics/page.tsx` | Charts over sensor history |
-| `/dashboard/notifications` | `.../notifications/page.tsx` | Notification inbox |
-| `/dashboard/settings` | `.../settings/page.tsx` | App/account settings |
-| `/dashboard/profile` | `.../profile/page.tsx` | Profile edit; reachable but hidden from the nav (`hidden: true` in `navConfig.ts`) |
-| `/api/nextauth/[...nextauth]` | `app/api/nextauth/[...nextauth]/route.ts` | NextAuth v5 catch-all handler |
+| `/dashboard/devices` | `.../devices/page.tsx` | Daftar/klaim/kelola device |
+| `/dashboard/plants` | `.../plants/page.tsx` | Penelusuran referensi tanaman |
+| `/dashboard/recommendations` | `.../recommendations/page.tsx` | Riwayat rekomendasi/simulasi |
+| `/dashboard/analytics` | `.../analytics/page.tsx` | Chart atas riwayat sensor |
+| `/dashboard/notifications` | `.../notifications/page.tsx` | Kotak masuk notifikasi |
+| `/dashboard/settings` | `.../settings/page.tsx` | Pengaturan aplikasi/akun |
+| `/dashboard/profile` | `.../profile/page.tsx` | Edit profil; dapat diakses tetapi disembunyikan dari nav (`hidden: true` di `navConfig.ts`) |
+| `/api/nextauth/[...nextauth]` | `app/api/nextauth/[...nextauth]/route.ts` | Handler catch-all NextAuth v5 |
 
-## Auth Enforcement
+## Penegakan Autentikasi
 
-`app/(dashboard)/layout.tsx` is an **async server component** that calls `auth()` (NextAuth) on every request to a `/dashboard/*` route and `redirect("/login")` if there is no session — this is the single enforcement point; individual dashboard pages do not need their own auth checks. The layout also eagerly fetches a fresh user profile from the backend (`GET /api/users/me`) to avoid showing stale name/avatar from the JWT.
+`app/(dashboard)/layout.tsx` adalah **async server component** yang memanggil `auth()` (NextAuth) pada setiap request ke route `/dashboard/*` dan melakukan `redirect("/login")` jika tidak ada sesi, dan menjadi satu-satunya titik penegakan (enforcement); halaman dashboard individual tidak perlu memiliki pemeriksaan auth sendiri. Layout ini juga secara aktif mengambil profil pengguna terbaru dari backend (`GET /api/users/me`) untuk menghindari tampilnya nama/avatar yang usang dari JWT.
 
-Adding a new dashboard page: create `app/(dashboard)/dashboard/<route>/page.tsx` and add an entry to [`navConfig.ts`](../../frontend/src/components/dashboard/navConfig.ts) — the layout's auth check applies automatically since the page lives inside the `(dashboard)` group.
+Menambahkan halaman dashboard baru: buat `app/(dashboard)/dashboard/<route>/page.tsx` dan tambahkan entri ke [`navConfig.ts`](../../frontend/src/components/dashboard/navConfig.ts); pemeriksaan auth pada layout otomatis berlaku karena halaman tersebut berada di dalam group `(dashboard)`.

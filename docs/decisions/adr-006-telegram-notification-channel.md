@@ -1,21 +1,21 @@
-# ADR-006: Telegram as the External Push Channel, Centralized via a Single Dispatch Service
+# ADR-006: Telegram sebagai channel push eksternal, disentralisasi melalui satu dispatch service
 
 ## Status
-Accepted
+Diterima
 
-## Context
-Notifications (invalid sensor data, dry/wet soil, out-of-range pH) were created by calling `prisma.notification.create` and `broadcastToDevice` (SSE) as a manual pair at every call site — the MQTT subscriber alone had five near-identical copies of this pattern. This duplication made it easy for a new call site to forget one half of the pair, and there was no way to reach a user who wasn't actively looking at the dashboard: the only delivery channel was an SSE stream to an open browser tab plus the in-app notification list, both of which require the user to already be on the site.
+## Konteks
+Notifikasi (data sensor tidak valid, tanah kering/basah, pH di luar rentang) dibuat dengan memanggil `prisma.notification.create` dan `broadcastToDevice` (SSE) sebagai pasangan manual di setiap call site: subscriber MQTT saja memiliki lima salinan pola ini yang hampir identik. Duplikasi ini membuat call site baru mudah lupa salah satu bagian dari pasangan tersebut, dan tidak ada cara untuk menjangkau user yang tidak sedang aktif melihat dashboard: satu-satunya channel pengiriman adalah stream SSE ke tab browser yang terbuka ditambah daftar notifikasi in-app, yang keduanya mengharuskan user sudah berada di situs.
 
-A desktop-push option (the browser `Notification` API) existed as a partial alternative, gated behind a per-viewer permission prompt and a `localStorage` preference, but it only worked while the browser was open on that device and required re-granting permission per browser/device.
+Opsi push desktop (API `Notification` browser) ada sebagai alternatif parsial, dibatasi di balik prompt izin per-viewer dan preferensi `localStorage`, tetapi hanya berfungsi selama browser terbuka di device tersebut dan mengharuskan pemberian izin ulang per browser/device.
 
-## Decision
-- Add Telegram as the external push channel: users link their Telegram account from the settings page via a one-time 6-character code (`POST /api/users/me/telegram/link-code`, consumed by the bot's `/link <code>` command through a webhook at `POST /api/telegram/webhook`), storing the resulting chat ID on `User.telegramChatId`.
-- Centralize all notification creation behind a single `notifyDevice(deviceId, { title, message, type })` function in `src/services/notification.service.js`. It always writes to Postgres and broadcasts over SSE, and additionally sends a Telegram message when the device's owner has linked their account. Every existing call site (MQTT subscriber, the notification test endpoint) was migrated to call this instead of the manual create+broadcast pair.
-- Remove the desktop browser-push option entirely (`Notification.requestPermission()` / `new Notification(...)` and its settings toggle) — Telegram covers the "reach the user when they're not looking at the dashboard" need without the per-browser permission friction, so maintaining both was redundant.
-- `telegramService.sendMessage` never throws; a failed Telegram API call is logged and swallowed so a user who hasn't linked Telegram (or whose bot call fails) still gets the database + SSE notification exactly as before.
+## Keputusan
+- Menambahkan Telegram sebagai channel push eksternal: user menautkan akun Telegram mereka dari halaman settings melalui kode 6 karakter sekali pakai (`POST /api/users/me/telegram/link-code`, dikonsumsi oleh perintah `/link <code>` milik bot melalui webhook di `POST /api/telegram/webhook`), menyimpan chat ID yang dihasilkan pada `User.telegramChatId`.
+- Mensentralisasi semua pembuatan notifikasi di balik satu fungsi `notifyDevice(deviceId, { title, message, type })` di `src/services/notification.service.js`. Fungsi ini selalu menulis ke Postgres dan melakukan broadcast melalui SSE, dan tambahan mengirim pesan Telegram ketika pemilik device telah menautkan akunnya. Setiap call site yang ada (subscriber MQTT, endpoint test notifikasi) dimigrasikan untuk memanggil ini alih-alih pasangan create+broadcast manual.
+- Menghapus sepenuhnya opsi push browser desktop (`Notification.requestPermission()` / `new Notification(...)` dan toggle settings-nya): Telegram mencakup kebutuhan "menjangkau user saat mereka tidak sedang melihat dashboard" tanpa friksi izin per-browser, sehingga mempertahankan keduanya menjadi redundan.
+- `telegramService.sendMessage` tidak pernah melempar error; pemanggilan API Telegram yang gagal dicatat dan ditelan sehingga user yang belum menautkan Telegram (atau yang pemanggilan bot-nya gagal) tetap mendapatkan notifikasi database + SSE persis seperti sebelumnya.
 
-## Consequences
-- Adding a new kind of notification anywhere in the backend is now one `notifyDevice(...)` call instead of remembering to pair a Prisma write with an SSE broadcast — and it gets Telegram delivery for free.
-- The app depends on the Telegram Bot API being reachable for that one channel; because `sendMessage` is fire-and-forget with respect to the rest of the flow, a Telegram outage degrades to "database + SSE only," not a broken notification pipeline.
-- Users without a linked Telegram account get no push at all outside the dashboard — there's no other out-of-band channel (email, native mobile push) yet. Revisit if that gap matters for the target users.
-- The webhook endpoint is intentionally unauthenticated (Telegram itself has no way to send a bearer token) and always returns `200`; correctness there is enforced by validating the `telegramLinkCode` lookup, not by request auth.
+## Konsekuensi
+- Menambahkan jenis notifikasi baru di mana pun di backend sekarang hanya satu pemanggilan `notifyDevice(...)` alih-alih harus mengingat untuk memasangkan penulisan Prisma dengan broadcast SSE, dan otomatis mendapatkan pengiriman Telegram.
+- Aplikasi bergantung pada Telegram Bot API yang dapat dijangkau untuk channel tersebut; karena `sendMessage` bersifat fire-and-forget terhadap sisa alur, gangguan Telegram akan terdegradasi menjadi "database + SSE saja," bukan pipeline notifikasi yang rusak.
+- User tanpa akun Telegram yang tertaut tidak mendapat push sama sekali di luar dashboard. Belum ada channel out-of-band lain (email, push mobile native). Tinjau ulang jika celah ini penting bagi target pengguna.
+- Endpoint webhook sengaja dibiarkan tanpa autentikasi (Telegram sendiri tidak memiliki cara untuk mengirim bearer token) dan selalu mengembalikan `200`; kebenaran di sana ditegakkan dengan memvalidasi lookup `telegramLinkCode`, bukan dengan autentikasi request.

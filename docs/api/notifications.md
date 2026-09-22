@@ -1,12 +1,12 @@
-# Notifications API
+# API Notifications
 
-All endpoints require `Authorization: Bearer <jwt>` (see [authentication.md](authentication.md)) and are scoped to devices owned by the authenticated user. Notifications are created server-side (e.g. by the MQTT subscriber when it receives invalid sensor data) through the shared [`notifyDevice`](../../backend/src/services/notification.service.js) helper, which fans a single notification out to three channels: the database (for this list), a live SSE broadcast to the dashboard, and a Telegram message if the device owner has linked their account (see [telegram.md](telegram.md)). There is no general-purpose create endpoint aside from the test helper below.
+Semua endpoint memerlukan `Authorization: Bearer <jwt>` (lihat [authentication.md](authentication.md)) dan dibatasi hanya untuk device milik user yang terautentikasi. Notifikasi dibuat di sisi server (misalnya oleh MQTT subscriber saat menerima data sensor yang tidak valid) melalui helper bersama [`notifyDevice`](../../backend/src/services/notification.service.js), yang menyebarkan satu notifikasi ke tiga kanal: database (untuk daftar ini), broadcast SSE langsung ke dashboard, dan pesan Telegram jika pemilik device telah menautkan akunnya (lihat [telegram.md](telegram.md)). Tidak ada endpoint create serba guna selain helper uji coba di bawah ini.
 
 ## `GET /api/notifications`
 
-Lists all notifications for the caller's devices, newest first.
+Menampilkan semua notifikasi untuk device milik pemanggil, terbaru lebih dulu.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -28,33 +28,33 @@ Lists all notifications for the caller's devices, newest first.
 }
 ```
 
-`type` is a free-form string convention: `"warning"`, `"success"`, or `"info"`.
+`type` adalah konvensi string bebas: `"warning"`, `"success"`, atau `"info"`.
 
 ## `PATCH /api/notifications/read`
 
-Marks every unread notification for the caller's devices as read.
+Menandai semua notifikasi yang belum dibaca untuk device milik pemanggil sebagai telah dibaca.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 { "success": true, "message": "Semua notifikasi berhasil ditandai telah dibaca." }
 ```
 
 ## `DELETE /api/notifications/:id`
 
-Deletes one notification the caller has access to (via device ownership).
+Menghapus satu notifikasi yang dapat diakses oleh pemanggil (melalui kepemilikan device).
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 { "success": true, "message": "Notifikasi berhasil dihapus." }
 ```
 
-**Error responses:** `404` (not found or not owned).
+**Response error:** `404` (tidak ditemukan atau bukan milik pemanggil).
 
 ## `POST /api/notifications/test`
 
-Sends a real notification through `notifyDevice` for the caller's first device (creating a throwaway test device if none exists), so it exercises every channel: persisted to the database, broadcast over SSE, and sent to Telegram if the caller has linked their account. Intended for manually verifying the full notification pipeline, including Telegram, from the dashboard's "Tes Notifikasi" button.
+Mengirim notifikasi sungguhan melalui `notifyDevice` untuk device pertama milik pemanggil (membuat device uji coba sementara jika belum ada), sehingga menguji setiap kanal: tersimpan ke database, di-broadcast melalui SSE, dan terkirim ke Telegram jika pemanggil telah menautkan akunnya. Dimaksudkan untuk verifikasi manual seluruh pipeline notifikasi, termasuk Telegram, dari tombol "Tes Notifikasi" di dashboard.
 
-**Success response `201`:**
+**Response sukses `201`:**
 ```json
 {
   "success": true,
@@ -73,4 +73,4 @@ Sends a real notification through `notifyDevice` for the caller's first device (
 }
 ```
 
-**Error responses:** `400` (no plants/polybags seeded to create a fallback device).
+**Response error:** `400` (tidak ada data plants/polybags yang di-seed untuk membuat device fallback).

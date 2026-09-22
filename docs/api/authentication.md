@@ -1,12 +1,12 @@
-# Authentication API
+# API Autentikasi
 
-Subur.in uses Google Sign-In only — there is no email/password flow. The frontend performs the Google OAuth handshake via NextAuth, then exchanges the Google ID token for a backend-issued JWT. See [backend/authentication.md](../backend/authentication.md) for implementation detail and [architecture/api-flow.md](../architecture/api-flow.md) for the full sequence diagram.
+Subur.in hanya menggunakan Google Sign-In, tidak ada alur email/password. Frontend melakukan handshake OAuth Google melalui NextAuth, lalu menukar ID token Google dengan JWT yang diterbitkan oleh backend. Lihat [backend/authentication.md](../backend/authentication.md) untuk detail implementasi dan [architecture/api-flow.md](../architecture/api-flow.md) untuk diagram alur lengkap.
 
 ## `POST /api/auth/google`
 
-Verifies a Google ID token, finds or creates the corresponding `User`, and issues a session JWT (7-day expiry).
+Memverifikasi ID token Google, mencari atau membuat `User` terkait, dan menerbitkan session JWT (berlaku 7 hari).
 
-**Auth required:** No
+**Perlu autentikasi:** Tidak
 
 **Request body:**
 ```json
@@ -15,7 +15,7 @@ Verifies a Google ID token, finds or creates the corresponding `User`, and issue
 }
 ```
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -32,23 +32,23 @@ Verifies a Google ID token, finds or creates the corresponding `User`, and issue
 }
 ```
 
-**Error responses:**
-| Status | Cause |
+**Response error:**
+| Status | Penyebab |
 |---|---|
-| `400` | `idToken` missing, or Google account has no email |
-| `401` | Google ID token invalid/expired |
-| `500` | Database error while finding/creating the user |
+| `400` | `idToken` tidak ada, atau akun Google tidak memiliki email |
+| `401` | ID token Google tidak valid/kedaluwarsa |
+| `500` | Error database saat mencari/membuat user |
 
-## Using the Token
+## Menggunakan Token
 
-Send the returned `token` as a Bearer token on every protected endpoint:
+Kirim `token` yang dikembalikan sebagai Bearer token pada setiap endpoint yang dilindungi:
 
 ```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...
 ```
 
-The JWT payload contains `id`, `email`, and `name`, and is verified with `JWT_SECRET` (see [setup/environment.md](../setup/environment.md)). Protected endpoints reject requests with a `401` if the header is missing, malformed, or the token is invalid/expired (see [error-response.md](error-response.md)).
+Payload JWT berisi `id`, `email`, dan `name`, serta diverifikasi dengan `JWT_SECRET` (lihat [setup/environment.md](../setup/environment.md)). Endpoint yang dilindungi akan menolak request dengan status `401` jika header tidak ada, formatnya salah, atau token tidak valid/kedaluwarsa (lihat [error-response.md](error-response.md)).
 
-## Account Linking
+## Penautan Akun
 
-If a user previously signed up with the same email through a different Google account state, the backend links the incoming `googleId` to the existing user record by email match rather than creating a duplicate account.
+Jika seorang user sebelumnya pernah mendaftar dengan email yang sama melalui state akun Google yang berbeda, backend akan menautkan `googleId` yang masuk ke record user yang sudah ada berdasarkan kecocokan email, bukan membuat akun duplikat.

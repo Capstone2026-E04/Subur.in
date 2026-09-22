@@ -1,12 +1,12 @@
-# Users API
+# API Users
 
-All endpoints require `Authorization: Bearer <jwt>` (see [authentication.md](authentication.md)) and operate on the authenticated caller's own account (`req.user.id`).
+Semua endpoint memerlukan `Authorization: Bearer <jwt>` (lihat [authentication.md](authentication.md)) dan beroperasi pada akun milik pemanggil yang terautentikasi (`req.user.id`).
 
 ## `GET /api/users/me`
 
-Returns the authenticated user's profile.
+Mengembalikan profil user yang terautentikasi.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -25,13 +25,13 @@ Returns the authenticated user's profile.
 }
 ```
 
-`isTelegramLinked` is a derived boolean (`Boolean(telegramChatId)`) — the raw `telegramChatId` is never sent to the client. See [telegram.md](telegram.md) for how it gets set.
+`isTelegramLinked` adalah boolean turunan (`Boolean(telegramChatId)`). `telegramChatId` mentah tidak pernah dikirim ke client. Lihat [telegram.md](telegram.md) untuk bagaimana nilai ini diatur.
 
-**Error responses:** `401` (no/invalid token), `404` (user no longer exists), `500`.
+**Response error:** `401` (token tidak ada/tidak valid), `404` (user sudah tidak ada), `500`.
 
 ## `PATCH /api/users/me`
 
-Updates `name` and/or `avatarUrl`. At least one field is required.
+Memperbarui `name` dan/atau `avatarUrl`. Minimal satu field wajib diisi.
 
 **Request body:**
 ```json
@@ -41,11 +41,11 @@ Updates `name` and/or `avatarUrl`. At least one field is required.
 }
 ```
 
-**Validation:**
-- At least one of `name`/`avatarUrl` must be present.
-- `name` must be a non-empty string, max 100 characters.
+**Validasi:**
+- Minimal salah satu dari `name`/`avatarUrl` harus ada.
+- `name` harus berupa string tidak kosong, maksimal 100 karakter.
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -62,13 +62,13 @@ Updates `name` and/or `avatarUrl`. At least one field is required.
 }
 ```
 
-**Error responses:** `400` (no fields / invalid name), `401`, `500`.
+**Response error:** `400` (tidak ada field / nama tidak valid), `401`, `500`.
 
 ## `DELETE /api/users/me`
 
-Permanently deletes the authenticated user's account. Cascades to their devices, which cascades to those devices' recommendation logs and notifications (see [database-schema.md](../architecture/database-schema.md)).
+Menghapus akun user yang terautentikasi secara permanen. Menghapus juga secara cascade device-device miliknya, yang kemudian secara cascade menghapus log rekomendasi dan notifikasi dari device-device tersebut (lihat [database-schema.md](../architecture/database-schema.md)).
 
-**Success response `200`:**
+**Response sukses `200`:**
 ```json
 {
   "success": true,
@@ -76,8 +76,8 @@ Permanently deletes the authenticated user's account. Cascades to their devices,
 }
 ```
 
-**Error responses:** `401`, `404`, `500`.
+**Response error:** `401`, `404`, `500`.
 
-## `POST /api/users/me/telegram/link-code` and `DELETE /api/users/me/telegram`
+## `POST /api/users/me/telegram/link-code` dan `DELETE /api/users/me/telegram`
 
-Generate/revoke the Telegram account link. Documented in full in [telegram.md](telegram.md).
+Membuat/mencabut penautan akun Telegram. Didokumentasikan secara lengkap di [telegram.md](telegram.md).
