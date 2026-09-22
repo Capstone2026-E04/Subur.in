@@ -99,7 +99,7 @@ async function startSimulation() {
     console.log('====================================================');
     console.log(`Input Sensor      : pH = ${result.phValue}, Kelembaban = ${result.moistureValue}%`);
     console.log(`Tanaman Terpilih  : ${result._debug.plantUsed}`);
-    console.log(`Target Parameter  : pH ideal = ${result._debug.phTarget.toFixed(2)}, Kelembaban ideal = ${(result._debug.thetaTarget * 100).toFixed(1)}%`);
+    console.log(`Target Parameter  : pH ideal = ${result._debug.phTarget.toFixed(2)}, Kelembaban ideal = ${(result._debug.vwcTarget * 100).toFixed(1)}%`);
     console.log(`Preset Polybag    : ${result._debug.polybagPresetUsed}`);
     console.log(`Luas Permukaan    : ${result._debug.areaM2} m²`);
     console.log(`Volume Tanah      : ${result._debug.volumeLiterUsed} Liter`);

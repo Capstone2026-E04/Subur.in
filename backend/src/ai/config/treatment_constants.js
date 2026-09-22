@@ -5,8 +5,8 @@ const TREATMENT_CONSTANTS = {
   V_MAX_FRACTION:            0.08,    
   K_L_LIME:                  1.3,
   K_S_SULFUR:                0.6,
-  M_S_MAX_PER_LITER:         3.0,    
-  THETA_TARGET:              0.30,
+  M_S_MAX_PER_LITER:         3.0,
+  VWC_TARGET:                0.30,
 };
 
 module.exports = TREATMENT_CONSTANTS;

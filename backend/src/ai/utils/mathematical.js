@@ -2,6 +2,11 @@ const { fuzzify }   = require('../core/membership');
 const { aggregateAt } = require('../core/engine');
 const FUZZY_PARAMETERS = require('../config/fuzzy_parameters');
 
+// VWC = Volumetric Water Content, fraksi 0-1 dari persentase kelembaban tanah
+function toVwc(moisturePercent) {
+  return moisturePercent / 100;
+}
+
 function sampleAggregatedMF(activeRules, step = 0.1) {
   const { Y_MIN, Y_MAX } = FUZZY_PARAMETERS;
   const points = [];
@@ -48,6 +53,7 @@ function estimateCentroidAnalytic(activeRules) {
 }
 
 module.exports = {
+  toVwc,
   sampleAggregatedMF,
   inspectPhMembership,
   inspectMoistureMembership,

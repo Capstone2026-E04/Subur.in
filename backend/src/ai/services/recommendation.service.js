@@ -6,7 +6,7 @@ const { calculateWaterVolume }   = require('../dosage/water_calculator');
 const { calculateLimeDosage }    = require('../dosage/lime_calculator');
 const { calculateSulfurDosage }  = require('../dosage/sulfur_calculator');
 const { getPhysicalPreset }      = require('../config/physical_presets');
-const { THETA_TARGET }           = require('../config/treatment_constants');
+const { VWC_TARGET }             = require('../config/treatment_constants');
 
 async function generateRecommendation({ phValue, moistureValue, polybagPreset, plantIdOrName }) {
   if (typeof phValue !== 'number' || typeof moistureValue !== 'number') {
@@ -115,7 +115,7 @@ async function generateRecommendation({ phValue, moistureValue, polybagPreset, p
       volumeLiterUsed:    parseFloat(preset.volumeLiter.toFixed(3)),
       plantUsed:          `${plant.name} (${plant.scientificName || 'n/a'})`,
       phTarget:           parseFloat(phTarget.toFixed(3)),
-      thetaTarget:        THETA_TARGET,
+      vwcTarget:          VWC_TARGET,
       waterDetail,
       limeDetail,
       sulfurDetail,

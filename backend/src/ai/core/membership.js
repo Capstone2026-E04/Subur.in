@@ -45,31 +45,32 @@ function buildMembershipFunctions(plantParams = DEFAULT_PLANT_PARAMS) {
     return 1;
   };
 
-  const muKering = (theta) => {
-    if (theta <= 0.15) return 1;
-    if (theta <= 0.25) return (0.25 - theta) / 0.10;
+  // VWC = Volumetric Water Content, fraksi 0-1 dari persentase kelembaban tanah
+  const muKering = (vwc) => {
+    if (vwc <= 0.15) return 1;
+    if (vwc <= 0.25) return (0.25 - vwc) / 0.10;
     return 0;
   };
 
-  const muSedang = (theta) => {
-    if (theta <= 0.15) return 0;
-    if (theta <= 0.25) return (theta - 0.15) / 0.10;
-    if (theta <= 0.30) return (0.30 - theta) / 0.05;
+  const muSedang = (vwc) => {
+    if (vwc <= 0.15) return 0;
+    if (vwc <= 0.25) return (vwc - 0.15) / 0.10;
+    if (vwc <= 0.30) return (0.30 - vwc) / 0.05;
     return 0;
   };
 
 
-  const muLembap = (theta) => {
-    if (theta <= 0.25) return 0;
-    if (theta <= 0.30) return (theta - 0.25) / 0.05;
-    if (theta <= 0.35) return 1;
-    if (theta <= 0.40) return (0.40 - theta) / 0.05;
+  const muLembap = (vwc) => {
+    if (vwc <= 0.25) return 0;
+    if (vwc <= 0.30) return (vwc - 0.25) / 0.05;
+    if (vwc <= 0.35) return 1;
+    if (vwc <= 0.40) return (0.40 - vwc) / 0.05;
     return 0;
   };
 
-  const muJenuh = (theta) => {
-    if (theta <= 0.35) return 0;
-    if (theta <= 0.40) return (theta - 0.35) / 0.05;
+  const muJenuh = (vwc) => {
+    if (vwc <= 0.35) return 0;
+    if (vwc <= 0.40) return (vwc - 0.35) / 0.05;
     return 1;
   };
 
@@ -78,7 +79,8 @@ function buildMembershipFunctions(plantParams = DEFAULT_PLANT_PARAMS) {
   };
 
   const fuzzify = (ph, moisturePercent) => {
-    const theta = moisturePercent / 100;
+    const { toVwc } = require('../utils/mathematical');
+    const vwc = toVwc(moisturePercent);
     return {
       ph: {
         sangatAsam: muSangatAsam(ph),
@@ -88,10 +90,10 @@ function buildMembershipFunctions(plantParams = DEFAULT_PLANT_PARAMS) {
         sangatBasa: muSangatBasa(ph),
       },
       moisture: {
-        kering: muKering(theta),
-        sedang: muSedang(theta),
-        lembap: muLembap(theta),
-        jenuh:  muJenuh(theta),
+        kering: muKering(vwc),
+        sedang: muSedang(vwc),
+        lembap: muLembap(vwc),
+        jenuh:  muJenuh(vwc),
       },
     };
   };

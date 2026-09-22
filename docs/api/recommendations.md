@@ -51,7 +51,7 @@ Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyent
       "volumeLiterUsed": 5,
       "plantUsed": "Pakcoy (Brassica rapa subsp. chinensis)",
       "phTarget": 6.8,
-      "thetaTarget": 0.3
+      "vwcTarget": 0.3
     }
   }
 }
