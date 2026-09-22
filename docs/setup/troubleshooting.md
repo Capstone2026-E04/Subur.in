@@ -34,6 +34,10 @@ Telusuri pipeline secara berurutan:
 
 `generateRecommendation` melempar error ketika `plantIdOrName` atau `polybagPreset` tidak cocok dengan baris data mana pun (berdasarkan UUID atau nama case-insensitive); ini muncul sebagai `500` dari controller. Pastikan `plantId`/`polybagId` device masih merujuk ke baris data yang ada (seharusnya tidak dapat dihapus karena `onDelete: Restrict`, tetapi data yang di-seed/migrasi di luar jalur normal tetap bisa menjadi tidak konsisten).
 
+## Wizard bot Telegram (`/threshold`) tidak lanjut ke langkah berikutnya, atau `/tanaman` untuk device kedua tidak pernah "menempel"
+
+Sesi wizard dan "tanaman aktif" disimpan di Redis (`bot_session:{telegramUserId}`, TTL 5 menit, lihat [api/telegram.md](../api/telegram.md)). Jika Redis tidak terjangkau, `session/session.service.js` gagal senyap ke `null`/no-op alih-alih melempar error, sehingga bot tetap membalas tetapi seolah-olah sesi selalu kosong (wizard reset setiap kali, `/tanaman` untuk user multi-device harus dipilih ulang terus-menerus). Periksa `REDIS_HOST`/`REDIS_PORT`/`REDIS_PASSWORD` di `.env` dan cari `[Redis] Error koneksi Redis` di log backend. (Unit test `src/__tests__/telegram/session/session.service.test.js` me-mock Redis sepenuhnya lewat `jest.mock(...)`, lihat [ADR-008](../decisions/adr-008-jest-for-testing.md), jadi tidak terpengaruh oleh masalah konektivitas ini.)
+
 ## `npx prisma migrate dev` / `db push` gagal secara lokal
 
 Prisma memerlukan `DIRECT_URL` (non-pooled) untuk perubahan schema; connection string berbasis pool (misalnya melalui PgBouncer/pooler Supabase) sering tidak mendukung session-level lock yang dibutuhkan migrasi. Pastikan `DATABASE_URL` dan `DIRECT_URL` sudah diset sesuai [environment.md](environment.md).

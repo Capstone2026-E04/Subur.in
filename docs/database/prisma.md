@@ -15,6 +15,10 @@ Schema: [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma). Cl
 - **Selective includes:** controller melakukan `include` hanya untuk relasi yang benar-benar dibutuhkan response (misalnya `plant`, `polybag: { include: { polybagType: true } }`) daripada blanket include, agar payload dan query tetap ringan.
 - **Raw SQL untuk manajemen partisi:** `prisma.$queryRawUnsafe`/`$executeRawUnsafe` digunakan di [`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js) untuk mengelola partisi tabel Postgres, karena schema DSL Prisma tidak memodelkan partitioning. Nama tabel/partisi yang di-interpolasi ke dalam raw query ini dihasilkan secara internal (year/month), tidak pernah diambil dari input user. Jangan memperluas pola ini untuk menerima string eksternal tanpa parameterisasi.
 
+## Mocking di unit test
+
+Unit test (Jest) tidak pernah memanggil `prisma_client` sungguhan: mock seluruh modul lewat `jest.mock('.../database/connections/prisma_client', () => ({ <model>: { <method>: jest.fn() } }))`, lalu atur nilai kembalian per test dengan `mockResolvedValue`/`mockRejectedValue`. Lihat `src/__tests__/ai/services/recommendation.service.test.js` untuk contoh nyata, dan [backend/coding-standards.md](../backend/coding-standards.md#testing) untuk konvensi test secara umum.
+
 ## Meregenerasi client
 
 Setelah perubahan apa pun pada `schema.prisma`:
