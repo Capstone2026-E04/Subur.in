@@ -18,9 +18,10 @@ Subur.in/
 │       │   ├── simulate.js      # Entrypoint simulasi CLI/manual
 │       │   └── __tests__/       # Unit test untuk engine dan kalkulator
 │       ├── controllers/         # Handler request Express, satu file per resource
-│       ├── cron/                # Job node-cron (manajemen partisi, downsampling)
+│       ├── cron/                # Job node-cron (manajemen partisi, pembersihan log lama)
 │       ├── database/connections/# Singleton Prisma client, Redis client (ioredis)
-│       ├── middlewares/         # auth.middleware.js, verifikasi JWT
+│       ├── errors/              # AppError.js (error terklasifikasi: statusCode, isOperational)
+│       ├── middlewares/         # auth.middleware.js (verifikasi JWT), error.middleware.js (handler error terpusat)
 │       ├── mqtt/
 │       │   ├── connection.js        # Setup MQTT client (EMQX via TLS)
 │       │   ├── publishers/          # Mempublikasikan konfigurasi device (interval sensor) ke perangkat
@@ -29,6 +30,7 @@ Subur.in/
 │       ├── routes/              # Router Express, dipasang di bawah /api pada routes/api.js
 │       ├── services/            # notification.service.js (fan-out notifyDevice), telegram.service.js (client Bot API)
 │       ├── sse/                 # Registry client Server-Sent Events in-memory + broadcaster
+│       ├── utils/               # response.js (sendSuccess/sendError, envelope response bersama)
 │       └── server.js            # Bootstrap aplikasi: Express, CORS, MQTT, Redis, inisialisasi cron
 │
 ├── frontend/

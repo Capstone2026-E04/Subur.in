@@ -7,10 +7,7 @@ Tidak ada library validasi skema (tidak ada Joi/Zod/express-validator). Setiap c
 **Pemeriksaan field wajib:**
 ```javascript
 if (!deviceId || !label || !plantId || !polybagId) {
-  return res.status(400).json({
-    success: false,
-    message: 'deviceId, label, plantId, dan polybagId wajib diisi.'
-  });
+  return sendError(res, 400, 'deviceId, label, plantId, dan polybagId wajib diisi.');
 }
 ```
 
@@ -18,10 +15,10 @@ if (!deviceId || !label || !plantId || !polybagId) {
 ```javascript
 const ph = parseFloat(phValue);
 if (isNaN(ph)) {
-  return res.status(400).json({ success: false, message: 'phValue dan moistureValue harus berupa angka valid.' });
+  return sendError(res, 400, 'phValue dan moistureValue harus berupa angka valid.');
 }
 if (ph < 0 || ph > 14) {
-  return res.status(400).json({ success: false, message: 'Nilai pH harus berada dalam rentang 0 sampai 14.' });
+  return sendError(res, 400, 'Nilai pH harus berada dalam rentang 0 sampai 14.');
 }
 ```
 
@@ -29,21 +26,21 @@ if (ph < 0 || ph > 14) {
 ```javascript
 const parsedDelay = Number(delay_ms);
 if (!Number.isInteger(parsedDelay) || parsedDelay < 100) {
-  return res.status(400).json({ success: false, message: '"delay_ms" harus berupa bilangan bulat dan minimal 100 ms.' });
+  return sendError(res, 400, '"delay_ms" harus berupa bilangan bulat dan minimal 100 ms.');
 }
 ```
 
 **Panjang/kekosongan string (update profil):**
 ```javascript
 if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0)) {
-  return res.status(400).json({ success: false, message: 'Nama tidak boleh kosong.' });
+  return sendError(res, 400, 'Nama tidak boleh kosong.');
 }
 if (name !== undefined && name.trim().length > 100) {
-  return res.status(400).json({ success: false, message: 'Nama tidak boleh melebihi 100 karakter.' });
+  return sendError(res, 400, 'Nama tidak boleh melebihi 100 karakter.');
 }
 ```
 
-Lapisan AI menduplikasi pemeriksaan rentangnya sendiri di [`ai/services/recommendation.service.js`](../../backend/src/ai/services/recommendation.service.js) (melempar `TypeError`/`RangeError` alih-alih mengembalikan response HTTP), karena dipanggil baik dari `recommendation.controller.js` maupun `device.controller.js`. Controller hanya perlu memvalidasi apa yang bisa langsung dikirim client (misalnya `phValue`/`moistureValue` pada simulate), sementara service melakukan validasi ulang sebagai jaring pengaman terhadap pemanggil mana pun.
+Lapisan AI menduplikasi pemeriksaan rentangnya sendiri di [`ai/services/recommendation.service.js`](../../backend/src/ai/services/recommendation.service.js) (melempar `AppError` dengan status 400/404 alih-alih `res.status().json()` langsung, karena tidak punya akses ke `res`), karena dipanggil baik dari `recommendation.controller.js` maupun `device.controller.js`. Controller hanya perlu memvalidasi apa yang bisa langsung dikirim client (misalnya `phValue`/`moistureValue` pada simulate), sementara service melakukan validasi ulang sebagai jaring pengaman terhadap pemanggil mana pun; `AppError` yang dilempar service ditangkap di controller lalu diteruskan ke middleware error terpusat lewat `next(error)`.
 
 ## Validasi payload MQTT
 

@@ -2,6 +2,13 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-09-22
+
+- **refactor(error-handling):** Menambahkan `AppError` dan middleware error Express terpusat ([`middlewares/error.middleware.js`](../backend/src/middlewares/error.middleware.js)) sehingga error tak terduga tidak lagi ditangani manual di tiap controller dan membocorkan `error.message` mentah ke client; `recommendation.service.js`/`physical_presets.js` sekarang melempar `AppError` berstatus 400/404 alih-alih `Error`/`TypeError`/`RangeError` generik yang selalu jatuh ke 500.
+- **refactor(api):** Menyentralisasi bentuk response lewat helper `sendSuccess`/`sendError` ([`utils/response.js`](../backend/src/utils/response.js)) di seluruh endpoint, menggantikan `res.json({...})` yang ditulis manual per controller. Payload `GET /api` dan `GET /api/health` yang sebelumnya berada di top-level kini dibungkus di bawah `data`, konsisten dengan endpoint lain. Lihat [api/error-response.md](api/error-response.md).
+- **refactor(fuzzy-engine):** Mengganti nama `theta`/`thetaTarget` menjadi `vwc`/`vwcTarget` (Volumetric Water Content) di seluruh mesin fuzzy logic, dan mengekstrak rumus konversi `moisturePercent / 100` yang terduplikasi menjadi `toVwc()` di `ai/utils/mathematical.js`.
+- **refactor(cron):** Retensi `raw_sensor_logs`/`recommendation_logs`/`notifications` diperpanjang dari 30 hari menjadi 6 bulan; menghapus `cron/downsampling_job.js` yang kosong dan tidak pernah diimplementasikan.
+
 ## 2026-09-08
 
 - **fix(layout):** Container root dashboard menggunakan `flex` (row) tanpa breakpoint responsif, sehingga di mobile bar hamburger dan panel konten utama berada bersebelahan alih-alih bertumpuk; diubah menjadi `flex-col md:flex-row`. Juga memperbaiki touch target di bawah 44px pada tombol hamburger/close sidebar mobile dan mencegah nama user yang panjang meluber dari topbar.

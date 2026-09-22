@@ -40,7 +40,7 @@ flowchart LR
 - **Mesin rekomendasi AI** (`src/ai`): sistem fuzzy logic Mamdani (pH x kelembaban -> 9 kategori aksi) ditambah kalkulator dosis deterministik untuk air irigasi, kapur dolomit, dan sulfur elemental. Fungsi murni, tanpa I/O, aman untuk diuji secara terisolasi ([`src/ai/__tests__`](../../backend/src/ai/__tests__)).
 - **SSE manager** (`src/sse`): menyimpan daftar client `EventSource` per device di memori dan menyiarkan event sensor langsung + notifikasi ke dashboard yang terhubung.
 - **Dispatch notifikasi** (`src/services/notification.service.js`, `src/services/telegram.service.js`): satu titik masuk (`notifyDevice`) yang digunakan setiap call site pembuat notifikasi, menyebarkan notifikasi ke Postgres, SSE, dan Telegram (jika pemilik device telah menautkan akunnya) dalam satu panggilan. Lihat [api/telegram.md](../api/telegram.md).
-- **Cron job** (`src/cron`): manajemen/pembersihan partisi Postgres bulanan untuk `raw_sensor_logs`, dan job downsampling.
+- **Cron job** (`src/cron`): manajemen/pembersihan partisi Postgres bulanan untuk `raw_sensor_logs`, dan pembersihan log lama (retensi 6 bulan).
 - **Repositories** (`src/repositories`): lapisan akses data tipis di atas Prisma (Postgres) dan Redis untuk pembacaan sensor.
 
 ## Mengapa fuzzy logic

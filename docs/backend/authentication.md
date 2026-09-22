@@ -18,7 +18,7 @@ Diterapkan per-router dengan `router.use(authMiddleware)` (devices, users, notif
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: '...' });
+    return next(new AppError('Akses ditolak. ...', 401, true));
   }
   const token = authHeader.split(' ')[1];
   const decoded = jwt.verify(token, JWT_SECRET);
@@ -27,7 +27,7 @@ module.exports = (req, res, next) => {
 };
 ```
 
-Jika berhasil, `req.user` berisi payload JWT yang telah didekode (`{ id, email, name }`), dan controller membaca `req.user.id` untuk membatasi query hanya pada pemanggil (caller). Jika gagal (header hilang, header salah format, signature kedaluwarsa/tidak valid), request dihentikan dengan `401` sebelum controller dijalankan.
+Jika berhasil, `req.user` berisi payload JWT yang telah didekode (`{ id, email, name }`), dan controller membaca `req.user.id` untuk membatasi query hanya pada pemanggil (caller). Jika gagal (header hilang, header salah format, signature kedaluwarsa/tidak valid), middleware melempar `AppError(401)` lewat `next()`, yang ditangkap [middleware error terpusat](../api/error-response.md) dan menghentikan request dengan `401` sebelum controller dijalankan.
 
 ## Secrets
 
