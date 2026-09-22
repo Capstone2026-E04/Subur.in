@@ -16,6 +16,7 @@ model User {
   avatarUrl String?  @map("avatar_url") @db.Text
   telegramChatId   String?  @unique @map("telegram_chat_id") @db.VarChar(50)
   telegramLinkCode String?  @unique @map("telegram_link_code") @db.VarChar(10)
+  telegramNotifyEnabled Boolean @default(true) @map("telegram_notify_enabled")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -35,6 +36,11 @@ model Device {
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
   sensorInterval Int          @default(15) @map("sensor_interval")
+
+  customPhMin        Float? @map("custom_ph_min")
+  customPhMax        Float? @map("custom_ph_max")
+  customMoistureMin  Float? @map("custom_moisture_min")
+  customMoistureMax  Float? @map("custom_moisture_max")
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   plant   Plant   @relation(fields: [plantId], references: [id], onDelete: Restrict)

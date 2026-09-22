@@ -37,9 +37,9 @@ flowchart LR
 
 - **HTTP API** (`src/routes`, `src/controllers`): resource REST untuk auth, users, devices, plants, polybags, recommendations, notifications, dan pembacaan sensor. Lihat [api-flow.md](api-flow.md).
 - **Lapisan MQTT** (`src/mqtt`): berlangganan telemetri perangkat, memvalidasi payload, menulis ke Redis + Postgres, memicu notifikasi saat data tidak valid, dan mempublikasikan perubahan konfigurasi (interval sensor) kembali ke perangkat.
-- **Mesin rekomendasi AI** (`src/ai`): sistem fuzzy logic Mamdani (pH x kelembaban -> 9 kategori aksi) ditambah kalkulator dosis deterministik untuk air irigasi, kapur dolomit, dan sulfur elemental. Fungsi murni, tanpa I/O, aman untuk diuji secara terisolasi ([`src/ai/__tests__`](../../backend/src/ai/__tests__)).
+- **Mesin rekomendasi AI** (`src/ai`): sistem fuzzy logic Mamdani (pH x kelembaban -> 9 kategori aksi) ditambah kalkulator dosis deterministik untuk air irigasi, kapur dolomit, dan sulfur elemental. Fungsi murni, tanpa I/O, aman untuk diuji secara terisolasi ([`src/__tests__/ai`](../../backend/src/__tests__/ai)).
 - **SSE manager** (`src/sse`): menyimpan daftar client `EventSource` per device di memori dan menyiarkan event sensor langsung + notifikasi ke dashboard yang terhubung.
-- **Dispatch notifikasi** (`src/services/notification.service.js`, `src/services/telegram.service.js`): satu titik masuk (`notifyDevice`) yang digunakan setiap call site pembuat notifikasi, menyebarkan notifikasi ke Postgres, SSE, dan Telegram (jika pemilik device telah menautkan akunnya) dalam satu panggilan. Lihat [api/telegram.md](../api/telegram.md).
+- **Dispatch notifikasi** (`src/services/notification.service.js`, `src/telegram/telegram_api.service.js`): satu titik masuk (`notifyDevice`) yang digunakan setiap call site pembuat notifikasi, menyebarkan notifikasi ke Postgres, SSE, dan Telegram (jika pemilik device telah menautkan akunnya dan mengaktifkan `/notifikasi`) dalam satu panggilan. Lihat [api/telegram.md](../api/telegram.md).
 - **Cron job** (`src/cron`): manajemen/pembersihan partisi Postgres bulanan untuk `raw_sensor_logs`, dan pembersihan log lama (retensi 6 bulan).
 - **Repositories** (`src/repositories`): lapisan akses data tipis di atas Prisma (Postgres) dan Redis untuk pembacaan sensor.
 

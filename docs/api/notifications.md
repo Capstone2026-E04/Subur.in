@@ -1,6 +1,6 @@
 # API Notifications
 
-Semua endpoint memerlukan `Authorization: Bearer <jwt>` (lihat [authentication.md](authentication.md)) dan dibatasi hanya untuk device milik user yang terautentikasi. Notifikasi dibuat di sisi server (misalnya oleh MQTT subscriber saat menerima data sensor yang tidak valid) melalui helper bersama [`notifyDevice`](../../backend/src/services/notification.service.js), yang menyebarkan satu notifikasi ke tiga kanal: database (untuk daftar ini), broadcast SSE langsung ke dashboard, dan pesan Telegram jika pemilik device telah menautkan akunnya (lihat [telegram.md](telegram.md)). Tidak ada endpoint create serba guna selain helper uji coba di bawah ini.
+Semua endpoint memerlukan `Authorization: Bearer <jwt>` (lihat [authentication.md](authentication.md)) dan dibatasi hanya untuk device milik user yang terautentikasi. Notifikasi dibuat di sisi server (misalnya oleh MQTT subscriber saat menerima data sensor yang tidak valid) melalui helper bersama [`notifyDevice`](../../backend/src/services/notification.service.js), yang menyebarkan satu notifikasi ke tiga kanal: database (untuk daftar ini), broadcast SSE langsung ke dashboard, dan pesan Telegram jika pemilik device telah menautkan akunnya **dan** `User.telegramNotifyEnabled` bernilai `true` (diatur lewat perintah bot `/notifikasi on|off`, lihat [telegram.md](telegram.md)). Tidak ada endpoint create serba guna selain helper uji coba di bawah ini.
 
 ## `GET /api/notifications`
 

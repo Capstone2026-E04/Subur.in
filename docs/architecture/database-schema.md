@@ -35,6 +35,7 @@ erDiagram
         text avatar_url
         varchar telegram_chat_id UK
         varchar telegram_link_code UK
+        bool telegram_notify_enabled
     }
     DEVICE {
         varchar id PK
@@ -45,6 +46,10 @@ erDiagram
         enum status
         timestamp last_seen_at
         int sensor_interval
+        float custom_ph_min
+        float custom_ph_max
+        float custom_moisture_min
+        float custom_moisture_max
     }
     PLANT {
         uuid id PK
@@ -103,5 +108,7 @@ erDiagram
 - `RawSensorLog` menggunakan kunci `(timestamp, id)` dan dipartisi berdasarkan rentang bulan di level database (dikelola oleh [`src/cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) agar penulisan telemetri berfrekuensi tinggi dan pembersihan retensi tetap murah.
 - Enum `DeviceStatus`: `ACTIVE`, `INACTIVE`, `OFFLINE`.
 - `User.telegramChatId` dan `User.telegramLinkCode` sama-sama bersifat nullable dan unik. `telegramLinkCode` adalah kode sekali pakai yang dihapus segera setelah webhook Telegram mengonsumsinya untuk mengisi `telegramChatId`. Lihat [api/telegram.md](../api/telegram.md).
+- `User.telegramNotifyEnabled` (default `true`) mengatur perintah bot `/notifikasi on|off`; dibaca oleh `notifyDevice` untuk memutuskan apakah channel Telegram ikut dikirimi, terlepas dari `telegramChatId` sudah tertaut atau belum.
+- `Device.customPhMin`/`customPhMax`/`customMoistureMin`/`customMoistureMax` (semuanya nullable, diisi lewat perintah bot `/threshold`) meng-override ambang batas notifikasi transisi kategori bawaan (hardcode `25`/`35` untuk kelembapan, `Plant.minPh`/`maxPh` untuk pH) di `mqtt/subscribers/sensor_subscriber.js`. Tidak memengaruhi perhitungan `generateRecommendation`, yang tetap selalu memakai nilai resmi `Plant`.
 
 Lihat [database/prisma.md](../database/prisma.md) untuk konvensi query dan [database/migration.md](../database/migration.md) untuk cara perubahan skema diterapkan.

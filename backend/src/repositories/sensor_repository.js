@@ -40,7 +40,15 @@ async function getSensorHistory(deviceId, limit = 30) {
     orderBy: { timestamp: "desc" },
     take: limit,
   });
-  return logs.reverse(); 
+  return logs.reverse();
+}
+
+async function getSensorHistorySince(deviceId, sinceDate) {
+  const logs = await prisma.rawSensorLog.findMany({
+    where: { deviceId, timestamp: { gte: sinceDate } },
+    orderBy: { timestamp: "asc" },
+  });
+  return logs;
 }
 
 module.exports = {
@@ -49,5 +57,6 @@ module.exports = {
   updateDeviceLastSeen,
   getLatestSensorLog,
   getSensorHistory,
+  getSensorHistorySince,
 };
 

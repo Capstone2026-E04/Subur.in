@@ -1,5 +1,5 @@
 const prisma = require('../database/connections/prisma_client');
-const telegramService = require('../services/telegram.service');
+const telegramService = require('../telegram/telegram_api.service');
 const { sendSuccess, sendError } = require('../utils/response');
 
 

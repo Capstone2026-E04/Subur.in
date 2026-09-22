@@ -2,7 +2,7 @@
 
 const prisma = require("../database/connections/prisma_client");
 const { broadcastToDevice } = require("../sse/sse_manager");
-const telegramService = require("./telegram.service");
+const telegramService = require("../telegram/telegram_api.service");
 
 async function notifyDevice(deviceId, { title, message, type }) {
   const notification = await prisma.notification.create({
@@ -16,10 +16,10 @@ async function notifyDevice(deviceId, { title, message, type }) {
 
   const device = await prisma.device.findUnique({
     where: { id: deviceId },
-    select: { user: { select: { telegramChatId: true } } },
+    select: { user: { select: { telegramChatId: true, telegramNotifyEnabled: true } } },
   });
 
-  if (device?.user?.telegramChatId) {
+  if (device?.user?.telegramChatId && device.user.telegramNotifyEnabled) {
     await telegramService.sendMessage(
       device.user.telegramChatId,
       `*${title}*\n${message}`,

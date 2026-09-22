@@ -150,7 +150,10 @@ function registerSensorSubscriber(mqttClient) {
         await redis.del(offlineNotifiedKey);
         await redis.del(invalidNotifiedKey);
 
-        if (moisture < 25) {
+        const moistureLowBound = device.customMoistureMin ?? 25;
+        const moistureHighBound = device.customMoistureMax ?? 35;
+
+        if (moisture < moistureLowBound) {
           const dryCount = await redis.incr(dryKey);
           await redis.del(wetKey);
           if (dryCount === 2 && recommendation.waterVolumeLiter > 0) {
@@ -160,7 +163,7 @@ function registerSensorSubscriber(mqttClient) {
               type: "warning",
             });
           }
-        } else if (moisture > 35) {
+        } else if (moisture > moistureHighBound) {
           const wetCount = await redis.incr(wetKey);
           await redis.del(dryKey);
           if (wetCount === 2 && recommendation.reduceWatering) {
@@ -175,8 +178,8 @@ function registerSensorSubscriber(mqttClient) {
           await redis.del(wetKey);
         }
 
-        const minPh = device.plant.minPh;
-        const maxPh = device.plant.maxPh;
+        const minPh = device.customPhMin ?? device.plant.minPh;
+        const maxPh = device.customPhMax ?? device.plant.maxPh;
 
         if (ph < minPh - 0.2 && recommendation.limeDosageGram > 0) {
           const alreadyNotified = await redis.get(phAcidNotifiedKey);

@@ -11,8 +11,9 @@ Tidak ada library logging terstruktur (tidak ada Winston/Pino). Logging mengguna
 | `[MQTT Publish]` | Publikasi konfigurasi keluar ([`mqtt/publishers/config_publisher.js`](../../backend/src/mqtt/publishers/config_publisher.js)) |
 | `[Redis]` | Inisialisasi Redis client ([`database/connections/redis.js`](../../backend/src/database/connections/redis.js)) |
 | `[DatabaseCleanupCron]` | Job terjadwal ([`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) |
-| `[TelegramService]` | Panggilan Bot API keluar ([`services/telegram.service.js`](../../backend/src/services/telegram.service.js)) |
-| `[TelegramController]` | Error pemrosesan webhook ([`controllers/telegram.controller.js`](../../backend/src/controllers/telegram.controller.js)) |
+| `[TelegramApiService]` | Panggilan Bot API keluar ([`telegram/telegram_api.service.js`](../../backend/src/telegram/telegram_api.service.js)) |
+| `[TelegramBot]` | Error tak tertangani saat memproses satu `Update` Telegram ([`telegram/bot.js`](../../backend/src/telegram/bot.js)) |
+| `[TelegramSessionService]` | Kegagalan baca/tulis sesi wizard di Redis ([`telegram/session/session.service.js`](../../backend/src/telegram/session/session.service.js)) |
 | `[Error Middleware]` | Error tak tertangani yang sampai ke [middleware error terpusat](../../backend/src/middlewares/error.middleware.js) |
 | `[<Nama>Controller]` | Error di controller resource tersebut (mis. `[DeviceController]`, `[SensorController]`, `[UserController]`) |
 | `[Server]` | Kegagalan inisialisasi subsistem saat boot ([`server.js`](../../backend/src/server.js)) |
