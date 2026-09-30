@@ -17,8 +17,8 @@ model User {
   telegramChatId   String?  @unique @map("telegram_chat_id") @db.VarChar(50)
   telegramLinkCode String?  @unique @map("telegram_link_code") @db.VarChar(10)
   telegramNotifyEnabled Boolean @default(true) @map("telegram_notify_enabled")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
 
   devices Device[]
 
@@ -32,9 +32,9 @@ model Device {
   plantId    String       @map("plant_id") @db.Uuid
   polybagId  String       @map("polybag_id") @db.Uuid
   status     DeviceStatus @default(ACTIVE)
-  lastSeenAt DateTime?    @map("last_seen_at")
-  createdAt  DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
+  lastSeenAt DateTime?    @db.Timestamptz(6) @map("last_seen_at")
+  createdAt  DateTime     @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(6) @map("updated_at")
   sensorInterval Int          @default(15) @map("sensor_interval")
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -63,7 +63,7 @@ model RecommendationLog {
   sulfurDosageGram Float   @default(0) @map("sulfur_dosage_gram")
   reduceWatering   Boolean @default(false) @map("reduce_watering")
 
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
 
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
@@ -89,8 +89,8 @@ model Plant {
   minPh          Float    @map("min_ph")
   maxPh          Float    @map("max_ph")
   phTarget       Float    @map("ph_target")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
 
   devices Device[]
 
@@ -102,8 +102,8 @@ model PolybagType {
   name      String   @db.VarChar(100)
   diameter  Float
   height    Float
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
 
   polybags  Polybag[]
 
@@ -114,8 +114,8 @@ model Polybag {
   id              String      @id @default(uuid()) @db.Uuid
   polybagTypeId   String      @map("polybag_type_id") @db.Uuid
   soilVolumeLiter Float       @map("soil_volume_liter")
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  createdAt       DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt       DateTime    @updatedAt @db.Timestamptz(6) @map("updated_at")
 
   polybagType PolybagType @relation(fields: [polybagTypeId], references: [id], onDelete: Restrict)
   devices     Device[]
@@ -138,7 +138,7 @@ model Notification {
   message   String   @db.Text
   type      String   @db.VarChar(20)
   isRead    Boolean  @default(false) @map("is_read")
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
 
   device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
