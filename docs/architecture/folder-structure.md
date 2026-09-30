@@ -33,10 +33,10 @@ Subur.in/
 │       │   ├── bot.js               # Entrypoint: processUpdate(update), dipanggil oleh controller webhook
 │       │   ├── router.js            # Satu-satunya tempat yang membedakan message vs callback_query
 │       │   ├── telegram_api.service.js # Client Bot API mentah (sendMessage/sendPhoto/answerCallbackQuery/...)
-│       │   ├── commands/            # Satu file per perintah (/status, /threshold, dst), didaftarkan di index.js
-│       │   ├── callbacks/           # Handler callback_query untuk wizard multi-step (tanaman, threshold)
+│       │   ├── commands/            # Satu file per perintah (/status, /tanaman, dst), didaftarkan di index.js
+│       │   ├── callbacks/           # Handler callback_query untuk wizard multi-step (tanaman)
 │       │   ├── keyboards/           # Builder inline keyboard per domain
-│       │   ├── session/             # Sesi wizard berbasis Redis (bot_session:{telegramUserId}, TTL 5 menit)
+│       │   ├── session/             # Sesi bot berbasis Redis (bot_session:{telegramUserId}, TTL 5 menit)
 │       │   ├── middlewares/         # require_linked_device.middleware.js (guard akun/device tertaut)
 │       │   └── utils/                # parse_callback_data, format_message, format_chart (quickchart.io)
 │       ├── utils/               # response.js (sendSuccess/sendError, envelope response bersama)

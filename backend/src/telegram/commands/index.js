@@ -9,7 +9,6 @@ const unlink = require("./unlink.command");
 const device = require("./device.command");
 const tanaman = require("./tanaman.command");
 const notifikasi = require("./notifikasi.command");
-const threshold = require("./threshold.command");
 const help = require("./help.command");
 const laporan = require("./laporan.command");
 
@@ -23,7 +22,6 @@ const commandList = [
   device,
   tanaman,
   notifikasi,
-  threshold,
   help,
   laporan,
 ];

@@ -11,9 +11,6 @@ const {
   setSession,
   updateSession,
   clearSession,
-  getWizard,
-  setWizard,
-  clearWizard,
   getActiveDeviceId,
   setActiveDeviceId,
   resolveActiveDevice,
@@ -67,11 +64,11 @@ describe("updateSession", () => {
     mockRedisClient.get.mockResolvedValue(JSON.stringify({ activeDeviceId: "device-1" }));
     mockRedisClient.set.mockResolvedValue("OK");
 
-    await updateSession(TELEGRAM_USER_ID, { wizard: { type: "threshold" } });
+    await updateSession(TELEGRAM_USER_ID, { label: "x" });
 
     expect(mockRedisClient.set).toHaveBeenCalledWith(
       `bot_session:${TELEGRAM_USER_ID}`,
-      JSON.stringify({ activeDeviceId: "device-1", wizard: { type: "threshold" } }),
+      JSON.stringify({ activeDeviceId: "device-1", label: "x" }),
       "EX",
       300,
     );
@@ -85,44 +82,6 @@ describe("clearSession", () => {
     await clearSession(TELEGRAM_USER_ID);
 
     expect(mockRedisClient.del).toHaveBeenCalledWith(`bot_session:${TELEGRAM_USER_ID}`);
-  });
-});
-
-describe("wizard state", () => {
-  it("getWizard returns null when no wizard field is stored", async () => {
-    mockRedisClient.get.mockResolvedValue(JSON.stringify({ activeDeviceId: "device-1" }));
-
-    const result = await getWizard(TELEGRAM_USER_ID);
-
-    expect(result).toBeNull();
-  });
-
-  it("setWizard stores the wizard state under the wizard field", async () => {
-    mockRedisClient.get.mockResolvedValue(null);
-    mockRedisClient.set.mockResolvedValue("OK");
-
-    await setWizard(TELEGRAM_USER_ID, { type: "threshold", parameter: "ph", deviceId: "device-1" });
-
-    expect(mockRedisClient.set).toHaveBeenCalledWith(
-      `bot_session:${TELEGRAM_USER_ID}`,
-      JSON.stringify({ wizard: { type: "threshold", parameter: "ph", deviceId: "device-1" } }),
-      "EX",
-      300,
-    );
-  });
-
-  it("clearWizard sets the wizard field to null without touching other fields", async () => {
-    mockRedisClient.get.mockResolvedValue(JSON.stringify({ activeDeviceId: "device-1", wizard: { type: "threshold" } }));
-    mockRedisClient.set.mockResolvedValue("OK");
-
-    await clearWizard(TELEGRAM_USER_ID);
-
-    expect(mockRedisClient.set).toHaveBeenCalledWith(
-      `bot_session:${TELEGRAM_USER_ID}`,
-      JSON.stringify({ activeDeviceId: "device-1", wizard: null }),
-      "EX",
-      300,
-    );
   });
 });
 

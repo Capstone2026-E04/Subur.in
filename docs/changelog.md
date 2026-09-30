@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-09-30
+
+- **refactor(telegram):** Menghapus perintah `/threshold` beserta callback, keyboard, dan mekanisme wizard sesi (`getWizard`/`setWizard`/`clearWizard`) karena rentang ambang batas sudah ditentukan oleh fuzzy logic dan tidak dapat dikustomisasi user.
+- **refactor(db):** Menghapus `Device.customPhMin`/`customPhMax`/`customMoistureMin`/`customMoistureMax`; `sensor_subscriber.js` kembali selalu memakai ambang bawaan (`25`/`35` kelembapan, `Plant.minPh`/`maxPh` pH).
+
 ## 2026-09-23
 
 - **test(backend):** Migrasi seluruh testing backend ke **Jest**, menggantikan script `assert`+`node` manual (`src/ai/__tests__/*.test.js`, yang sebagiannya menghantam database Supabase sungguhan dan skip diam-diam tanpa data seed). Test dipindahkan ke folder tersentralisasi `src/__tests__/`, mencerminkan struktur `src/`, dengan Prisma/Redis di-mock lewat `jest.mock(...)` alih-alih dependency sungguhan. `npm test` sekarang menjalankan `jest` dan benar-benar gagal (exit non-zero) saat assertion gagal. Lihat [ADR-008](decisions/adr-008-jest-for-testing.md).

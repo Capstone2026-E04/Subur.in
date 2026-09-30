@@ -5,14 +5,8 @@ const telegramApi = require("./telegram_api.service");
 const { commandMap } = require("./commands/index");
 const { callbackHandlers } = require("./callbacks/index");
 const { parseCallbackData } = require("./utils/parse_callback_data");
-const { getWizard } = require("./session/session.service");
-const { WIZARD_TYPE } = require("./session/session.constants");
 
 const UNKNOWN_COMMAND_MESSAGE = "Perintah tidak dikenali. Kirim /help untuk melihat daftar perintah.";
-
-const WIZARD_HANDLERS = {
-  [WIZARD_TYPE.THRESHOLD]: (ctx) => commandMap.threshold.handleWizardInput(ctx),
-};
 
 async function findUserByChatId(chatId) {
   return prisma.user.findUnique({ where: { telegramChatId: String(chatId) } });
@@ -26,7 +20,7 @@ async function fetchDevicesForUser(user) {
   });
 }
 
-function buildCtx({ chatId, telegramUserId, user, devices, message, callbackQueryId, parsed, args, text, wizard }) {
+function buildCtx({ chatId, telegramUserId, user, devices, message, callbackQueryId, parsed, args, text }) {
   return {
     chatId,
     telegramUserId,
@@ -37,7 +31,6 @@ function buildCtx({ chatId, telegramUserId, user, devices, message, callbackQuer
     parsed,
     args: args || [],
     text,
-    wizard,
     reply: (msgText, replyMarkup) => telegramApi.sendMessage(chatId, msgText, undefined, replyMarkup),
     replyPhoto: (photoUrl, caption) => telegramApi.sendPhoto(chatId, photoUrl, caption),
     answerCallback: (text2) => (callbackQueryId ? telegramApi.answerCallbackQuery(callbackQueryId, text2) : Promise.resolve()),
@@ -50,19 +43,10 @@ async function handleMessage(message) {
   const telegramUserId = message.from?.id;
   const text = (message.text || "").trim();
 
-  if (!chatId || !text) return;
+  if (!chatId || !text || !text.startsWith("/")) return;
 
   const user = await findUserByChatId(chatId);
   const devices = await fetchDevicesForUser(user);
-
-  if (!text.startsWith("/")) {
-    const wizard = user ? await getWizard(telegramUserId) : null;
-    if (wizard && WIZARD_HANDLERS[wizard.type]) {
-      const ctx = buildCtx({ chatId, telegramUserId, user, devices, message, text, wizard });
-      await WIZARD_HANDLERS[wizard.type](ctx);
-    }
-    return;
-  }
 
   const [rawCommand, ...args] = text.split(/\s+/);
   const commandName = rawCommand.slice(1).split("@")[0].toLowerCase();

@@ -19,7 +19,7 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 - Riwayat & analitik: riwayat rekomendasi dan grafik histori sensor per perangkat.
 - Notifikasi otomatis: peringatan real-time saat data sensor tidak valid atau perangkat bermasalah, dikirim ke dashboard (SSE) sekaligus Telegram.
 - Manajemen perangkat: klaim perangkat baru yang terdeteksi, atur interval pengiriman data, dan kelola beberapa perangkat sekaligus.
-- Bot Telegram interaktif: cek status sensor, riwayat, dan rekomendasi, pilih tanaman aktif, serta atur notifikasi dan ambang batas kustom langsung dari chat (`/status`, `/riwayat`, `/rekomendasi`, `/tanaman`, `/notifikasi`, `/threshold`, dst).
+- Bot Telegram interaktif: cek status sensor, riwayat, dan rekomendasi, pilih tanaman aktif, serta atur notifikasi langsung dari chat (`/status`, `/riwayat`, `/rekomendasi`, `/tanaman`, `/notifikasi`, dst).
 
 ## Tech Stack
 

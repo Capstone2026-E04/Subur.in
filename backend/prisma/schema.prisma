@@ -37,11 +37,6 @@ model Device {
   updatedAt      DateTime     @updatedAt @map("updated_at")
   sensorInterval Int          @default(15) @map("sensor_interval")
 
-  customPhMin        Float? @map("custom_ph_min")
-  customPhMax        Float? @map("custom_ph_max")
-  customMoistureMin  Float? @map("custom_moisture_min")
-  customMoistureMax  Float? @map("custom_moisture_max")
-
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   plant   Plant   @relation(fields: [plantId], references: [id], onDelete: Restrict)
   polybag Polybag @relation(fields: [polybagId], references: [id], onDelete: Restrict)

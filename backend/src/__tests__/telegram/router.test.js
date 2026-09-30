@@ -43,7 +43,7 @@ describe("router handleUpdate", () => {
     expect(telegramApi.sendMessage.mock.calls[0][1]).toEqual(expect.stringContaining("Perintah tidak dikenali"));
   });
 
-  it("does not reply to a non-command message with no active wizard", async () => {
+  it("does not reply to a non-command message", async () => {
     await handleUpdate({
       message: { chat: { id: FAKE_CHAT_ID }, from: { id: FAKE_USER_ID }, text: "halo bot" },
     });

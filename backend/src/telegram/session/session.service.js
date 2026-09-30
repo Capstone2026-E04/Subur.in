@@ -53,19 +53,6 @@ async function clearSession(telegramUserId) {
   }
 }
 
-async function getWizard(telegramUserId) {
-  const session = await getSession(telegramUserId);
-  return session?.wizard || null;
-}
-
-async function setWizard(telegramUserId, wizardState) {
-  await updateSession(telegramUserId, { wizard: wizardState });
-}
-
-async function clearWizard(telegramUserId) {
-  await updateSession(telegramUserId, { wizard: null });
-}
-
 async function getActiveDeviceId(telegramUserId) {
   const session = await getSession(telegramUserId);
   return session?.activeDeviceId || null;
@@ -90,9 +77,6 @@ module.exports = {
   setSession,
   updateSession,
   clearSession,
-  getWizard,
-  setWizard,
-  clearWizard,
   getActiveDeviceId,
   setActiveDeviceId,
   resolveActiveDevice,
