@@ -44,6 +44,10 @@ model Device {
   recommendations RecommendationLog[]
   notifications   Notification[]
 
+  @@index([userId], map: "idx_devices_user_id")
+  @@index([plantId], map: "idx_devices_plant_id")
+  @@index([polybagId], map: "idx_devices_polybag_id")
+
   @@map("devices")
 }
 
@@ -67,6 +71,8 @@ model RecommendationLog {
 
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
+  @@index([deviceId, createdAt(sort: Desc)], map: "idx_recommendation_logs_device_created")
+
   @@map("recommendation_logs")
 }
 
@@ -78,6 +84,8 @@ model RawSensorLog {
   moisture  Float    @db.DoublePrecision
 
   @@id([timestamp, id])
+  @@index([deviceId, timestamp(sort: Desc)], map: "idx_raw_sensor_logs_device_timestamp")
+
   @@map("raw_sensor_logs")
 }
 
@@ -120,6 +128,8 @@ model Polybag {
   polybagType PolybagType @relation(fields: [polybagTypeId], references: [id], onDelete: Restrict)
   devices     Device[]
 
+  @@index([polybagTypeId], map: "idx_polybags_polybag_type_id")
+
   @@map("polybags")
 }
 
@@ -141,6 +151,8 @@ model Notification {
   createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
 
   device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId, createdAt(sort: Desc)], map: "idx_notifications_device_created")
 
   @@map("notifications")
 }
