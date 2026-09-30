@@ -223,9 +223,10 @@ exports.deleteDevice = async (req, res, next) => {
       return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
     }
 
-    await prisma.device.delete({
-      where: { id: id }
-    });
+    await prisma.$transaction([
+      prisma.rawSensorLog.deleteMany({ where: { deviceId: id } }),
+      prisma.device.delete({ where: { id: id } })
+    ]);
 
     return sendSuccess(res, 200, 'Device berhasil dihapus dari akun Anda.');
 

@@ -5,6 +5,7 @@ async function main() {
   console.log(' Memulai proses seeding database Subur.in...');
 
   console.log(' Membersihkan data tanaman lama (jika ada)...');
+  await prisma.rawSensorLog.deleteMany({});
   await prisma.device.deleteMany({});
   await prisma.plant.deleteMany({});
 

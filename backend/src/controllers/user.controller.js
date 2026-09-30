@@ -101,9 +101,15 @@ exports.deleteAccount = async (req, res, next) => {
       return sendError(res, 404, 'Pengguna tidak ditemukan.');
     }
 
-    await prisma.user.delete({
-      where: { id: userId }
+    const devices = await prisma.device.findMany({
+      where: { userId },
+      select: { id: true }
     });
+
+    await prisma.$transaction([
+      prisma.rawSensorLog.deleteMany({ where: { deviceId: { in: devices.map((d) => d.id) } } }),
+      prisma.user.delete({ where: { id: userId } })
+    ]);
 
     return sendSuccess(res, 200, 'Akun berhasil dihapus secara permanen.');
 

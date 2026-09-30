@@ -21,7 +21,7 @@ jest.mock("../../mqtt/publishers/config_publisher", () => ({
 }));
 
 const prisma = require("../../database/connections/prisma_client");
-const { registerDevice, updateDevice } = require("../../controllers/device.controller");
+const { registerDevice, updateDevice, deleteDevice } = require("../../controllers/device.controller");
 
 function makeRes() {
   const res = {};
@@ -54,5 +54,32 @@ describe("sensorInterval validation", () => {
     await updateDevice({ user: { id: "u" }, params: { id: "dev-1" }, body: { sensorInterval: value } }, res, jest.fn());
     expect(res.status).toHaveBeenCalledWith(400);
     expect(prisma.device.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteDevice", () => {
+  it("deletes sensor logs and the device in one transaction, logs first", async () => {
+    prisma.device.findFirst.mockResolvedValue({ id: "dev-1", userId: "u" });
+    prisma.rawSensorLog.deleteMany.mockReturnValue("delete-logs");
+    prisma.device.delete.mockReturnValue("delete-device");
+    prisma.$transaction.mockResolvedValue([]);
+    const res = makeRes();
+
+    await deleteDevice({ user: { id: "u" }, params: { id: "dev-1" } }, res, jest.fn());
+
+    expect(prisma.rawSensorLog.deleteMany).toHaveBeenCalledWith({ where: { deviceId: "dev-1" } });
+    expect(prisma.device.delete).toHaveBeenCalledWith({ where: { id: "dev-1" } });
+    expect(prisma.$transaction).toHaveBeenCalledWith(["delete-logs", "delete-device"]);
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("returns 404 and deletes nothing when the device is not owned by the user", async () => {
+    prisma.device.findFirst.mockResolvedValue(null);
+    const res = makeRes();
+
+    await deleteDevice({ user: { id: "u" }, params: { id: "dev-1" } }, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 });
