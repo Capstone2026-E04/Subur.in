@@ -23,6 +23,25 @@ tetapi perlu diingat ini menyimpang dari cara production menerapkan perubahan sc
 
 `raw_sensor_logs` di-partisi berdasarkan rentang bulan di level SQL, di luar schema Prisma. `prisma db push` **tidak** membuat/menghapus partisi. Pembuatan partisi dan pembersihan partisi lama ditangani saat runtime oleh [`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js), yang memeriksa `pg_partitioned_table`/`pg_class` dan menjalankan DDL `CREATE TABLE ... PARTITION OF` mentah sesuai kebutuhan. Jika Anda mengubah kolom `RawSensorLog` di `schema.prisma`, pastikan SQL mentah pada file cron tersebut masih sesuai dengan susunan kolom yang diperbarui.
 
+## SQL manual (`prisma/manual/`)
+
+Hal yang tidak dimodelkan Prisma (CHECK constraint, RLS) ditulis sebagai SQL idempoten di [`backend/prisma/manual/`](../../backend/prisma/manual/), dengan kebalikannya di `prisma/manual/rollback/`. File dijalankan **manual** di Supabase SQL Editor, tidak oleh pipeline deploy.
+
+Urutan penerapan:
+
+1. `001_check_constraints.sql`: CHECK numerik dan kategori. Jalankan pra-cek pelanggaran (mis. `select count(*) from raw_sensor_logs where ph < 0 or ph > 14;`) sebelum menerapkan, karena `ADD CONSTRAINT` gagal jika ada baris yang melanggar.
+2. `002_row_level_security.sql`: `ENABLE ROW LEVEL SECURITY` pada semua tabel dan partisi. Verifikasi dulu role koneksi backend: `select rolname, rolbypassrls from pg_roles where rolname = current_user;` harus `rolbypassrls = true`.
+
+Kedua file aman dijalankan ulang.
+
+**Aturan index:** semua index wajib dideklarasikan dengan `@@index` (nama eksplisit lewat `map:`) di `schema.prisma`. Index yang hanya dibuat lewat SQL akan dihapus oleh `prisma db push` berikutnya. CHECK constraint dan RLS tidak disentuh `db push`.
+
+Sebelum deploy yang mengubah schema, pratinjau dengan:
+```bash
+npx prisma migrate diff --from-url "$DIRECT_URL" --to-schema-datamodel prisma/schema.prisma --script
+```
+Perubahan tipe kolom waktu harus muncul sebagai `ALTER COLUMN ... SET DATA TYPE TIMESTAMPTZ(6)`, bukan drop/add column. Jika `SHOW timezone` pada koneksi langsung bukan UTC, konversi manual dulu dengan `ALTER COLUMN ... TYPE timestamptz USING kolom AT TIME ZONE 'UTC'`.
+
 ## Rollback
 
 Tidak ada rollback otomatis untuk `db push` (karena tidak berbasis file migration, sehingga tidak ada migration "down"). Untuk membatalkan perubahan schema yang bermasalah: kembalikan `schema.prisma` ke bentuk sebelumnya lalu jalankan `db push` lagi. Ini aman untuk perubahan yang bersifat additive/non-destruktif, tetapi **dapat menghapus data** untuk penghapusan kolom/tipe, jadi tinjau output diff dari `prisma db push` (atau jalankan terlebih dahulu terhadap DB staging) sebelum mem-push perubahan destruktif ke production.

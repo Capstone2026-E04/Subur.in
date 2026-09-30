@@ -2,6 +2,15 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-09-30 (hardening database)
+
+- **refactor(db):** Semua kolom `DateTime` kini `timestamptz(6)`.
+- **perf(db):** Menambahkan `@@index` untuk FK dan query riwayat (`raw_sensor_logs`, `devices`, `notifications`, `recommendation_logs`, `polybags`).
+- **feat(db):** Menambahkan CHECK constraint kategori, rentang numerik, dan nilai positif lewat `prisma/manual/001_check_constraints.sql`.
+- **feat(db):** Mengaktifkan RLS pada semua tabel dan partisi lewat `prisma/manual/002_row_level_security.sql`; `database_cleanup_cron.js` mengaktifkan RLS otomatis pada partisi baru dan yang sudah ada.
+- **fix(device):** Menghapus device atau akun kini juga menghapus `raw_sensor_logs` terkait dalam satu transaksi; menambahkan `npm run db:check-orphans`. `seed.js` ikut menghapus `raw_sensor_logs` sebelum `device.deleteMany`.
+- **feat(device):** `registerDevice` dan `updateDevice` memvalidasi `sensorInterval` (bilangan bulat minimal 1).
+
 ## 2026-09-30
 
 - **refactor(telegram):** Menghapus perintah `/threshold` beserta callback, keyboard, dan mekanisme wizard sesi (`getWizard`/`setWizard`/`clearWizard`) karena rentang ambang batas sudah ditentukan oleh fuzzy logic dan tidak dapat dikustomisasi user.

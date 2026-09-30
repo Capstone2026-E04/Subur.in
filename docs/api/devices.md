@@ -34,7 +34,7 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
 }
 ```
 
-`sensorInterval` (dalam menit) bersifat opsional, defaultnya `15`. Jika berhasil, backend juga mempublikasikan interval tersebut ke device melalui MQTT (lihat [backend authentication/config publisher](../architecture/api-flow.md)).
+`sensorInterval` (dalam menit) bersifat opsional, defaultnya `15`. Jika diisi harus bilangan bulat minimal `1`, jika tidak `400`. Jika berhasil, backend juga mempublikasikan interval tersebut ke device melalui MQTT (lihat [backend authentication/config publisher](../architecture/api-flow.md)).
 
 **Response sukses `201`:**
 ```json
@@ -76,11 +76,11 @@ Memperbarui device milik pemanggil. Salah satu dari `label`, `plantId`, `polybag
 
 **Response sukses `200`:** object `device` yang telah diperbarui, di dalam `data.device`.
 
-**Response error:** `404` (tidak ditemukan atau bukan milik user), `500`.
+**Response error:** `400` (`sensorInterval` bukan bilangan bulat minimal 1), `404` (tidak ditemukan atau bukan milik user), `500`.
 
 ## `DELETE /api/devices/:id`
 
-Menghapus device milik pemanggil (menghapus juga secara cascade log rekomendasi dan notifikasi terkait).
+Menghapus device milik pemanggil (menghapus juga log rekomendasi dan notifikasi terkait lewat cascade, serta `raw_sensor_logs` device tersebut dalam satu transaksi).
 
 **Response sukses `200`:**
 ```json

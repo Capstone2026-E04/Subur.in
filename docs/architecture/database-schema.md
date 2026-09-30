@@ -44,7 +44,7 @@ erDiagram
         uuid plant_id FK
         uuid polybag_id FK
         enum status
-        timestamp last_seen_at
+        timestamptz last_seen_at
         int sensor_interval
     }
     PLANT {
@@ -105,5 +105,40 @@ erDiagram
 - Enum `DeviceStatus`: `ACTIVE`, `INACTIVE`, `OFFLINE`.
 - `User.telegramChatId` dan `User.telegramLinkCode` sama-sama bersifat nullable dan unik. `telegramLinkCode` adalah kode sekali pakai yang dihapus segera setelah webhook Telegram mengonsumsinya untuk mengisi `telegramChatId`. Lihat [api/telegram.md](../api/telegram.md).
 - `User.telegramNotifyEnabled` (default `true`) mengatur perintah bot `/notifikasi on|off`; dibaca oleh `notifyDevice` untuk memutuskan apakah channel Telegram ikut dikirimi, terlepas dari `telegramChatId` sudah tertaut atau belum.
+
+- Semua kolom waktu bertipe `timestamptz(6)` (`@db.Timestamptz(6)`), termasuk `created_at`, `updated_at`, `last_seen_at`, dan `raw_sensor_logs.timestamp`.
+- Menghapus device atau akun juga menghapus `raw_sensor_logs` miliknya di dalam satu `prisma.$transaction` (tanpa FK, jadi tidak ikut cascade). Skrip `npm run db:check-orphans` melaporkan baris yatim.
+
+## Index
+
+Semua index dideklarasikan dengan `@@index` di `schema.prisma` (wajib, karena `prisma db push` menghapus index yang tidak dideklarasikan):
+
+| Tabel                | Index                                                 |
+| -------------------- | ----------------------------------------------------- |
+| `raw_sensor_logs`    | `idx_raw_sensor_logs_device_timestamp (device_id, timestamp DESC)` |
+| `devices`            | `idx_devices_user_id`, `idx_devices_plant_id`, `idx_devices_polybag_id` |
+| `notifications`      | `idx_notifications_device_created (device_id, created_at DESC)` |
+| `recommendation_logs`| `idx_recommendation_logs_device_created (device_id, created_at DESC)` |
+| `polybags`           | `idx_polybags_polybag_type_id`                        |
+
+## Constraint (CHECK)
+
+Dikelola lewat SQL manual [`prisma/manual/001_check_constraints.sql`](../../backend/prisma/manual/001_check_constraints.sql), tidak dimodelkan Prisma. Field Prisma tetap `String`/`Float`.
+
+| Tabel                 | Aturan                                                                            |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `notifications`       | `type` hanya `'warning'`, `'info'`, `'success'`                                   |
+| `recommendation_logs` | `category_code` cocok `^C[1-9]$`; `ph_value` 0-14; `moisture_value` 0-100; `water_volume_liter`, `lime_dosage_gram`, `sulfur_dosage_gram` >= 0; `fuzzy_index` 0-8 |
+| `raw_sensor_logs`     | `ph` 0-14; `moisture` 0-100 (berlaku di semua partisi)                            |
+| `plants`              | `min_ph`, `max_ph` 0-14; `min_ph < max_ph`; `ph_target` di antara keduanya        |
+| `devices`             | `sensor_interval > 0`                                                             |
+| `polybag_types`       | `diameter > 0`, `height > 0`                                                      |
+| `polybags`            | `soil_volume_liter > 0`                                                           |
+
+Enum Postgres sengaja tidak dipakai untuk `type` dan `category_code`: `db push` dapat menganggap perubahan `varchar` ke enum berisiko kehilangan data dan menggagalkan deploy, dan tidak kompatibel mundur dengan kode lama selama jendela deploy.
+
+## Row Level Security
+
+RLS diaktifkan (tanpa policy, tanpa `FORCE`) pada semua tabel dan seluruh partisi `raw_sensor_logs` lewat [`002_row_level_security.sql`](../../backend/prisma/manual/002_row_level_security.sql). Backend memakai role dengan `BYPASSRLS` sehingga tidak terpengaruh. Partisi baru otomatis diaktifkan RLS-nya oleh `database_cleanup_cron.js`.
 
 Lihat [database/prisma.md](../database/prisma.md) untuk konvensi query dan [database/migration.md](../database/migration.md) untuk cara perubahan skema diterapkan.
