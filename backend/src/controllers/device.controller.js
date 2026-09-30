@@ -65,6 +65,10 @@ exports.registerDevice = async (req, res, next) => {
       return sendError(res, 400, 'deviceId, label, plantId, dan polybagId wajib diisi.');
     }
 
+    if (sensorInterval !== undefined && (!Number.isInteger(Number(sensorInterval)) || Number(sensorInterval) < 1)) {
+      return sendError(res, 400, '"sensorInterval" harus berupa bilangan bulat dan minimal 1 menit.');
+    }
+
 
     const existingDevice = await prisma.device.findUnique({
       where: { id: deviceId }
@@ -149,6 +153,9 @@ exports.updateDevice = async (req, res, next) => {
     const { id } = req.params;
     const { label, plantId, polybagId, status, sensorInterval } = req.body;
 
+    if (sensorInterval !== undefined && (!Number.isInteger(Number(sensorInterval)) || Number(sensorInterval) < 1)) {
+      return sendError(res, 400, '"sensorInterval" harus berupa bilangan bulat dan minimal 1 menit.');
+    }
 
     const device = await prisma.device.findFirst({
       where: { id: id, userId: userId }
