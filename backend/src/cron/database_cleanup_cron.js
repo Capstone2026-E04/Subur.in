@@ -59,11 +59,42 @@ async function createPartitionForMonth(date) {
       FOR VALUES FROM ('${startStr}') TO ('${endStr}');
     `);
     console.log(`[Cron] Sukses membuat tabel partisi ${partitionName}.`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "${partitionName}" ENABLE ROW LEVEL SECURITY;`);
+    console.log(`[Cron] RLS diaktifkan pada partisi ${partitionName}.`);
   } catch (err) {
     console.error("[DatabaseCleanupCron] Gagal memproses pembuatan partisi:", {
       message: err.message,
       stack: err.stack,
       partitionName,
+    });
+  }
+}
+
+async function enableRlsOnPartitions() {
+  try {
+    const partitions = await prisma.$queryRawUnsafe(`
+      SELECT c.relname AS relname
+      FROM pg_inherits i
+      JOIN pg_class c ON c.oid = i.inhrelid
+      JOIN pg_class p ON p.oid = i.inhparent
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE p.relname = 'raw_sensor_logs'
+        AND n.nspname = 'public'
+        AND c.relrowsecurity = false;
+    `);
+
+    for (const { relname } of partitions) {
+      if (!/^raw_sensor_logs_y\d{4}m\d{2}$/.test(relname)) {
+        console.warn(`[Cron] Nama partisi ${relname} tidak dikenali, RLS dilewati.`);
+        continue;
+      }
+      await prisma.$executeRawUnsafe(`ALTER TABLE "${relname}" ENABLE ROW LEVEL SECURITY;`);
+      console.log(`[Cron] RLS diaktifkan pada partisi ${relname}.`);
+    }
+  } catch (err) {
+    console.error("[DatabaseCleanupCron] Gagal mengaktifkan RLS pada partisi:", {
+      message: err.message,
+      stack: err.stack,
     });
   }
 }
@@ -84,7 +115,9 @@ async function managePartitions() {
 
   const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
   await createPartitionForMonth(nextMonth);
-  
+
+  await enableRlsOnPartitions();
+
   console.log("[Cron] Pengecekan partisi selesai.");
 }
 
@@ -261,5 +294,6 @@ function initCronJobs() {
 module.exports = {
   initCronJobs,
   cleanupOldLogs,
-  managePartitions
+  managePartitions,
+  enableRlsOnPartitions
 };
