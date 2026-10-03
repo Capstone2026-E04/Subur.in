@@ -91,11 +91,16 @@ Menghapus device milik pemanggil (menghapus juga log rekomendasi dan notifikasi 
 
 ## `GET /api/devices/:id/recommendation`
 
-Menjalankan mesin fuzzy logic terhadap pembacaan sensor terbaru dari device (Redis, dengan fallback ke baris `RawSensorLog` terbaru) dan menyimpan hasilnya sebagai `RecommendationLog`. Lihat [recommendations.md](recommendations.md) untuk bentuk response dan [architecture/api-flow.md](../architecture/api-flow.md) untuk diagram alurnya.
+Menjalankan mesin fuzzy logic terhadap pembacaan sensor terbaru dari device (Redis, dengan fallback ke baris `RawSensorLog` terbaru). Endpoint ini read-only dan tidak menulis `RecommendationLog`; log hanya ditulis oleh subscriber MQTT. Bila pembacaan terakhir lebih tua dari 2 × `sensorInterval` menit, rekomendasi tidak dihitung dan `data` bernilai `null`. Lihat [recommendations.md](recommendations.md) untuk bentuk response dan [architecture/api-flow.md](../architecture/api-flow.md) untuk diagram alurnya.
 
 **Response sukses `200` (belum ada data sensor):**
 ```json
 { "success": true, "message": "Belum ada data sensor tercatat untuk alat ini.", "data": null }
+```
+
+**Response sukses `200` (data sensor basi):**
+```json
+{ "success": true, "message": "Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.", "data": null }
 ```
 
 ## `POST /api/devices/:id/config`

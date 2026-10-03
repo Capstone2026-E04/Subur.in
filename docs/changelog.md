@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-03
+
+- **fix(device):** `GET /api/devices/:id/recommendation` kini read-only dan tidak lagi menulis `recommendation_logs` (sebelumnya satu insert per panggilan, termasuk dari data basi); log hanya ditulis oleh subscriber MQTT. Field `logId` dihapus dari respons.
+- **feat(device):** Endpoint yang sama mengembalikan `data: null` dengan pesan "Data sensor sudah lama..." bila pembacaan terakhir lebih tua dari 2 × `sensorInterval` menit (ambang sama dengan cron `checkOfflineDevices`).
+
 ## 2026-09-30 (hardening database)
 
 - **refactor(db):** Semua kolom `DateTime` kini `timestamptz(6)`.

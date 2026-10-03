@@ -90,13 +90,17 @@ sequenceDiagram
     alt cache miss
         Controller->>Postgres: getLatestSensorLog(id)
     end
+    alt umur data > 2 x sensorInterval
+        Controller-->>Client: 200 { data: null }
+    end
     Controller->>Engine: generateRecommendation({ph, moisture, polybagId, plantId})
     Engine->>Postgres: load Plant + Polybag/PolybagType
     Engine->>Engine: runInference (fuzzify -> rules -> defuzzify)
     Engine->>Engine: calculate water/lime/sulfur dosage
     Engine-->>Controller: recommendation
-    Controller->>Postgres: create RecommendationLog
     Controller-->>Client: 200 { data: recommendation }
 ```
+
+Endpoint ini read-only: tidak menulis ke database. `recommendation_logs` hanya ditulis oleh subscriber MQTT (`mqtt/subscribers/sensor_subscriber.js`) untuk setiap pesan sensor yang valid.
 
 Lihat [error-response.md](../api/error-response.md) untuk format error bersama dan [authentication.md](../api/authentication.md) untuk detail token.

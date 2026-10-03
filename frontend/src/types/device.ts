@@ -93,7 +93,6 @@ export interface DeviceRecommendation {
   limeDosageGram: number;
   sulfurDosageGram: number;
   reduceWatering: boolean;
-  logId?: string;
   timestamp?: string;
 }
 

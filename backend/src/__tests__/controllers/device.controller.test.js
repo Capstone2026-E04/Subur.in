@@ -9,6 +9,7 @@ jest.mock("../../database/connections/prisma_client", () => ({
     delete: jest.fn(),
   },
   rawSensorLog: { deleteMany: jest.fn() },
+  recommendationLog: { create: jest.fn() },
   $transaction: jest.fn(),
 }));
 
@@ -21,7 +22,10 @@ jest.mock("../../mqtt/publishers/config_publisher", () => ({
 }));
 
 const prisma = require("../../database/connections/prisma_client");
-const { registerDevice, updateDevice, deleteDevice } = require("../../controllers/device.controller");
+const { generateRecommendation } = require("../../ai/services/recommendation.service");
+const { getLatestSensorData } = require("../../repositories/sensor_redis_repository");
+const { getLatestSensorLog } = require("../../repositories/sensor_repository");
+const { registerDevice, updateDevice, deleteDevice, getDeviceRecommendation } = require("../../controllers/device.controller");
 
 function makeRes() {
   const res = {};
@@ -81,5 +85,95 @@ describe("deleteDevice", () => {
 
     expect(res.status).toHaveBeenCalledWith(404);
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+});
+
+describe("getDeviceRecommendation", () => {
+  const req = { user: { id: "u" }, params: { id: "dev-1" } };
+  const device = { id: "dev-1", userId: "u", polybagId: "b", plantId: "p", sensorInterval: 1 };
+  const recommendation = { fuzzyIndex: 3, categoryCode: "C3", actionText: "Siram" };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    prisma.device.findFirst.mockResolvedValue(device);
+    getLatestSensorData.mockResolvedValue(null);
+    getLatestSensorLog.mockResolvedValue(null);
+    generateRecommendation.mockResolvedValue(recommendation);
+  });
+
+  it("returns the recommendation for fresh data without writing a log", async () => {
+    const timestamp = new Date(Date.now() - 30 * 1000).toISOString();
+    getLatestSensorData.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
+    const res = makeRes();
+
+    await getDeviceRecommendation(req, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json.mock.calls[0][0].data).toEqual({ ...recommendation, timestamp });
+    expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
+  });
+
+  it("returns null data for stale data without computing or writing", async () => {
+    const timestamp = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+    getLatestSensorData.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
+    const res = makeRes();
+
+    await getDeviceRecommendation(req, res, jest.fn());
+
+    const body = res.json.mock.calls[0][0];
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(body.data).toBeNull();
+    expect(body.message).toBe("Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.");
+    expect(generateRecommendation).not.toHaveBeenCalled();
+    expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
+  });
+
+  it("scales the stale threshold with sensorInterval", async () => {
+    prisma.device.findFirst.mockResolvedValue({ ...device, sensorInterval: 5 });
+    const timestamp = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+    getLatestSensorData.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
+    const res = makeRes();
+
+    await getDeviceRecommendation(req, res, jest.fn());
+
+    expect(generateRecommendation).toHaveBeenCalled();
+  });
+
+  it("returns the no-data message when no sensor data exists", async () => {
+    const res = makeRes();
+
+    await getDeviceRecommendation(req, res, jest.fn());
+
+    const body = res.json.mock.calls[0][0];
+    expect(body.message).toBe("Belum ada data sensor tercatat untuk alat ini.");
+    expect(body.data).toBeNull();
+    expect(generateRecommendation).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 when the device is not found", async () => {
+    prisma.device.findFirst.mockResolvedValue(null);
+    const res = makeRes();
+
+    await getDeviceRecommendation(req, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(generateRecommendation).not.toHaveBeenCalled();
+  });
+
+  it("handles a Date timestamp from the DB fallback", async () => {
+    const timestamp = new Date(Date.now() - 30 * 1000);
+    getLatestSensorLog.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
+    const fresh = makeRes();
+    await getDeviceRecommendation(req, fresh, jest.fn());
+    expect(fresh.json.mock.calls[0][0].data).toEqual({ ...recommendation, timestamp });
+
+    jest.clearAllMocks();
+    prisma.device.findFirst.mockResolvedValue(device);
+    getLatestSensorData.mockResolvedValue(null);
+    getLatestSensorLog.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp: new Date(Date.now() - 10 * 60 * 1000) });
+    const stale = makeRes();
+    await getDeviceRecommendation(req, stale, jest.fn());
+    expect(stale.json.mock.calls[0][0].data).toBeNull();
+    expect(generateRecommendation).not.toHaveBeenCalled();
   });
 });

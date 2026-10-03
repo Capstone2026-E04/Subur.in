@@ -278,6 +278,12 @@ exports.getDeviceRecommendation = async (req, res, next) => {
     }
 
 
+    const intervalMinutes = Number.isFinite(device.sensorInterval) && device.sensorInterval > 0 ? device.sensorInterval : 1;
+    const ageMs = Date.now() - new Date(sensorData.timestamp).getTime();
+    if (ageMs > 2 * intervalMinutes * 60 * 1000) {
+      return sendSuccess(res, 200, 'Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.', null);
+    }
+
     const recommendation = await generateRecommendation({
       phValue: sensorData.ph,
       moistureValue: sensorData.moisture,
@@ -285,25 +291,8 @@ exports.getDeviceRecommendation = async (req, res, next) => {
       plantIdOrName: device.plantId
     });
 
-
-    const savedLog = await prisma.recommendationLog.create({
-      data: {
-        deviceId: id,
-        phValue: sensorData.ph,
-        moistureValue: sensorData.moisture,
-        fuzzyIndex: recommendation.fuzzyIndex,
-        categoryCode: recommendation.categoryCode,
-        actionText: recommendation.actionText,
-        waterVolumeLiter: recommendation.waterVolumeLiter,
-        limeDosageGram: recommendation.limeDosageGram,
-        sulfurDosageGram: recommendation.sulfurDosageGram,
-        reduceWatering: recommendation.reduceWatering
-      }
-    });
-
     return sendSuccess(res, 200, 'Rekomendasi Fuzzy Logic berhasil dibuat.', {
       ...recommendation,
-      logId: savedLog.id,
       timestamp: sensorData.timestamp
     });
 
