@@ -33,19 +33,19 @@ exports.getDiscoveredDevices = async (req, res, next) => {
       }
     }
 
-    const activeDeviceIds = activeDevices.map((d) => d.deviceId);
+    const activeDeviceCodes = activeDevices.map((d) => d.deviceCode);
 
     const registeredDevices = await prisma.device.findMany({
       where: {
-        id: { in: activeDeviceIds },
+        deviceCode: { in: activeDeviceCodes },
       },
-      select: { id: true },
+      select: { deviceCode: true },
     });
 
-    const registeredIds = new Set(registeredDevices.map((d) => d.id));
+    const registeredCodes = new Set(registeredDevices.map((d) => d.deviceCode));
 
     const unclaimedDevices = activeDevices.filter(
-      (d) => !registeredIds.has(d.deviceId),
+      (d) => !registeredCodes.has(d.deviceCode),
     );
 
     return sendSuccess(
@@ -67,13 +67,13 @@ exports.getDiscoveredDevices = async (req, res, next) => {
 exports.registerDevice = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { deviceId, label, plantId, polybagId, sensorInterval } = req.body;
+    const { deviceCode, label, plantId, polybagId, sensorInterval } = req.body;
 
-    if (!deviceId || !label || !plantId || !polybagId) {
+    if (!deviceCode || !label || !plantId || !polybagId) {
       return sendError(
         res,
         400,
-        "deviceId, label, plantId, dan polybagId wajib diisi.",
+        "deviceCode, label, plantId, dan polybagId wajib diisi.",
       );
     }
 
@@ -89,7 +89,7 @@ exports.registerDevice = async (req, res, next) => {
     }
 
     const existingDevice = await prisma.device.findUnique({
-      where: { id: deviceId },
+      where: { deviceCode },
     });
 
     if (existingDevice) {
@@ -102,7 +102,7 @@ exports.registerDevice = async (req, res, next) => {
 
     const newDevice = await prisma.device.create({
       data: {
-        id: deviceId,
+        deviceCode,
         userId: userId,
         label: label.trim(),
         plantId: plantId,
@@ -121,13 +121,13 @@ exports.registerDevice = async (req, res, next) => {
 
     const intervalMin =
       sensorInterval !== undefined ? Number(sensorInterval) : 15;
-    publishDeviceConfig(deviceId, intervalMin).catch((err) => {
+    publishDeviceConfig(deviceCode, intervalMin).catch((err) => {
       console.error(
         `[MQTT Publish] Gagal mengirim config awal saat registrasi device:`,
         {
           message: err.message,
           stack: err.stack,
-          deviceId,
+          deviceCode,
         },
       );
     });
@@ -143,7 +143,7 @@ exports.registerDevice = async (req, res, next) => {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
-      deviceId: req.body?.deviceId,
+      deviceCode: req.body?.deviceCode,
     });
     return next(error);
   }
@@ -236,7 +236,7 @@ exports.updateDevice = async (req, res, next) => {
       console.log(
         `[DeviceController] Mengirim data interval baru ke MQTT: ${intervalMin} menit`,
       );
-      publishDeviceConfig(id, intervalMin).catch((err) => {
+      publishDeviceConfig(device.deviceCode, intervalMin).catch((err) => {
         console.error(
           `[MQTT Publish] Gagal mengirim config saat update device:`,
           {
@@ -317,7 +317,7 @@ exports.getDeviceRecommendation = async (req, res, next) => {
       );
     }
 
-    let sensorData = await getLatestSensorData(id);
+    let sensorData = await getLatestSensorData(device.deviceCode);
     if (!sensorData) {
       const dbLog = await getLatestSensorLog(id);
       if (dbLog) {
@@ -405,14 +405,15 @@ exports.sendDeviceConfig = async (req, res, next) => {
       );
     }
 
-    const result = await publishDeviceConfig(id, parsedDelay);
+    const result = await publishDeviceConfig(device.deviceCode, parsedDelay);
 
     return sendSuccess(
       res,
       200,
-      `Konfigurasi delay berhasil dikirim ke device "${id}".`,
+      `Konfigurasi delay berhasil dikirim ke device "${device.deviceCode}".`,
       {
-        deviceId: id,
+        deviceId: device.id,
+        deviceCode: device.deviceCode,
         topic: result.topic,
         payload: result.payload,
       },

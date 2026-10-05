@@ -36,12 +36,12 @@ async function tick(userId) {
   try {
     const devices = await prisma.device.findMany({
       where: { userId },
-      select: { id: true },
+      select: { deviceCode: true },
     });
-    for (const { id } of devices) {
+    for (const { deviceCode } of devices) {
       for (const reading of pickReadings()) {
         await handleSensorMessage(
-          `suburin/devices/${id}/telemetry`,
+          `suburin/devices/${deviceCode}/telemetry`,
           Buffer.from(JSON.stringify(reading)),
           { isDev: true },
         );

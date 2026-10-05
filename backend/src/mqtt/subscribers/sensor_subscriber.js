@@ -43,10 +43,10 @@ function registerSensorSubscriber(mqttClient) {
 async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   if (!isSensorTopic(topic)) return;
 
-  const deviceId = extractDeviceId(topic);
-  if (!deviceId) {
+  const deviceCode = extractDeviceCode(topic);
+  if (!deviceCode) {
     console.warn(
-      `[MQTT Subscriber] ️  Tidak bisa ekstrak deviceId dari topic: ${topic}`,
+      `[MQTT Subscriber] ️  Tidak bisa ekstrak deviceCode dari topic: ${topic}`,
     );
     return;
   }
@@ -57,7 +57,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   } catch (parseErr) {
     console.error("[SensorSubscriber] Payload MQTT bukan JSON valid:", {
       message: parseErr.message,
-      deviceId,
+      deviceCode,
       rawPayload: payload.toString(),
     });
     return;
@@ -72,15 +72,19 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     !isValidSensorValue(moisture, "moisture")
   ) {
     console.warn(
-      `[MQTT Subscriber] ️  Nilai sensor tidak valid dari device "${deviceId}":`,
+      `[MQTT Subscriber] ️  Nilai sensor tidak valid dari device "${deviceCode}":`,
       data,
     );
     try {
       const redis = getRedisClient();
-      const invalidNotifiedKey = `sensor:invalid_notified:${deviceId}`;
+      const invalidNotifiedKey = `sensor:invalid_notified:${deviceCode}`;
       const alreadyNotified = await redis.get(invalidNotifiedKey);
-      if (!alreadyNotified) {
-        await notifyDevice(deviceId, {
+      const device = await prisma.device.findUnique({
+        where: { deviceCode },
+        select: { id: true },
+      });
+      if (device && !alreadyNotified) {
+        await notifyDevice(device.id, {
           title: "Data Sensor Tidak Valid",
           message:
             "Data sensor tidak valid. Periksa sensor, daya, atau koneksi.",
@@ -94,7 +98,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         {
           message: err.message,
           stack: err.stack,
-          deviceId,
+          deviceCode,
         },
       );
     }
@@ -102,30 +106,30 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   }
 
   console.log(
-    `[MQTT Subscriber]  Data diterima | Device: ${deviceId} | pH: ${ph} | Moisture: ${moisture}%`,
+    `[MQTT Subscriber]  Data diterima | Device: ${deviceCode} | pH: ${ph} | Moisture: ${moisture}%`,
   );
 
   try {
-    await setLatestSensorData(deviceId, ph, moisture);
-
-    const sensorPayload = {
-      deviceId,
-      ph,
-      moisture,
-      timestamp: new Date().toISOString(),
-    };
-    broadcastToDevice(deviceId, sensorPayload);
+    await setLatestSensorData(deviceCode, ph, moisture);
 
     const device = await prisma.device.findUnique({
-      where: { id: deviceId },
+      where: { deviceCode },
       include: { plant: true },
     });
     if (!device) {
       console.warn(
-        `[MQTT Subscriber] ️  Device "${deviceId}" tidak ditemukan di database. Data Redis disimpan, Postgres diabaikan.`,
+        `[MQTT Subscriber] ️  Device "${deviceCode}" tidak ditemukan di database. Data Redis disimpan, Postgres diabaikan.`,
       );
       return;
     }
+
+    const sensorPayload = {
+      deviceId: device.id,
+      ph,
+      moisture,
+      timestamp: new Date().toISOString(),
+    };
+    broadcastToDevice(device.id, sensorPayload);
 
     try {
       const recommendation = await generateRecommendation({
@@ -137,7 +141,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
 
       await prisma.recommendationLog.create({
         data: {
-          deviceId: deviceId,
+          deviceId: device.id,
           phValue: ph,
           moistureValue: moisture,
           fuzzyIndex: recommendation.fuzzyIndex,
@@ -151,16 +155,16 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         },
       });
       console.log(
-        `[MQTT Subscriber]  Recommendation log disimpan ke Postgres | Device: ${deviceId}`,
+        `[MQTT Subscriber]  Recommendation log disimpan ke Postgres | Device: ${deviceCode}`,
       );
 
       const redis = getRedisClient();
-      const dryKey = `sensor:consecutive_dry:${deviceId}`;
-      const wetKey = `sensor:consecutive_wet:${deviceId}`;
-      const offlineNotifiedKey = `sensor:offline_notified:${deviceId}`;
-      const invalidNotifiedKey = `sensor:invalid_notified:${deviceId}`;
-      const phAcidNotifiedKey = `sensor:ph_acid_notified:${deviceId}`;
-      const phAlkalineNotifiedKey = `sensor:ph_alkaline_notified:${deviceId}`;
+      const dryKey = `sensor:consecutive_dry:${deviceCode}`;
+      const wetKey = `sensor:consecutive_wet:${deviceCode}`;
+      const offlineNotifiedKey = `sensor:offline_notified:${deviceCode}`;
+      const invalidNotifiedKey = `sensor:invalid_notified:${deviceCode}`;
+      const phAcidNotifiedKey = `sensor:ph_acid_notified:${deviceCode}`;
+      const phAlkalineNotifiedKey = `sensor:ph_alkaline_notified:${deviceCode}`;
 
       await redis.del(offlineNotifiedKey);
       await redis.del(invalidNotifiedKey);
@@ -172,7 +176,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         const dryCount = await redis.incr(dryKey);
         await redis.del(wetKey);
         if (dryCount === 2 && recommendation.waterVolumeLiter > 0) {
-          await notifyDevice(deviceId, {
+          await notifyDevice(device.id, {
             title: "Media Kering",
             message: `Media kering. Siram sekitar ${Math.round(recommendation.waterVolumeLiter * 1000)} mL.`,
             type: "warning",
@@ -182,7 +186,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         const wetCount = await redis.incr(wetKey);
         await redis.del(dryKey);
         if (wetCount === 2 && recommendation.reduceWatering) {
-          await notifyDevice(deviceId, {
+          await notifyDevice(device.id, {
             title: "Media Terlalu Basah",
             message:
               "Media terlalu basah. Hentikan penyiraman sementara dan cek drainase.",
@@ -200,7 +204,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       if (ph < minPh - 0.2 && recommendation.limeDosageGram > 0) {
         const alreadyNotified = await redis.get(phAcidNotifiedKey);
         if (!alreadyNotified) {
-          await notifyDevice(deviceId, {
+          await notifyDevice(device.id, {
             title: "pH Terlalu Asam",
             message: `pH terlalu asam. Tambahkan kapur/dolomit sekitar ${Math.round(recommendation.limeDosageGram)} gram.`,
             type: "warning",
@@ -210,7 +214,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       } else if (ph > maxPh + 0.2 && recommendation.sulfurDosageGram > 0) {
         const alreadyNotified = await redis.get(phAlkalineNotifiedKey);
         if (!alreadyNotified) {
-          await notifyDevice(deviceId, {
+          await notifyDevice(device.id, {
             title: "pH Terlalu Basa",
             message: `pH terlalu basa. Tambahkan sulfur elemental sekitar ${Math.round(recommendation.sulfurDosageGram)} gram.`,
             type: "warning",
@@ -227,17 +231,17 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         {
           message: recErr.message,
           stack: recErr.stack,
-          deviceId,
+          deviceCode,
         },
       );
     }
 
-    const allowWrite = await shouldSaveToDatabase(deviceId);
+    const allowWrite = await shouldSaveToDatabase(deviceCode);
     if (allowWrite) {
-      await saveRawSensorLog(deviceId, ph, moisture, isDev);
-      await updateDeviceLastSeen(deviceId);
+      await saveRawSensorLog(device.id, ph, moisture, isDev);
+      await updateDeviceLastSeen(device.id);
       console.log(
-        `[MQTT Subscriber]  Data sensor disimpan ke Postgres | Device: ${deviceId}`,
+        `[MQTT Subscriber]  Data sensor disimpan ke Postgres | Device: ${deviceCode}`,
       );
     }
   } catch (err) {
@@ -246,7 +250,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       {
         message: err.message,
         stack: err.stack,
-        deviceId,
+        deviceCode,
       },
     );
   }
@@ -256,7 +260,7 @@ function isSensorTopic(topic) {
   return /^suburin\/devices\/.+\/telemetry$/.test(topic);
 }
 
-function extractDeviceId(topic) {
+function extractDeviceCode(topic) {
   const parts = topic.split("/");
   return parts.length === 4 ? parts[2] : null;
 }

@@ -26,7 +26,8 @@ model User {
 }
 
 model Device {
-  id         String       @id @db.VarChar(50)
+  id         String       @id @default(uuid()) @db.Uuid
+  deviceCode String       @unique @map("device_code") @db.VarChar(50)
   userId     String       @map("user_id") @db.Uuid
   label      String       @db.VarChar(100)
   plantId    String       @map("plant_id") @db.Uuid
@@ -53,7 +54,7 @@ model Device {
 
 model RecommendationLog {
   id       String @id @default(uuid()) @db.Uuid
-  deviceId String @map("device_id") @db.VarChar(50)
+  deviceId String @map("device_id") @db.Uuid
 
   phValue       Float @map("ph_value")
   moistureValue Float @map("moisture_value")
@@ -80,7 +81,7 @@ model RecommendationLog {
 model RawSensorLog {
   id        Int      @default(autoincrement())
   timestamp DateTime @default(now()) @db.Timestamptz(6)
-  deviceId  String   @map("device_id") @db.VarChar(50)
+  deviceId  String   @map("device_id") @db.Uuid
   ph        Float    @db.DoublePrecision
   moisture  Float    @db.DoublePrecision
   isDev     Boolean  @default(false) @map("is_dev")
@@ -145,7 +146,7 @@ enum DeviceStatus {
 
 model Notification {
   id        String   @id @default(uuid()) @db.Uuid
-  deviceId  String   @map("device_id") @db.VarChar(50)
+  deviceId  String   @map("device_id") @db.Uuid
   title     String   @db.VarChar(100)
   message   String   @db.Text
   type      String   @db.VarChar(20)

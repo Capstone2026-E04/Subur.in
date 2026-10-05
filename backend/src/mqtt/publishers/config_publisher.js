@@ -5,7 +5,7 @@ const { connectMQTT } = require("../connection");
 const CONFIG_TOPIC_PREFIX = "suburin/devices";
 const CONFIG_TOPIC_SUFFIX = "config";
 
-function publishDeviceConfig(deviceId, readingIntervalMin) {
+function publishDeviceConfig(deviceCode, readingIntervalMin) {
   return new Promise((resolve, reject) => {
     const client = connectMQTT();
 
@@ -13,7 +13,7 @@ function publishDeviceConfig(deviceId, readingIntervalMin) {
       return reject(new Error("MQTT client belum terhubung ke broker."));
     }
 
-    const topic = `${CONFIG_TOPIC_PREFIX}/${deviceId}/${CONFIG_TOPIC_SUFFIX}`;
+    const topic = `${CONFIG_TOPIC_PREFIX}/${deviceCode}/${CONFIG_TOPIC_SUFFIX}`;
     const payload = JSON.stringify({
       reading_interval_min: readingIntervalMin,
     });
@@ -21,14 +21,14 @@ function publishDeviceConfig(deviceId, readingIntervalMin) {
     client.publish(topic, payload, { qos: 1, retain: false }, (err) => {
       if (err) {
         console.error(
-          `[MQTT Publisher] Gagal mempublikasikan config ke device "${deviceId}":`,
+          `[MQTT Publisher] Gagal mempublikasikan config ke device "${deviceCode}":`,
           err.message,
         );
         return reject(err);
       }
 
       console.log(
-        `[MQTT Publisher] Config berhasil dikirim ke device "${deviceId}" | Topic: ${topic} | reading_interval_min: ${readingIntervalMin}`,
+        `[MQTT Publisher] Config berhasil dikirim ke device "${deviceCode}" | Topic: ${topic} | reading_interval_min: ${readingIntervalMin}`,
       );
       resolve({ topic, payload: { reading_interval_min: readingIntervalMin } });
     });

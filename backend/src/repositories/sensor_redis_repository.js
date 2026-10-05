@@ -6,12 +6,12 @@ const SENSOR_TTL_SECONDS = 300;
 const THROTTLE_KEY_PREFIX = "sensor:throttle:";
 const LATEST_KEY_PREFIX = "sensor:latest:";
 
-async function setLatestSensorData(deviceId, ph, moisture) {
+async function setLatestSensorData(deviceCode, ph, moisture) {
   try {
     const redis = getRedisClient();
-    const key = `${LATEST_KEY_PREFIX}${deviceId}`;
+    const key = `${LATEST_KEY_PREFIX}${deviceCode}`;
     const payload = JSON.stringify({
-      deviceId,
+      deviceCode,
       ph,
       moisture,
       timestamp: new Date().toISOString(),
@@ -23,16 +23,16 @@ async function setLatestSensorData(deviceId, ph, moisture) {
       {
         message: err.message,
         stack: err.stack,
-        deviceId,
+        deviceCode,
       },
     );
   }
 }
 
-async function getLatestSensorData(deviceId) {
+async function getLatestSensorData(deviceCode) {
   try {
     const redis = getRedisClient();
-    const key = `${LATEST_KEY_PREFIX}${deviceId}`;
+    const key = `${LATEST_KEY_PREFIX}${deviceCode}`;
     const raw = await redis.get(key);
     return raw ? JSON.parse(raw) : null;
   } catch (err) {
@@ -41,21 +41,21 @@ async function getLatestSensorData(deviceId) {
       {
         message: err.message,
         stack: err.stack,
-        deviceId,
+        deviceCode,
       },
     );
     return null;
   }
 }
 
-async function shouldSaveToDatabase(deviceId) {
+async function shouldSaveToDatabase(deviceCode) {
   try {
     const redis = getRedisClient();
     const throttleSeconds = parseInt(
       process.env.SENSOR_THROTTLE_SECONDS || "30",
       10,
     );
-    const key = `${THROTTLE_KEY_PREFIX}${deviceId}`;
+    const key = `${THROTTLE_KEY_PREFIX}${deviceCode}`;
     const exists = await redis.exists(key);
     if (exists) return false;
     await redis.set(key, "1", "EX", throttleSeconds);
@@ -66,7 +66,7 @@ async function shouldSaveToDatabase(deviceId) {
       {
         message: err.message,
         stack: err.stack,
-        deviceId,
+        deviceCode,
       },
     );
     return true;

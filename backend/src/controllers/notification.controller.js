@@ -135,7 +135,7 @@ exports.createTestNotification = async (req, res, next) => {
 
       device = await prisma.device.create({
         data: {
-          id: `TEST-DEV-${userId.slice(0, 8)}`,
+          deviceCode: `TEST-DEV-${userId.slice(0, 8)}`,
           userId: userId,
           label: "Sensor Uji Coba",
           plantId: plant.id,

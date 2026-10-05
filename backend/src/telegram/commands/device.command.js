@@ -28,7 +28,7 @@ async function baseHandler(ctx) {
 
   await ctx.reply(
     `Info ${formatDeviceLabel(device)}\n\n` +
-      `ID Device: ${device.id}\n` +
+      `ID Device: ${device.deviceCode}\n` +
       `Status koneksi: ${connectionStatus}\n` +
       `Terakhir terlihat: ${device.lastSeenAt ? formatTimestamp(device.lastSeenAt) : "Belum ada data"}\n` +
       `Interval sensor: ${device.sensorInterval} menit`,

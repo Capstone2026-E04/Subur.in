@@ -205,12 +205,12 @@ async function checkOfflineDevices() {
         now.getTime() - new Date(device.lastSeenAt).getTime();
 
       if (timeSinceLastSeen > thresholdMs) {
-        const notifiedKey = `sensor:offline_notified:${device.id}`;
+        const notifiedKey = `sensor:offline_notified:${device.deviceCode}`;
         const alreadyNotified = await redis.get(notifiedKey);
 
         if (!alreadyNotified) {
           console.warn(
-            `[Cron] Device "${device.id}" terdeteksi offline. Tidak mengirim data melebihi 2x interval.`,
+            `[Cron] Device "${device.deviceCode}" terdeteksi offline. Tidak mengirim data melebihi 2x interval.`,
           );
 
           try {

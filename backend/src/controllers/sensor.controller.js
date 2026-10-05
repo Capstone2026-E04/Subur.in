@@ -1,5 +1,6 @@
 "use strict";
 
+const prisma = require("../database/connections/prisma_client");
 const { addClient, removeClient } = require("../sse/sse_manager");
 const {
   getLatestSensorData,
@@ -37,7 +38,19 @@ exports.getLatestSensor = async (req, res, next) => {
   const { deviceId } = req.params;
 
   try {
-    let data = await getLatestSensorData(deviceId);
+    const device = await prisma.device.findUnique({
+      where: { id: deviceId },
+      select: { deviceCode: true },
+    });
+    if (!device) {
+      return sendError(res, 404, "Device tidak ditemukan.");
+    }
+
+    let data = await getLatestSensorData(device.deviceCode);
+    if (data) {
+      const { deviceCode, ...rest } = data;
+      data = { ...rest, deviceId };
+    }
 
     if (!data) {
       console.log(

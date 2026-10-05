@@ -31,6 +31,9 @@ jest.mock("../../mqtt/publishers/config_publisher", () => ({
 
 const prisma = require("../../database/connections/prisma_client");
 const {
+  publishDeviceConfig,
+} = require("../../mqtt/publishers/config_publisher");
+const {
   generateRecommendation,
 } = require("../../ai/services/recommendation.service");
 const {
@@ -52,7 +55,7 @@ function makeRes() {
 }
 
 const BASE_BODY = {
-  deviceId: "dev-1",
+  deviceCode: "dev-1",
   label: "Bayam",
   plantId: "p",
   polybagId: "b",
@@ -84,6 +87,23 @@ describe("sensorInterval validation", () => {
       jest.fn(),
     );
     expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  it("registerDevice menyimpan kode alat sebagai deviceCode dan publish config ke kode tsb", async () => {
+    prisma.device.findUnique.mockResolvedValue(null);
+    prisma.device.create.mockResolvedValue({ id: "uuid-1" });
+    await registerDevice(
+      { user: { id: "u" }, body: BASE_BODY },
+      makeRes(),
+      jest.fn(),
+    );
+    expect(prisma.device.findUnique).toHaveBeenCalledWith({
+      where: { deviceCode: "dev-1" },
+    });
+    const { data } = prisma.device.create.mock.calls.at(-1)[0];
+    expect(data.deviceCode).toBe("dev-1");
+    expect(data).not.toHaveProperty("id");
+    expect(publishDeviceConfig).toHaveBeenCalledWith("dev-1", 15);
   });
 
   it.each([0, -1, 2.5, "x"])(
