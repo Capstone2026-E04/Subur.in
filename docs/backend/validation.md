@@ -22,11 +22,10 @@ if (ph < 0 || ph > 14) {
 }
 ```
 
-**Bilangan bulat dengan nilai minimum (konfigurasi device):**
+**Bilangan bulat dengan rentang (interval sensor device):**
 ```javascript
-const parsedDelay = Number(delay_ms);
-if (!Number.isInteger(parsedDelay) || parsedDelay < 100) {
-  return sendError(res, 400, '"delay_ms" harus berupa bilangan bulat dan minimal 100 ms.');
+if (sensorInterval !== undefined && !isValidInterval(sensorInterval)) {
+  return sendError(res, 400, '"sensorInterval" harus berupa bilangan bulat 1-60 menit.');
 }
 ```
 

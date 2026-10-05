@@ -36,7 +36,7 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
 }
 ```
 
-`sensorInterval` (dalam menit) bersifat opsional, defaultnya `15`. Jika diisi harus bilangan bulat minimal `1`, jika tidak `400`. Jika berhasil, backend juga mempublikasikan interval tersebut ke device melalui MQTT (lihat [backend authentication/config publisher](../architecture/api-flow.md)).
+`sensorInterval` (dalam menit) bersifat opsional, defaultnya `15`. Jika diisi harus bilangan bulat `1`-`60`, jika tidak `400`. Jika berhasil, backend juga mempublikasikan interval tersebut ke device melalui MQTT (lihat [backend authentication/config publisher](../architecture/api-flow.md)).
 
 **Response sukses `201`:**
 ```json
@@ -105,30 +105,3 @@ Menjalankan mesin fuzzy logic terhadap pembacaan sensor terbaru dari device (Red
 ```json
 { "success": true, "message": "Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.", "data": null }
 ```
-
-## `POST /api/devices/:id/config`
-
-Mengirim pesan konfigurasi MQTT ad-hoc (saat ini berupa delay publikasi telemetri, dalam milidetik) ke device milik pemanggil.
-
-**Request body:**
-```json
-{ "delay_ms": 5000 }
-```
-
-**Validasi:** `delay_ms` harus berupa integer `>= 100`.
-
-**Response sukses `200`:**
-```json
-{
-  "success": true,
-  "message": "Konfigurasi delay berhasil dikirim ke device \"ESP32-A1B2C3\".",
-  "data": {
-    "deviceId": "3c1b6a52-9d3e-4f0a-8a47-2b5d7e9f1a10",
-    "deviceCode": "ESP32-A1B2C3",
-    "topic": "suburin/devices/ESP32-A1B2C3/config",
-    "payload": { "delay_ms": 5000 }
-  }
-}
-```
-
-**Response error:** `400` (`delay_ms` tidak ada/tidak valid), `404`, `500`.

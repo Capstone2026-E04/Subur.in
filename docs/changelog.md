@@ -4,6 +4,9 @@ Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk ri
 
 ## 2026-10-05
 
+- **fix(mqtt):** Config interval dipublikasikan dengan `retain: true` agar alat yang offline/reboot langsung menerima interval terakhir saat subscribe.
+- **fix(device):** `sensorInterval` divalidasi 1-60 menit (sesuai batas firmware ESP) pada `registerDevice` dan `updateDevice`.
+- **refactor(api)!:** Menghapus endpoint `POST /api/devices/:id/config` (`delay_ms`) yang tidak kompatibel dengan firmware dan tidak dipakai frontend; ubah interval lewat `PATCH /api/devices/:id`.
 - **refactor(db)!:** `Device.id` kini UUID surrogate key; kode dari alat disimpan di `Device.deviceCode` (`device_code`, unik). FK `device_id` pada `recommendation_logs`, `notifications`, dan `raw_sensor_logs` menjadi UUID. Migrasi data lewat `prisma/manual/003_device_surrogate_key.sql` (dijalankan manual sebelum deploy, ada rollback).
 - **refactor(api)!:** `POST /api/devices` memakai `deviceCode` (bukan `deviceId`); `GET /api/devices/discovered` mengembalikan `deviceCode`; path/query `:id`/`:deviceId` kini UUID. Topic MQTT tidak berubah (tetap memakai kode alat), jadi firmware tidak perlu diubah.
 - **feat(dev-mode):** Dev Mode untuk simulasi telemetri MQTT per user, dengan skenario kritis acak; data simulasi ditandai `is_dev` pada `recommendation_logs` dan `raw_sensor_logs`.
