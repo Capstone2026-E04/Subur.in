@@ -39,7 +39,12 @@ function Logo() {
   return (
     <div className="flex items-center gap-2.5 px-2 py-1">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white p-1">
-        <Image src="/logo/logo-suburin.svg" alt="Subur.in" width={24} height={24} />
+        <Image
+          src="/logo/logo-suburin.svg"
+          alt="Subur.in"
+          width={24}
+          height={24}
+        />
       </div>
       <motion.span
         animate={{
