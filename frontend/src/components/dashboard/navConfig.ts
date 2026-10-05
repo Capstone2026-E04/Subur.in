@@ -6,7 +6,8 @@ import {
   MdNotifications,
   MdAccountCircle,
   MdComputer,
-  MdAutoAwesome
+  MdAutoAwesome,
+  MdDeveloperMode,
 } from "react-icons/md";
 import { IconType } from "react-icons";
 
@@ -52,6 +53,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Pengaturan",
     href: "/dashboard/settings",
     icon: MdSettings,
+  },
+  {
+    label: "Dev Mode",
+    href: "/dashboard/dev-mode",
+    icon: MdDeveloperMode,
   },
   {
     label: "Profil",

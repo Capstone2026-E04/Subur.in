@@ -1,26 +1,27 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const prisma = require('../database/connections/prisma_client');
-const { getRedisClient } = require('../database/connections/redis');
-const authRoutes = require('./auth.routes');
-const userRoutes = require('./user.routes');
-const sensorRoutes = require('./sensor.routes');
-const deviceRoutes = require('./device.routes');
-const plantRoutes = require('./plant.routes');
-const polybagRoutes = require('./polybag.routes');
-const recommendationRoutes = require('./recommendation.routes');
-const notificationRoutes = require('./notification.routes');
-const telegramRoutes = require('./telegram.routes');
-const { sendSuccess, sendError } = require('../utils/response');
+const prisma = require("../database/connections/prisma_client");
+const { getRedisClient } = require("../database/connections/redis");
+const authRoutes = require("./auth.routes");
+const userRoutes = require("./user.routes");
+const sensorRoutes = require("./sensor.routes");
+const deviceRoutes = require("./device.routes");
+const plantRoutes = require("./plant.routes");
+const polybagRoutes = require("./polybag.routes");
+const recommendationRoutes = require("./recommendation.routes");
+const notificationRoutes = require("./notification.routes");
+const telegramRoutes = require("./telegram.routes");
+const devModeRoutes = require("./dev_mode.routes");
+const { sendSuccess, sendError } = require("../utils/response");
 
-router.get('/version', (req, res) => {
-  return sendSuccess(res, 200, 'Informasi versi build.', {
-    commit: process.env.GIT_COMMIT_SHA || 'unknown',
+router.get("/version", (req, res) => {
+  return sendSuccess(res, 200, "Informasi versi build.", {
+    commit: process.env.GIT_COMMIT_SHA || "unknown",
     deployedAt: req.app.locals.startedAt,
   });
 });
 
-router.get('/health', async (req, res) => {
+router.get("/health", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
 
@@ -49,60 +50,68 @@ router.get('/health', async (req, res) => {
       message: error.message,
       stack: error.stack,
     });
-    return sendError(res, 503, "Server berjalan, namun GAGAL terkoneksi ke database Supabase.");
+    return sendError(
+      res,
+      503,
+      "Server berjalan, namun GAGAL terkoneksi ke database Supabase.",
+    );
   }
 });
 
-router.get('/', (req, res) => {
-  return sendSuccess(res, 200, 'Subur.in API Router v1 aktif!', {
+router.get("/", (req, res) => {
+  return sendSuccess(res, 200, "Subur.in API Router v1 aktif!", {
     endpoints: {
-      health: 'GET /api/health',
-      auth: '/api/auth/google',
+      health: "GET /api/health",
+      auth: "/api/auth/google",
       users: {
-        getProfile: 'GET /api/users/me',
-        updateProfile: 'PATCH /api/users/me',
-        deleteAccount: 'DELETE /api/users/me',
+        getProfile: "GET /api/users/me",
+        updateProfile: "PATCH /api/users/me",
+        deleteAccount: "DELETE /api/users/me",
       },
       devices: {
-        register: 'POST /api/devices',
-        list: 'GET /api/devices',
-        update: 'PATCH /api/devices/:id',
-        delete: 'DELETE /api/devices/:id',
-        recommendation: 'GET /api/devices/:id/recommendation',
-        sendConfig: 'POST /api/devices/:id/config',
+        register: "POST /api/devices",
+        list: "GET /api/devices",
+        update: "PATCH /api/devices/:id",
+        delete: "DELETE /api/devices/:id",
+        recommendation: "GET /api/devices/:id/recommendation",
+        sendConfig: "POST /api/devices/:id/config",
       },
       plants: {
-        list: 'GET /api/plants',
+        list: "GET /api/plants",
       },
       polybags: {
-        list: 'GET /api/polybags',
+        list: "GET /api/polybags",
       },
       recommendations: {
-        history: 'GET /api/recommendations',
-        simulate: 'POST /api/recommendations/simulate',
+        history: "GET /api/recommendations",
+        simulate: "POST /api/recommendations/simulate",
       },
       sensors: {
-        stream: 'GET /api/sensors/:deviceId/stream',
-        latest: 'GET /api/sensors/:deviceId/latest',
+        stream: "GET /api/sensors/:deviceId/stream",
+        latest: "GET /api/sensors/:deviceId/latest",
+      },
+      devMode: {
+        status: "GET /api/dev-mode",
+        toggle: "PUT /api/dev-mode",
       },
       telegram: {
-        webhook: 'POST /api/telegram/webhook',
-        linkCode: 'POST /api/users/me/telegram/link-code',
-        unlink: 'DELETE /api/users/me/telegram',
+        webhook: "POST /api/telegram/webhook",
+        linkCode: "POST /api/users/me/telegram/link-code",
+        unlink: "DELETE /api/users/me/telegram",
       },
-    }
+    },
   });
 });
 
-router.use('/auth', authRoutes);
-router.use('/users', userRoutes);
-router.use('/devices', deviceRoutes);
-router.use('/sensors', sensorRoutes);
-router.use('/plants', plantRoutes);
-router.use('/polybags', polybagRoutes);
-router.use('/recommendations', recommendationRoutes);
-router.use('/notifications', notificationRoutes);
-router.use('/telegram', telegramRoutes);
+router.use("/auth", authRoutes);
+router.use("/users", userRoutes);
+router.use("/devices", deviceRoutes);
+router.use("/sensors", sensorRoutes);
+router.use("/plants", plantRoutes);
+router.use("/polybags", polybagRoutes);
+router.use("/recommendations", recommendationRoutes);
+router.use("/notifications", notificationRoutes);
+router.use("/telegram", telegramRoutes);
+router.use("/dev-mode", devModeRoutes);
 
 module.exports = router;
-
