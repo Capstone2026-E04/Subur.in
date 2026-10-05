@@ -20,7 +20,7 @@ async function tick(userId) {
     });
     for (const { id } of devices) {
       const payload = Buffer.from(
-        JSON.stringify({ ph: rand(4.5, 8), moisture: rand(20, 90) }),
+        JSON.stringify({ ph: rand(0, 14), moisture: rand(0, 100) }),
       );
       await handleSensorMessage(`suburin/devices/${id}/telemetry`, payload);
     }
