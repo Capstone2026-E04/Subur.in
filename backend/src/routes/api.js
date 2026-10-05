@@ -74,7 +74,6 @@ router.get("/", (req, res) => {
         update: "PATCH /api/devices/:id",
         delete: "DELETE /api/devices/:id",
         recommendation: "GET /api/devices/:id/recommendation",
-        sendConfig: "POST /api/devices/:id/config",
       },
       plants: {
         list: "GET /api/plants",

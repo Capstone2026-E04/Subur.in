@@ -10,6 +10,10 @@ const { getLatestSensorLog } = require("../repositories/sensor_repository");
 const { publishDeviceConfig } = require("../mqtt/publishers/config_publisher");
 const { sendSuccess, sendError } = require("../utils/response");
 
+// Batas 1-60 menit mengikuti validasi firmware ESP (mqttCallback).
+const isValidInterval = (v) =>
+  Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 60;
+
 exports.getDiscoveredDevices = async (req, res, next) => {
   try {
     const redis = getRedisClient();
@@ -78,13 +82,12 @@ exports.registerDevice = async (req, res, next) => {
     }
 
     if (
-      sensorInterval !== undefined &&
-      (!Number.isInteger(Number(sensorInterval)) || Number(sensorInterval) < 1)
+      sensorInterval !== undefined && !isValidInterval(sensorInterval)
     ) {
       return sendError(
         res,
         400,
-        '"sensorInterval" harus berupa bilangan bulat dan minimal 1 menit.',
+        '"sensorInterval" harus berupa bilangan bulat 1-60 menit.',
       );
     }
 
@@ -183,13 +186,12 @@ exports.updateDevice = async (req, res, next) => {
     const { label, plantId, polybagId, status, sensorInterval } = req.body;
 
     if (
-      sensorInterval !== undefined &&
-      (!Number.isInteger(Number(sensorInterval)) || Number(sensorInterval) < 1)
+      sensorInterval !== undefined && !isValidInterval(sensorInterval)
     ) {
       return sendError(
         res,
         400,
-        '"sensorInterval" harus berupa bilangan bulat dan minimal 1 menit.',
+        '"sensorInterval" harus berupa bilangan bulat 1-60 menit.',
       );
     }
 
@@ -365,61 +367,6 @@ exports.getDeviceRecommendation = async (req, res, next) => {
     });
   } catch (error) {
     console.error("[DeviceController] Gagal menghasilkan rekomendasi device:", {
-      message: error.message,
-      stack: error.stack,
-      userId: req.user?.id,
-      deviceId: req.params?.id,
-    });
-    return next(error);
-  }
-};
-
-exports.sendDeviceConfig = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const { id } = req.params;
-    const { delay_ms } = req.body;
-
-    if (delay_ms === undefined || delay_ms === null) {
-      return sendError(res, 400, 'Field "delay_ms" wajib diisi.');
-    }
-
-    const parsedDelay = Number(delay_ms);
-    if (!Number.isInteger(parsedDelay) || parsedDelay < 100) {
-      return sendError(
-        res,
-        400,
-        '"delay_ms" harus berupa bilangan bulat dan minimal 100 ms.',
-      );
-    }
-
-    const device = await prisma.device.findFirst({
-      where: { id, userId },
-    });
-
-    if (!device) {
-      return sendError(
-        res,
-        404,
-        "Device tidak ditemukan atau Anda tidak memiliki akses.",
-      );
-    }
-
-    const result = await publishDeviceConfig(device.deviceCode, parsedDelay);
-
-    return sendSuccess(
-      res,
-      200,
-      `Konfigurasi delay berhasil dikirim ke device "${device.deviceCode}".`,
-      {
-        deviceId: device.id,
-        deviceCode: device.deviceCode,
-        topic: result.topic,
-        payload: result.payload,
-      },
-    );
-  } catch (error) {
-    console.error("[DeviceController] Gagal mengirim konfigurasi ke device:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,

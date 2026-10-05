@@ -62,7 +62,7 @@ const BASE_BODY = {
 };
 
 describe("sensorInterval validation", () => {
-  it.each([0, -5, 1.5, "abc", null])(
+  it.each([0, -5, 1.5, "abc", null, 61])(
     "registerDevice rejects sensorInterval %p with 400",
     async (value) => {
       const res = makeRes();
@@ -106,7 +106,7 @@ describe("sensorInterval validation", () => {
     expect(publishDeviceConfig).toHaveBeenCalledWith("dev-1", 15);
   });
 
-  it.each([0, -1, 2.5, "x"])(
+  it.each([0, -1, 2.5, "x", 61])(
     "updateDevice rejects sensorInterval %p with 400",
     async (value) => {
       const res = makeRes();

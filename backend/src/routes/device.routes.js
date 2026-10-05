@@ -9,7 +9,6 @@ router.post("/", deviceController.registerDevice);
 router.get("/", deviceController.getMyDevices);
 router.get("/discovered", deviceController.getDiscoveredDevices);
 router.get("/:id/recommendation", deviceController.getDeviceRecommendation);
-router.post("/:id/config", deviceController.sendDeviceConfig);
 router.patch("/:id", deviceController.updateDevice);
 router.delete("/:id", deviceController.deleteDevice);
 

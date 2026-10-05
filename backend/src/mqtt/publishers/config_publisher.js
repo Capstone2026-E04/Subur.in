@@ -18,7 +18,7 @@ function publishDeviceConfig(deviceCode, readingIntervalMin) {
       reading_interval_min: readingIntervalMin,
     });
 
-    client.publish(topic, payload, { qos: 1, retain: false }, (err) => {
+    client.publish(topic, payload, { qos: 1, retain: true }, (err) => {
       if (err) {
         console.error(
           `[MQTT Publisher] Gagal mempublikasikan config ke device "${deviceCode}":`,
