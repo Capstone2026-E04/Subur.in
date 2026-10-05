@@ -3,9 +3,10 @@
 import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { MdOutlineSpa, MdArrowBack, MdErrorOutline } from "react-icons/md";
+import { MdArrowBack, MdErrorOutline } from "react-icons/md";
 
 function LoginError() {
   const searchParams = useSearchParams();
@@ -38,9 +39,7 @@ export default function LoginPage() {
       </Link>
 
       <div className="flex flex-col items-center gap-3">
-        <div className="bg-primary shadow-primary/15 flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-md">
-          <MdOutlineSpa size={26} />
-        </div>
+        <Image src="/logo/logo-suburin.svg" alt="" width={56} height={56} />
         <div className="space-y-1 text-center">
           <h1 className="text-xl font-bold text-gray-800">Masuk ke Subur.in</h1>
           <p className="max-w-xs text-sm text-gray-500">

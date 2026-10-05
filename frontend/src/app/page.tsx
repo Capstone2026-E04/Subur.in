@@ -1,6 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
-  MdOutlineSpa,
   MdWaterDrop,
   MdAutoAwesome,
   MdNotificationsActive,
@@ -32,9 +32,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">
       <header className="flex items-center gap-2.5 px-6 py-5 sm:px-10">
-        <div className="bg-primary flex h-9 w-9 items-center justify-center rounded-lg text-white shadow-sm">
-          <MdOutlineSpa size={19} />
-        </div>
+        <Image src="/logo/logo-suburin.svg" alt="" width={36} height={36} />
         <span className="text-primary text-lg font-bold tracking-tight">
           Subur.in
         </span>
