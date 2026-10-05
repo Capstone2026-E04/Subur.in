@@ -7,8 +7,10 @@ export const metadata: Metadata = {
   description: "Platform monitoring tanaman pintar",
   icons: {
     icon: [
-      { url: "/logo/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/logo/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo/favicon-16x16.png", sizes: "16x16", type: "image/png", media: "(prefers-color-scheme: light)" },
+      { url: "/logo/favicon-32x32.png", sizes: "32x32", type: "image/png", media: "(prefers-color-scheme: light)" },
+      { url: "/logo/favicon-16x16-dark.png", sizes: "16x16", type: "image/png", media: "(prefers-color-scheme: dark)" },
+      { url: "/logo/favicon-32x32-dark.png", sizes: "32x32", type: "image/png", media: "(prefers-color-scheme: dark)" },
     ],
     apple: "/logo/apple-touch-icon.png",
   },
