@@ -31,7 +31,7 @@ interface ConnectDeviceModalProps {
   onClose: () => void;
   onSuccess: () => void;
   onClaim: (payload: {
-    deviceId: string;
+    deviceCode: string;
     label: string;
     plantId: string;
     polybagId: string;
@@ -143,7 +143,7 @@ export default function ConnectDeviceModal({
     setIsSubmitting(true);
     try {
       await onClaim({
-        deviceId: selectedDeviceId,
+        deviceCode: selectedDeviceId,
         label: label.trim(),
         plantId: selectedPlantId,
         polybagId: selectedPolybagId,
@@ -161,7 +161,7 @@ export default function ConnectDeviceModal({
   }
 
   const selectedDeviceInfo = discovered.find(
-    (d) => d.deviceId === selectedDeviceId,
+    (d) => d.deviceCode === selectedDeviceId,
   );
 
   return (
@@ -330,8 +330,8 @@ export default function ConnectDeviceModal({
                           >
                             <option value="">— Pilih alat —</option>
                             {discovered.map((d) => (
-                              <option key={d.deviceId} value={d.deviceId}>
-                                {d.deviceId} ·{" "}
+                              <option key={d.deviceCode} value={d.deviceCode}>
+                                {d.deviceCode} ·{" "}
                                 {formatDiscoveredAge(d.timestamp)}
                               </option>
                             ))}

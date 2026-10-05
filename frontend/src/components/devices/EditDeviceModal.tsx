@@ -144,7 +144,7 @@ export default function EditDeviceModal({
                       Edit Alat
                     </h2>
                     <p className="font-mono text-xs text-gray-400">
-                      {device.deviceId}
+                      {device.deviceCode}
                     </p>
                   </div>
                 </div>

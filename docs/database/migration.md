@@ -32,7 +32,9 @@ Urutan penerapan:
 1. `001_check_constraints.sql`: CHECK numerik dan kategori. Jalankan pra-cek pelanggaran (mis. `select count(*) from raw_sensor_logs where ph < 0 or ph > 14;`) sebelum menerapkan, karena `ADD CONSTRAINT` gagal jika ada baris yang melanggar.
 2. `002_row_level_security.sql`: `ENABLE ROW LEVEL SECURITY` pada semua tabel dan partisi. Verifikasi dulu role koneksi backend: `select rolname, rolbypassrls from pg_roles where rolname = current_user;` harus `rolbypassrls = true`.
 
-Kedua file aman dijalankan ulang.
+3. `003_device_surrogate_key.sql`: mengubah `devices.id` menjadi UUID surrogate key dan memindahkan kode alat lama ke `devices.device_code`, termasuk semua FK `device_id`. **Wajib dijalankan sebelum deploy backend versi baru**, karena `db push` tidak dapat melakukannya tanpa menghapus data. Baris `raw_sensor_logs` yatim ikut dihapus (cek dulu dengan `npm run db:check-orphans`). Rollback: `rollback/003_device_surrogate_key.sql` bersama rollback deploy backend.
+
+File 001 dan 002 aman dijalankan ulang; 003 hanya dijalankan sekali.
 
 **Aturan index:** semua index wajib dideklarasikan dengan `@@index` (nama eksplisit lewat `map:`) di `schema.prisma`. Index yang hanya dibuat lewat SQL akan dihapus oleh `prisma db push` berikutnya. CHECK constraint dan RLS tidak disentuh `db push`.
 

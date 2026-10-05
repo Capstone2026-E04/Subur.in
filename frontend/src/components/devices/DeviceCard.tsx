@@ -65,7 +65,7 @@ export default function DeviceCard({
               {device.label}
             </p>
             <p className="mt-1 truncate font-mono text-xs text-gray-400">
-              {device.deviceId}
+              {device.deviceCode}
             </p>
           </div>
         </div>

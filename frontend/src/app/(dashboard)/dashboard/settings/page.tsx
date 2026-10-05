@@ -201,7 +201,7 @@ export default function SettingsPage() {
                 >
                   {devices.map((device) => (
                     <option key={device.id} value={device.id}>
-                      {device.label} ({device.id})
+                      {device.label} ({device.deviceCode})
                     </option>
                   ))}
                 </select>

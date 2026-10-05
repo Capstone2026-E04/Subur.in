@@ -2,7 +2,7 @@
 
 Akses baca (read) untuk telemetri mentah device. Proses ingest data terjadi secara out-of-band melalui MQTT (lihat [architecture/api-flow.md](../architecture/api-flow.md#device-telemetry-mqtt---dbcache---sse)), bukan melalui endpoint-endpoint ini.
 
-**Perlu autentikasi:** Tidak, untuk semua endpoint ini saat ini. Endpoint-endpoint ini hanya dikunci berdasarkan `deviceId` pada path. Perlakukan `deviceId` sebagai capability token pada kode client; jangan mengekspos device ID milik user lain di UI yang tidak Anda kendalikan.
+**Perlu autentikasi:** Tidak, untuk semua endpoint ini saat ini. Endpoint-endpoint ini hanya dikunci berdasarkan `deviceId` (UUID surrogate key, bukan kode alat) pada path. Perlakukan `deviceId` sebagai capability token pada kode client; jangan mengekspos device ID milik user lain di UI yang tidak Anda kendalikan.
 
 ## `GET /api/sensors/:deviceId/stream`
 
@@ -10,7 +10,7 @@ Stream Server-Sent Events (SSE) berisi pembacaan dan notifikasi live untuk satu 
 
 **Response:** `Content-Type: text/event-stream`, satu object JSON per baris `data:`:
 ```
-data: {"connected":true,"deviceId":"ESP32-A1B2C3"}
+data: {"connected":true,"deviceId":"3c1b6a52-9d3e-4f0a-8a47-2b5d7e9f1a10"}
 
 data: {"ph":6.1,"moisture":42.3,"timestamp":"2026-09-03T10:05:00.000Z"}
 
@@ -28,7 +28,7 @@ Mengembalikan pembacaan terbaru untuk sebuah device, dari Redis jika tersedia, d
 {
   "success": true,
   "data": {
-    "deviceId": "ESP32-A1B2C3",
+    "deviceId": "3c1b6a52-9d3e-4f0a-8a47-2b5d7e9f1a10",
     "ph": 6.1,
     "moisture": 42.3,
     "timestamp": "2026-09-03T10:05:00.000Z"
@@ -52,7 +52,7 @@ Mengembalikan pembacaan historis terbaru dari Postgres, paling relevan untuk kep
 {
   "success": true,
   "data": [
-    { "id": 10234, "timestamp": "2026-09-03T10:05:00.000Z", "deviceId": "ESP32-A1B2C3", "ph": 6.1, "moisture": 42.3 }
+    { "id": 10234, "timestamp": "2026-09-03T10:05:00.000Z", "deviceId": "3c1b6a52-9d3e-4f0a-8a47-2b5d7e9f1a10", "ph": 6.1, "moisture": 42.3 }
   ]
 }
 ```

@@ -2,6 +2,8 @@
 
 Semua endpoint memerlukan `Authorization: Bearer <jwt>` (lihat [authentication.md](authentication.md)). Sebuah device hanya dapat dilihat/diubah oleh user yang mendaftarkannya.
 
+**Identitas device:** `id` adalah surrogate key UUID yang dibuat backend dan dipakai di semua path/query API. `deviceCode` adalah kode yang dikirim alat (mis. `ESP32-A1B2C3`), unik, dan dipakai pada topic MQTT `suburin/devices/<deviceCode>/...`.
+
 ## `GET /api/devices/discovered`
 
 Menampilkan daftar device yang telah mengirim telemetri MQTT (tersimpan di Redis sebagai `sensor:latest:*`) tetapi **belum terdaftar** ke user manapun. Digunakan agar user dapat "mengklaim" perangkat fisik yang baru saja dinyalakan.
@@ -13,7 +15,7 @@ Menampilkan daftar device yang telah mengirim telemetri MQTT (tersimpan di Redis
   "message": "Berhasil mendeteksi device aktif yang belum terdaftar.",
   "data": {
     "devices": [
-      { "deviceId": "ESP32-A1B2C3", "ph": 6.2, "moisture": 45.1, "timestamp": "2026-09-03T10:00:00.000Z" }
+      { "deviceCode": "ESP32-A1B2C3", "ph": 6.2, "moisture": 45.1, "timestamp": "2026-09-03T10:00:00.000Z" }
     ]
   }
 }
@@ -26,7 +28,7 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
 **Request body:**
 ```json
 {
-  "deviceId": "ESP32-A1B2C3",
+  "deviceCode": "ESP32-A1B2C3",
   "label": "Pakcoy Balkon",
   "plantId": "b6f1c2e0-...-plant-uuid",
   "polybagId": "d9a7e5f0-...-polybag-uuid",
@@ -43,7 +45,8 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
   "message": "Device berhasil didaftarkan dan dihubungkan ke akun Anda.",
   "data": {
     "device": {
-      "id": "ESP32-A1B2C3",
+      "id": "3c1b6a52-9d3e-4f0a-8a47-2b5d7e9f1a10",
+      "deviceCode": "ESP32-A1B2C3",
       "userId": "3fa85f64-...",
       "label": "Pakcoy Balkon",
       "plantId": "b6f1c2e0-...",
@@ -57,7 +60,7 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
 }
 ```
 
-**Response error:** `400` (field wajib tidak ada, device ID sudah terdaftar), `401`, `500`.
+**Response error:** `400` (field wajib tidak ada, `deviceCode` sudah terdaftar), `401`, `500`.
 
 ## `GET /api/devices`
 
@@ -120,7 +123,8 @@ Mengirim pesan konfigurasi MQTT ad-hoc (saat ini berupa delay publikasi telemetr
   "success": true,
   "message": "Konfigurasi delay berhasil dikirim ke device \"ESP32-A1B2C3\".",
   "data": {
-    "deviceId": "ESP32-A1B2C3",
+    "deviceId": "3c1b6a52-9d3e-4f0a-8a47-2b5d7e9f1a10",
+    "deviceCode": "ESP32-A1B2C3",
     "topic": "suburin/devices/ESP32-A1B2C3/config",
     "payload": { "delay_ms": 5000 }
   }

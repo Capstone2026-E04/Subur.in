@@ -89,7 +89,7 @@ export default function DeleteConfirmDialog({
                 <MdWarningAmber size={16} className="shrink-0 text-amber-500" />
                 <div>
                   <p className="text-xs font-semibold text-gray-700">
-                    {device.deviceId}
+                    {device.deviceCode}
                   </p>
                   <p className="mt-0.5 text-xs text-gray-400">
                     Tindakan ini tidak dapat diurungkan.

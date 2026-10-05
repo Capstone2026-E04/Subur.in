@@ -112,7 +112,7 @@ function UnselectedDeviceState({
                   {device.label}
                 </p>
                 <p className="mt-0.5 font-mono text-xs text-gray-400">
-                  {device.id}
+                  {device.deviceCode}
                 </p>
               </div>
             </div>

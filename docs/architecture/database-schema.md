@@ -38,7 +38,8 @@ erDiagram
         bool telegram_notify_enabled
     }
     DEVICE {
-        varchar id PK
+        uuid id PK
+        varchar device_code UK
         uuid user_id FK
         varchar label
         uuid plant_id FK
@@ -68,7 +69,7 @@ erDiagram
     }
     RECOMMENDATION_LOG {
         uuid id PK
-        varchar device_id FK
+        uuid device_id FK
         float ph_value
         float moisture_value
         float fuzzy_index
@@ -82,13 +83,13 @@ erDiagram
     RAW_SENSOR_LOG {
         int id PK
         timestamptz timestamp PK
-        varchar device_id FK
+        uuid device_id FK
         float ph
         float moisture
     }
     NOTIFICATION {
         uuid id PK
-        varchar device_id FK
+        uuid device_id FK
         varchar title
         text message
         varchar type

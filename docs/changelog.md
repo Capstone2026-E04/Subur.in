@@ -2,6 +2,12 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-05
+
+- **refactor(db)!:** `Device.id` kini UUID surrogate key; kode dari alat disimpan di `Device.deviceCode` (`device_code`, unik). FK `device_id` pada `recommendation_logs`, `notifications`, dan `raw_sensor_logs` menjadi UUID. Migrasi data lewat `prisma/manual/003_device_surrogate_key.sql` (dijalankan manual sebelum deploy, ada rollback).
+- **refactor(api)!:** `POST /api/devices` memakai `deviceCode` (bukan `deviceId`); `GET /api/devices/discovered` mengembalikan `deviceCode`; path/query `:id`/`:deviceId` kini UUID. Topic MQTT tidak berubah (tetap memakai kode alat), jadi firmware tidak perlu diubah.
+- **feat(dev-mode):** Dev Mode untuk simulasi telemetri MQTT per user, dengan skenario kritis acak; data simulasi ditandai `is_dev` pada `recommendation_logs` dan `raw_sensor_logs`.
+
 ## 2026-10-03
 
 - **fix(device):** `GET /api/devices/:id/recommendation` kini read-only dan tidak lagi menulis `recommendation_logs` (sebelumnya satu insert per panggilan, termasuk dari data basi); log hanya ditulis oleh subscriber MQTT. Field `logId` dihapus dari respons.

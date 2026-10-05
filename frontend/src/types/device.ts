@@ -2,7 +2,7 @@ export type DeviceStatus = "ACTIVE" | "INACTIVE";
 
 export interface RegisteredDevice {
   id: string;
-  deviceId: string;
+  deviceCode: string;
   label: string;
   status: DeviceStatus;
   lastSeenAt: string | null;
@@ -27,7 +27,7 @@ export interface RegisteredDevice {
 }
 
 export interface DiscoveredDevice {
-  deviceId: string;
+  deviceCode: string;
   ph: number;
   moisture: number;
   timestamp: string;
@@ -59,7 +59,7 @@ export interface PolybagOption {
 }
 
 export interface ClaimDevicePayload {
-  deviceId: string;
+  deviceCode: string;
   label: string;
   plantId: string;
   polybagId: string;
