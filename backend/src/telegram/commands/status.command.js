@@ -1,14 +1,21 @@
 "use strict";
 
 const prisma = require("../../database/connections/prisma_client");
-const { requireLinkedDevice } = require("../middlewares/require_linked_device.middleware");
+const {
+  requireLinkedDevice,
+} = require("../middlewares/require_linked_device.middleware");
 const { resolveActiveDevice } = require("../session/session.service");
-const { formatDeviceLabel, formatTimestamp } = require("../utils/format_message");
+const {
+  formatDeviceLabel,
+  formatTimestamp,
+} = require("../utils/format_message");
 
 async function baseHandler(ctx) {
   const device = await resolveActiveDevice(ctx.telegramUserId, ctx.devices);
   if (!device) {
-    await ctx.reply("Anda memiliki lebih dari satu tanaman. Gunakan /tanaman untuk memilih tanaman aktif terlebih dahulu.");
+    await ctx.reply(
+      "Anda memiliki lebih dari satu tanaman. Gunakan /tanaman untuk memilih tanaman aktif terlebih dahulu.",
+    );
     return;
   }
 
@@ -18,7 +25,9 @@ async function baseHandler(ctx) {
   });
 
   if (!log) {
-    await ctx.reply(`Belum ada data sensor tercatat untuk ${formatDeviceLabel(device)}.`);
+    await ctx.reply(
+      `Belum ada data sensor tercatat untuk ${formatDeviceLabel(device)}.`,
+    );
     return;
   }
 

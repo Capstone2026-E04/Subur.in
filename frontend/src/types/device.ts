@@ -58,7 +58,6 @@ export interface PolybagOption {
   soilVolumeLiter?: number;
 }
 
-
 export interface ClaimDevicePayload {
   deviceId: string;
   label: string;
@@ -131,6 +130,3 @@ export interface NotificationItem {
     label: string;
   } | null;
 }
-
-
-

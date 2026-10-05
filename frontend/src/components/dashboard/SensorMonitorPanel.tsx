@@ -3,8 +3,19 @@
 import { useSensorRealtime, ConnectionStatus } from "@/hooks/useSensorRealtime";
 import SensorGaugeCard from "./SensorGaugeCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdOutlineWaterDrop, MdOutlineSpa, MdSignalWifiStatusbarConnectedNoInternet4, MdSignalWifi4Bar, MdSignalWifiOff } from "react-icons/md";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  MdOutlineWaterDrop,
+  MdOutlineSpa,
+  MdSignalWifiStatusbarConnectedNoInternet4,
+  MdSignalWifi4Bar,
+  MdSignalWifiOff,
+} from "react-icons/md";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 
 function formatTimestamp(ts: string | null): string {
   if (!ts) return "Belum ada data";
@@ -60,7 +71,6 @@ function getPhClassification(ph: number): string {
   return "Sangat Basa";
 }
 
-
 function getMoistureColor(m: number) {
   if (m < 30) {
     return {
@@ -97,10 +107,15 @@ function getMoistureClassification(m: number): string {
   return "Terlalu Lembap";
 }
 
-
 const STATUS_CONFIG: Record<
   ConnectionStatus,
-  { label: string; dotColor: string; ringColor: string; textColor: string; Icon: React.ElementType }
+  {
+    label: string;
+    dotColor: string;
+    ringColor: string;
+    textColor: string;
+    Icon: React.ElementType;
+  }
 > = {
   connected: {
     label: "Terhubung",
@@ -130,7 +145,9 @@ function ConnectionBadge({ status }: { status: ConnectionStatus }) {
   const Icon = cfg.Icon;
 
   return (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border border-black/6 bg-white shadow-sm`}>
+    <div
+      className={`flex items-center gap-2 rounded-full border border-black/6 bg-white px-3 py-1.5 shadow-sm`}
+    >
       <span className="relative flex h-2.5 w-2.5">
         {status !== "disconnected" && (
           <motion.span
@@ -139,10 +156,14 @@ function ConnectionBadge({ status }: { status: ConnectionStatus }) {
             transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           />
         )}
-        <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${cfg.dotColor}`} />
+        <span
+          className={`relative inline-flex h-2.5 w-2.5 rounded-full ${cfg.dotColor}`}
+        />
       </span>
       <Icon size={14} className={cfg.textColor} />
-      <span className={`text-xs font-semibold ${cfg.textColor}`}>{cfg.label}</span>
+      <span className={`text-xs font-semibold ${cfg.textColor}`}>
+        {cfg.label}
+      </span>
     </div>
   );
 }
@@ -161,24 +182,27 @@ export default function SensorMonitorPanel({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="flex-wrap py-4 bg-muted/60">
+      <CardHeader className="bg-muted/60 flex-wrap py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+          <div className="bg-primary/10 flex h-9 w-9 items-center justify-center rounded-xl">
             <MdOutlineSpa size={20} className="text-primary" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-primary leading-tight">
+            <h3 className="text-primary text-sm leading-tight font-bold">
               Monitor Sensor Real-time
             </h3>
-            <p className="text-xs text-gray-400 font-medium">
-              Perangkat: <span className="font-semibold text-gray-600">{deviceLabel || deviceId}</span>
+            <p className="text-xs font-medium text-gray-400">
+              Perangkat:{" "}
+              <span className="font-semibold text-gray-600">
+                {deviceLabel || deviceId}
+              </span>
             </p>
           </div>
         </div>
         <ConnectionBadge status={connectionStatus} />
       </CardHeader>
 
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SensorGaugeCard
           label="Tingkat pH Tanah"
           value={ph}
@@ -204,7 +228,7 @@ export default function SensorMonitorPanel({
         />
       </CardContent>
 
-      <CardFooter className="py-3 bg-muted/40">
+      <CardFooter className="bg-muted/40 py-3">
         <AnimatePresence mode="wait">
           <motion.div
             key={lastUpdated ?? "empty"}

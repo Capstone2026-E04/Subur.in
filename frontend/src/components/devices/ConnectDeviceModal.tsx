@@ -14,8 +14,16 @@ import {
   MdLinkOff,
   MdAccessTime,
 } from "react-icons/md";
-import type { DiscoveredDevice, PlantOption, PolybagOption } from "@/types/device";
-import { fetchDiscoveredDevices, fetchPlants, fetchPolybags } from "@/services/deviceService";
+import type {
+  DiscoveredDevice,
+  PlantOption,
+  PolybagOption,
+} from "@/types/device";
+import {
+  fetchDiscoveredDevices,
+  fetchPlants,
+  fetchPolybags,
+} from "@/services/deviceService";
 
 interface ConnectDeviceModalProps {
   isOpen: boolean;
@@ -106,8 +114,7 @@ export default function ConnectDeviceModal({
         setPlants(p);
         setPolybags(pb);
       })
-      .catch(() => {
-      });
+      .catch(() => {});
 
     return () => clearTimeout(timer);
   }, [isOpen, token, scan]);
@@ -116,10 +123,22 @@ export default function ConnectDeviceModal({
     e.preventDefault();
     setFormError(null);
 
-    if (!selectedDeviceId) { setFormError("Pilih alat yang akan dihubungkan."); return; }
-    if (!label.trim()) { setFormError("Nama/label alat tidak boleh kosong."); return; }
-    if (!selectedPlantId) { setFormError("Pilih tanaman untuk alat ini."); return; }
-    if (!selectedPolybagId) { setFormError("Pilih tipe polybag untuk alat ini."); return; }
+    if (!selectedDeviceId) {
+      setFormError("Pilih alat yang akan dihubungkan.");
+      return;
+    }
+    if (!label.trim()) {
+      setFormError("Nama/label alat tidak boleh kosong.");
+      return;
+    }
+    if (!selectedPlantId) {
+      setFormError("Pilih tanaman untuk alat ini.");
+      return;
+    }
+    if (!selectedPolybagId) {
+      setFormError("Pilih tipe polybag untuk alat ini.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -133,13 +152,17 @@ export default function ConnectDeviceModal({
       onSuccess();
       onClose();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Gagal menghubungkan alat.");
+      setFormError(
+        err instanceof Error ? err.message : "Gagal menghubungkan alat.",
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  const selectedDeviceInfo = discovered.find((d) => d.deviceId === selectedDeviceId);
+  const selectedDeviceInfo = discovered.find(
+    (d) => d.deviceId === selectedDeviceId,
+  );
 
   return (
     <AnimatePresence>
@@ -147,7 +170,7 @@ export default function ConnectDeviceModal({
         <>
           <motion.div
             key="backdrop"
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm top-0 left-0 right-0 bottom-0"
+            className="fixed inset-0 top-0 right-0 bottom-0 left-0 z-40 bg-black/40 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -162,19 +185,19 @@ export default function ConnectDeviceModal({
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
               initial={{ scale: 0.95, y: 16 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 16 }}
               transition={{ type: "spring", stiffness: 300, damping: 28 }}
             >
-              <div className="flex items-center justify-between px-6 py-4 border-b border-black/6 bg-gray-50 shrink-0">
+              <div className="flex shrink-0 items-center justify-between border-b border-black/6 bg-gray-50 px-6 py-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="bg-primary/10 flex h-9 w-9 items-center justify-center rounded-xl">
                     <MdOutlineWifi size={18} className="text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-bold text-primary leading-tight">
+                    <h2 className="text-primary text-sm leading-tight font-bold">
                       Hubungkan Alat Baru
                     </h2>
                     <p className="text-xs text-gray-400">
@@ -185,21 +208,27 @@ export default function ConnectDeviceModal({
                 <button
                   id="close-connect-modal"
                   onClick={onClose}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                   aria-label="Tutup modal"
                 >
                   <MdClose size={18} />
                 </button>
               </div>
 
-              <div className="overflow-y-auto flex-1">
-                <form id="connect-device-form" onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
-
-                  <fieldset className="rounded-xl border border-black/6 overflow-hidden">
+              <div className="flex-1 overflow-y-auto">
+                <form
+                  id="connect-device-form"
+                  onSubmit={handleSubmit}
+                  className="flex flex-col gap-5 p-6"
+                >
+                  <fieldset className="overflow-hidden rounded-xl border border-black/6">
                     <legend className="sr-only">Pilih Alat</legend>
-                    <div className="flex items-center justify-between px-4 py-3 bg-gray-50/80 border-b border-black/5">
+                    <div className="flex items-center justify-between border-b border-black/5 bg-gray-50/80 px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <MdOutlineDeviceHub size={15} className="text-primary" />
+                        <MdOutlineDeviceHub
+                          size={15}
+                          className="text-primary"
+                        />
                         <span className="text-xs font-bold text-gray-700">
                           Langkah 1 — Pilih Alat yang Terdeteksi
                         </span>
@@ -209,13 +238,17 @@ export default function ConnectDeviceModal({
                         id="rescan-devices-btn"
                         onClick={scan}
                         disabled={scanStatus === "scanning"}
-                        className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/8 disabled:opacity-50 transition-colors cursor-pointer"
+                        className="text-primary hover:bg-primary/8 flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50"
                       >
                         <MdRefresh
                           size={13}
-                          className={scanStatus === "scanning" ? "animate-spin" : ""}
+                          className={
+                            scanStatus === "scanning" ? "animate-spin" : ""
+                          }
                         />
-                        {scanStatus === "scanning" ? "Memindai…" : "Pindai Ulang"}
+                        {scanStatus === "scanning"
+                          ? "Memindai…"
+                          : "Pindai Ulang"}
                       </button>
                     </div>
 
@@ -228,15 +261,21 @@ export default function ConnectDeviceModal({
                         >
                           <div className="relative flex h-12 w-12 items-center justify-center">
                             <motion.div
-                              className="absolute h-12 w-12 rounded-full bg-primary/20"
-                              animate={{ scale: [1, 1.6, 1], opacity: [0.6, 0, 0.6] }}
+                              className="bg-primary/20 absolute h-12 w-12 rounded-full"
+                              animate={{
+                                scale: [1, 1.6, 1],
+                                opacity: [0.6, 0, 0.6],
+                              }}
                               transition={{ duration: 1.5, repeat: Infinity }}
                             />
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                              <MdOutlineWifi size={18} className="text-primary" />
+                            <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
+                              <MdOutlineWifi
+                                size={18}
+                                className="text-primary"
+                              />
                             </div>
                           </div>
-                          <p className="text-xs text-gray-500 font-medium">
+                          <p className="text-xs font-medium text-gray-500">
                             Memindai alat di jaringan…
                           </p>
                         </motion.div>
@@ -255,8 +294,9 @@ export default function ConnectDeviceModal({
                             <p className="text-sm font-semibold text-gray-700">
                               Tidak ada alat baru terdeteksi
                             </p>
-                            <p className="text-xs text-gray-400 mt-1 max-w-xs">
-                              Pastikan alat ESP32 Anda sudah terhubung ke WiFi dan menyala, lalu klik Pindai Ulang.
+                            <p className="mt-1 max-w-xs text-xs text-gray-400">
+                              Pastikan alat ESP32 Anda sudah terhubung ke WiFi
+                              dan menyala, lalu klik Pindai Ulang.
                             </p>
                           </div>
                         </motion.div>
@@ -264,8 +304,10 @@ export default function ConnectDeviceModal({
 
                       {scanStatus === "error" && (
                         <div className="flex items-start gap-2 rounded-xl bg-rose-50 px-4 py-3 text-xs text-rose-700">
-                          <MdLinkOff size={14} className="shrink-0 mt-0.5" />
-                          <span>{scanError ?? "Gagal menghubungi server."}</span>
+                          <MdLinkOff size={14} className="mt-0.5 shrink-0" />
+                          <span>
+                            {scanError ?? "Gagal menghubungi server."}
+                          </span>
                         </div>
                       )}
 
@@ -275,19 +317,22 @@ export default function ConnectDeviceModal({
                           animate={{ opacity: 1 }}
                           className="flex flex-col gap-2"
                         >
-                          <p className="text-xs text-emerald-700 font-semibold">
+                          <p className="text-xs font-semibold text-emerald-700">
                             ✓ {discovered.length} alat terdeteksi
                           </p>
                           <select
                             id="select-discovered-device"
                             value={selectedDeviceId}
-                            onChange={(e) => setSelectedDeviceId(e.target.value)}
-                            className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition cursor-pointer"
+                            onChange={(e) =>
+                              setSelectedDeviceId(e.target.value)
+                            }
+                            className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
                           >
                             <option value="">— Pilih alat —</option>
                             {discovered.map((d) => (
                               <option key={d.deviceId} value={d.deviceId}>
-                                {d.deviceId} · {formatDiscoveredAge(d.timestamp)}
+                                {d.deviceId} ·{" "}
+                                {formatDiscoveredAge(d.timestamp)}
                               </option>
                             ))}
                           </select>
@@ -297,20 +342,29 @@ export default function ConnectDeviceModal({
                               key={selectedDeviceId}
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
-                              className="flex gap-3 rounded-xl bg-emerald-50/70 border border-emerald-200/60 px-3 py-2.5"
+                              className="flex gap-3 rounded-xl border border-emerald-200/60 bg-emerald-50/70 px-3 py-2.5"
                             >
-                              <MdOutlineDeviceHub size={16} className="text-emerald-600 mt-0.5 shrink-0" />
+                              <MdOutlineDeviceHub
+                                size={16}
+                                className="mt-0.5 shrink-0 text-emerald-600"
+                              />
                               <div className="flex flex-wrap gap-x-4 gap-y-1">
                                 <span className="text-xs text-gray-600">
-                                  <span className="font-medium text-gray-800">pH:</span>{" "}
+                                  <span className="font-medium text-gray-800">
+                                    pH:
+                                  </span>{" "}
                                   {selectedDeviceInfo.ph.toFixed(1)}
                                 </span>
                                 <span className="text-xs text-gray-600">
-                                  <span className="font-medium text-gray-800">Kelembapan:</span>{" "}
+                                  <span className="font-medium text-gray-800">
+                                    Kelembapan:
+                                  </span>{" "}
                                   {selectedDeviceInfo.moisture}%
                                 </span>
                                 <span className="text-xs text-gray-400">
-                                  {formatDiscoveredAge(selectedDeviceInfo.timestamp)}
+                                  {formatDiscoveredAge(
+                                    selectedDeviceInfo.timestamp,
+                                  )}
                                 </span>
                               </div>
                             </motion.div>
@@ -320,9 +374,9 @@ export default function ConnectDeviceModal({
                     </div>
                   </fieldset>
 
-                  <fieldset className="rounded-xl border border-black/6 overflow-hidden">
+                  <fieldset className="overflow-hidden rounded-xl border border-black/6">
                     <legend className="sr-only">Detail Alat</legend>
-                    <div className="px-4 py-3 bg-gray-50/80 border-b border-black/5">
+                    <div className="border-b border-black/5 bg-gray-50/80 px-4 py-3">
                       <span className="text-xs font-bold text-gray-700">
                         Langkah 2 — Lengkapi Detail Alat
                       </span>
@@ -344,7 +398,7 @@ export default function ConnectDeviceModal({
                           onChange={(e) => setLabel(e.target.value)}
                           placeholder="cth. Bayam Halaman Depan"
                           maxLength={80}
-                          className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                          className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition placeholder:text-gray-300 focus:ring-2 focus:outline-none"
                         />
                       </div>
 
@@ -360,7 +414,7 @@ export default function ConnectDeviceModal({
                           id="select-plant"
                           value={selectedPlantId}
                           onChange={(e) => setSelectedPlantId(e.target.value)}
-                          className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition cursor-pointer"
+                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
                         >
                           <option value="">— Pilih tanaman —</option>
                           {plants.map((p) => (
@@ -371,7 +425,8 @@ export default function ConnectDeviceModal({
                         </select>
                         {plants.length === 0 && (
                           <p className="text-xs text-gray-400">
-                            Belum ada data tanaman. Tambahkan tanaman terlebih dahulu.
+                            Belum ada data tanaman. Tambahkan tanaman terlebih
+                            dahulu.
                           </p>
                         )}
                       </div>
@@ -388,12 +443,13 @@ export default function ConnectDeviceModal({
                           id="select-polybag"
                           value={selectedPolybagId}
                           onChange={(e) => setSelectedPolybagId(e.target.value)}
-                          className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition cursor-pointer"
+                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
                         >
                           <option value="">— Pilih polybag —</option>
                           {polybags.map((pb) => (
                             <option key={pb.id} value={pb.id}>
-                              {pb.name} | Diameter {pb.diameter}cm | Tinggi {pb.height}cm | Volume Tanah {pb.soilVolumeLiter}L
+                              {pb.name} | Diameter {pb.diameter}cm | Tinggi{" "}
+                              {pb.height}cm | Volume Tanah {pb.soilVolumeLiter}L
                             </option>
                           ))}
                         </select>
@@ -410,8 +466,10 @@ export default function ConnectDeviceModal({
                         <select
                           id="select-interval"
                           value={sensorInterval}
-                          onChange={(e) => setSensorInterval(Number(e.target.value))}
-                          className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition cursor-pointer"
+                          onChange={(e) =>
+                            setSensorInterval(Number(e.target.value))
+                          }
+                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
                         >
                           <option value={1}>1 Menit</option>
                           <option value={5}>5 Menit</option>
@@ -420,8 +478,9 @@ export default function ConnectDeviceModal({
                           <option value={30}>30 Menit</option>
                           <option value={60}>1 jam</option>
                         </select>
-                        <p className="text-[10px] text-gray-400 leading-normal">
-                          Tentukan seberapa sering alat membaca & mengirim data sensor.
+                        <p className="text-[10px] leading-normal text-gray-400">
+                          Tentukan seberapa sering alat membaca & mengirim data
+                          sensor.
                         </p>
                       </div>
                     </div>
@@ -433,7 +492,7 @@ export default function ConnectDeviceModal({
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="text-xs text-rose-600 font-medium px-1"
+                        className="px-1 text-xs font-medium text-rose-600"
                       >
                         ⚠ {formError}
                       </motion.p>
@@ -442,12 +501,12 @@ export default function ConnectDeviceModal({
                 </form>
               </div>
 
-              <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-black/6 bg-gray-50/50">
+              <div className="flex shrink-0 items-center justify-end gap-3 border-t border-black/6 bg-gray-50/50 px-6 py-4">
                 <button
                   type="button"
                   id="cancel-connect-btn"
                   onClick={onClose}
-                  className="rounded-xl px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
                 >
                   Batal
                 </button>
@@ -456,14 +515,18 @@ export default function ConnectDeviceModal({
                   form="connect-device-form"
                   id="submit-connect-btn"
                   disabled={isSubmitting || scanStatus === "scanning"}
-                  className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-light disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
+                  className="bg-primary hover:bg-primary-light flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? (
                     <>
                       <motion.span
-                        className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white block"
+                        className="block h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white"
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 0.7, repeat: Infinity, ease: "linear" }}
+                        transition={{
+                          duration: 0.7,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                       />
                       Menghubungkan…
                     </>

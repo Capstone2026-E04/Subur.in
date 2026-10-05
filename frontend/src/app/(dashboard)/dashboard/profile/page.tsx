@@ -12,7 +12,9 @@ interface BackendUser {
   createdAt?: string;
 }
 
-async function fetchUserProfile(backendToken: string): Promise<BackendUser | null> {
+async function fetchUserProfile(
+  backendToken: string,
+): Promise<BackendUser | null> {
   try {
     const res = await fetch(`${API_URL}/api/users/me`, {
       headers: { Authorization: `Bearer ${backendToken}` },
@@ -51,9 +53,9 @@ export default async function ProfilePage() {
     : "-";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <Card className="flex-row items-center gap-5 p-6">
-        <div className="h-16 w-16 shrink-0 rounded-full overflow-hidden bg-primary shadow-sm">
+        <div className="bg-primary h-16 w-16 shrink-0 overflow-hidden rounded-full shadow-sm">
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -63,30 +65,27 @@ export default async function ProfilePage() {
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-white text-2xl font-bold">
+            <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-white">
               {name?.charAt(0)?.toUpperCase() ?? "?"}
             </div>
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <p className="text-base font-semibold text-gray-800 truncate">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-base font-semibold text-gray-800">
             {name ?? "Pengguna"}
           </p>
-          <p className="text-sm text-gray-400 truncate">{email}</p>
+          <p className="truncate text-sm text-gray-400">{email}</p>
         </div>
       </Card>
 
-      <Card className="p-5 space-y-5">
-        <h2 className="text-sm font-semibold text-primary">Informasi Akun</h2>
+      <Card className="space-y-5 p-5">
+        <h2 className="text-primary text-sm font-semibold">Informasi Akun</h2>
 
-        <EditNameForm
-          currentName={name ?? ""}
-          backendToken={backendToken}
-        />
+        <EditNameForm currentName={name ?? ""} backendToken={backendToken} />
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          <label className="text-xs font-medium tracking-wide text-gray-500 uppercase">
             Alamat Email
           </label>
           <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-gray-50 px-4 py-2.5">
@@ -99,7 +98,7 @@ export default async function ProfilePage() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          <label className="text-xs font-medium tracking-wide text-gray-500 uppercase">
             Bergabung Sejak
           </label>
           <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-gray-50 px-4 py-2.5">

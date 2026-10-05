@@ -1,6 +1,6 @@
-const { fuzzify }   = require('../core/membership');
-const { aggregateAt } = require('../core/engine');
-const FUZZY_PARAMETERS = require('../config/fuzzy_parameters');
+const { fuzzify } = require("../core/membership");
+const { aggregateAt } = require("../core/engine");
+const FUZZY_PARAMETERS = require("../config/fuzzy_parameters");
 
 // VWC = Volumetric Water Content, fraksi 0-1 dari persentase kelembaban tanah
 function toVwc(moisturePercent) {
@@ -13,7 +13,7 @@ function sampleAggregatedMF(activeRules, step = 0.1) {
 
   for (let y = Y_MIN; y <= Y_MAX + 1e-9; y += step) {
     points.push({
-      y:  parseFloat(y.toFixed(4)),
+      y: parseFloat(y.toFixed(4)),
       mu: parseFloat(aggregateAt(activeRules, y).toFixed(4)),
     });
   }
@@ -46,7 +46,10 @@ function inspectMoistureMembership(moistureValue) {
 function estimateCentroidAnalytic(activeRules) {
   if (activeRules.length === 0) return 4;
 
-  const numerator   = activeRules.reduce((sum, r) => sum + r.alpha * (r.outputCategory - 1), 0);
+  const numerator = activeRules.reduce(
+    (sum, r) => sum + r.alpha * (r.outputCategory - 1),
+    0,
+  );
   const denominator = activeRules.reduce((sum, r) => sum + r.alpha, 0);
 
   return denominator === 0 ? 4 : numerator / denominator;

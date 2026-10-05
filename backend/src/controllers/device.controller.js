@@ -1,23 +1,29 @@
-const prisma = require('../database/connections/prisma_client');
-const { getRedisClient } = require('../database/connections/redis');
-const { generateRecommendation } = require('../ai/services/recommendation.service');
-const { getLatestSensorData } = require('../repositories/sensor_redis_repository');
-const { getLatestSensorLog } = require('../repositories/sensor_repository');
-const { publishDeviceConfig } = require('../mqtt/publishers/config_publisher');
-const { sendSuccess, sendError } = require('../utils/response');
-
+const prisma = require("../database/connections/prisma_client");
+const { getRedisClient } = require("../database/connections/redis");
+const {
+  generateRecommendation,
+} = require("../ai/services/recommendation.service");
+const {
+  getLatestSensorData,
+} = require("../repositories/sensor_redis_repository");
+const { getLatestSensorLog } = require("../repositories/sensor_repository");
+const { publishDeviceConfig } = require("../mqtt/publishers/config_publisher");
+const { sendSuccess, sendError } = require("../utils/response");
 
 exports.getDiscoveredDevices = async (req, res, next) => {
   try {
     const redis = getRedisClient();
 
-
-    const keys = await redis.keys('sensor:latest:*');
+    const keys = await redis.keys("sensor:latest:*");
 
     if (keys.length === 0) {
-      return sendSuccess(res, 200, 'Tidak ada device aktif baru yang terdeteksi.', { devices: [] });
+      return sendSuccess(
+        res,
+        200,
+        "Tidak ada device aktif baru yang terdeteksi.",
+        { devices: [] },
+      );
     }
-
 
     const activeDevices = [];
     for (const key of keys) {
@@ -27,26 +33,29 @@ exports.getDiscoveredDevices = async (req, res, next) => {
       }
     }
 
-
-    const activeDeviceIds = activeDevices.map(d => d.deviceId);
-
+    const activeDeviceIds = activeDevices.map((d) => d.deviceId);
 
     const registeredDevices = await prisma.device.findMany({
       where: {
-        id: { in: activeDeviceIds }
+        id: { in: activeDeviceIds },
       },
-      select: { id: true }
+      select: { id: true },
     });
 
-    const registeredIds = new Set(registeredDevices.map(d => d.id));
+    const registeredIds = new Set(registeredDevices.map((d) => d.id));
 
+    const unclaimedDevices = activeDevices.filter(
+      (d) => !registeredIds.has(d.deviceId),
+    );
 
-    const unclaimedDevices = activeDevices.filter(d => !registeredIds.has(d.deviceId));
-
-    return sendSuccess(res, 200, 'Berhasil mendeteksi device aktif yang belum terdaftar.', { devices: unclaimedDevices });
-
+    return sendSuccess(
+      res,
+      200,
+      "Berhasil mendeteksi device aktif yang belum terdaftar.",
+      { devices: unclaimedDevices },
+    );
   } catch (error) {
-    console.error('[DeviceController] Gagal mencari device aktif:', {
+    console.error("[DeviceController] Gagal mencari device aktif:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -55,29 +64,41 @@ exports.getDiscoveredDevices = async (req, res, next) => {
   }
 };
 
-
 exports.registerDevice = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { deviceId, label, plantId, polybagId, sensorInterval } = req.body;
 
     if (!deviceId || !label || !plantId || !polybagId) {
-      return sendError(res, 400, 'deviceId, label, plantId, dan polybagId wajib diisi.');
+      return sendError(
+        res,
+        400,
+        "deviceId, label, plantId, dan polybagId wajib diisi.",
+      );
     }
 
-    if (sensorInterval !== undefined && (!Number.isInteger(Number(sensorInterval)) || Number(sensorInterval) < 1)) {
-      return sendError(res, 400, '"sensorInterval" harus berupa bilangan bulat dan minimal 1 menit.');
+    if (
+      sensorInterval !== undefined &&
+      (!Number.isInteger(Number(sensorInterval)) || Number(sensorInterval) < 1)
+    ) {
+      return sendError(
+        res,
+        400,
+        '"sensorInterval" harus berupa bilangan bulat dan minimal 1 menit.',
+      );
     }
-
 
     const existingDevice = await prisma.device.findUnique({
-      where: { id: deviceId }
+      where: { id: deviceId },
     });
 
     if (existingDevice) {
-      return sendError(res, 400, 'Device dengan ID ini sudah terdaftar di sistem.');
+      return sendError(
+        res,
+        400,
+        "Device dengan ID ini sudah terdaftar di sistem.",
+      );
     }
-
 
     const newDevice = await prisma.device.create({
       data: {
@@ -86,30 +107,39 @@ exports.registerDevice = async (req, res, next) => {
         label: label.trim(),
         plantId: plantId,
         polybagId: polybagId,
-        status: 'ACTIVE',
-        sensorInterval: sensorInterval !== undefined ? Number(sensorInterval) : 15
+        status: "ACTIVE",
+        sensorInterval:
+          sensorInterval !== undefined ? Number(sensorInterval) : 15,
       },
       include: {
         plant: true,
         polybag: {
-          include: { polybagType: true }
-        }
-      }
+          include: { polybagType: true },
+        },
+      },
     });
 
-    const intervalMin = sensorInterval !== undefined ? Number(sensorInterval) : 15;
-    publishDeviceConfig(deviceId, intervalMin).catch(err => {
-      console.error(`[MQTT Publish] Gagal mengirim config awal saat registrasi device:`, {
-        message: err.message,
-        stack: err.stack,
-        deviceId,
-      });
+    const intervalMin =
+      sensorInterval !== undefined ? Number(sensorInterval) : 15;
+    publishDeviceConfig(deviceId, intervalMin).catch((err) => {
+      console.error(
+        `[MQTT Publish] Gagal mengirim config awal saat registrasi device:`,
+        {
+          message: err.message,
+          stack: err.stack,
+          deviceId,
+        },
+      );
     });
 
-    return sendSuccess(res, 201, 'Device berhasil didaftarkan dan dihubungkan ke akun Anda.', { device: newDevice });
-
+    return sendSuccess(
+      res,
+      201,
+      "Device berhasil didaftarkan dan dihubungkan ke akun Anda.",
+      { device: newDevice },
+    );
   } catch (error) {
-    console.error('[DeviceController] Gagal mendaftarkan device:', {
+    console.error("[DeviceController] Gagal mendaftarkan device:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -118,7 +148,6 @@ exports.registerDevice = async (req, res, next) => {
     return next(error);
   }
 };
-
 
 exports.getMyDevices = async (req, res, next) => {
   try {
@@ -129,15 +158,16 @@ exports.getMyDevices = async (req, res, next) => {
       include: {
         plant: true,
         polybag: {
-          include: { polybagType: true }
-        }
-      }
+          include: { polybagType: true },
+        },
+      },
     });
 
-    return sendSuccess(res, 200, 'Daftar device Anda berhasil diambil.', { devices });
-
+    return sendSuccess(res, 200, "Daftar device Anda berhasil diambil.", {
+      devices,
+    });
   } catch (error) {
-    console.error('[DeviceController] Gagal mengambil daftar device:', {
+    console.error("[DeviceController] Gagal mengambil daftar device:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -146,23 +176,33 @@ exports.getMyDevices = async (req, res, next) => {
   }
 };
 
-
 exports.updateDevice = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
     const { label, plantId, polybagId, status, sensorInterval } = req.body;
 
-    if (sensorInterval !== undefined && (!Number.isInteger(Number(sensorInterval)) || Number(sensorInterval) < 1)) {
-      return sendError(res, 400, '"sensorInterval" harus berupa bilangan bulat dan minimal 1 menit.');
+    if (
+      sensorInterval !== undefined &&
+      (!Number.isInteger(Number(sensorInterval)) || Number(sensorInterval) < 1)
+    ) {
+      return sendError(
+        res,
+        400,
+        '"sensorInterval" harus berupa bilangan bulat dan minimal 1 menit.',
+      );
     }
 
     const device = await prisma.device.findFirst({
-      where: { id: id, userId: userId }
+      where: { id: id, userId: userId },
     });
 
     if (!device) {
-      return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
+      return sendError(
+        res,
+        404,
+        "Device tidak ditemukan atau Anda tidak memiliki akses.",
+      );
     }
 
     const updatedDevice = await prisma.device.update({
@@ -172,33 +212,47 @@ exports.updateDevice = async (req, res, next) => {
         plantId: plantId !== undefined ? plantId : device.plantId,
         polybagId: polybagId !== undefined ? polybagId : device.polybagId,
         status: status !== undefined ? status : device.status,
-        sensorInterval: sensorInterval !== undefined ? Number(sensorInterval) : device.sensorInterval
+        sensorInterval:
+          sensorInterval !== undefined
+            ? Number(sensorInterval)
+            : device.sensorInterval,
       },
       include: {
         plant: true,
         polybag: {
-          include: { polybagType: true }
-        }
-      }
+          include: { polybagType: true },
+        },
+      },
     });
 
-    console.log(`[DeviceController] Menghitung status MQTT config | sensorInterval di body: ${sensorInterval} (Number: ${Number(sensorInterval)}), db lama: ${device.sensorInterval}`);
-    if (sensorInterval !== undefined && Number(sensorInterval) !== device.sensorInterval) {
+    console.log(
+      `[DeviceController] Menghitung status MQTT config | sensorInterval di body: ${sensorInterval} (Number: ${Number(sensorInterval)}), db lama: ${device.sensorInterval}`,
+    );
+    if (
+      sensorInterval !== undefined &&
+      Number(sensorInterval) !== device.sensorInterval
+    ) {
       const intervalMin = Number(sensorInterval);
-      console.log(`[DeviceController] Mengirim data interval baru ke MQTT: ${intervalMin} menit`);
-      publishDeviceConfig(id, intervalMin).catch(err => {
-        console.error(`[MQTT Publish] Gagal mengirim config saat update device:`, {
-          message: err.message,
-          stack: err.stack,
-          deviceId: id,
-        });
+      console.log(
+        `[DeviceController] Mengirim data interval baru ke MQTT: ${intervalMin} menit`,
+      );
+      publishDeviceConfig(id, intervalMin).catch((err) => {
+        console.error(
+          `[MQTT Publish] Gagal mengirim config saat update device:`,
+          {
+            message: err.message,
+            stack: err.stack,
+            deviceId: id,
+          },
+        );
       });
     }
 
-    return sendSuccess(res, 200, 'Info device berhasil diperbarui.', { device: updatedDevice });
-
+    return sendSuccess(res, 200, "Info device berhasil diperbarui.", {
+      device: updatedDevice,
+    });
   } catch (error) {
-    console.error('[DeviceController] Gagal memperbarui device:', {
+    console.error("[DeviceController] Gagal memperbarui device:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -207,31 +261,32 @@ exports.updateDevice = async (req, res, next) => {
     return next(error);
   }
 };
-
 
 exports.deleteDevice = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
 
-
     const device = await prisma.device.findFirst({
-      where: { id: id, userId: userId }
+      where: { id: id, userId: userId },
     });
 
     if (!device) {
-      return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
+      return sendError(
+        res,
+        404,
+        "Device tidak ditemukan atau Anda tidak memiliki akses.",
+      );
     }
 
     await prisma.$transaction([
       prisma.rawSensorLog.deleteMany({ where: { deviceId: id } }),
-      prisma.device.delete({ where: { id: id } })
+      prisma.device.delete({ where: { id: id } }),
     ]);
 
-    return sendSuccess(res, 200, 'Device berhasil dihapus dari akun Anda.');
-
+    return sendSuccess(res, 200, "Device berhasil dihapus dari akun Anda.");
   } catch (error) {
-    console.error('[DeviceController] Gagal menghapus device:', {
+    console.error("[DeviceController] Gagal menghapus device:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -241,25 +296,26 @@ exports.deleteDevice = async (req, res, next) => {
   }
 };
 
-
 exports.getDeviceRecommendation = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
 
-
     const device = await prisma.device.findFirst({
       where: { id: id, userId: userId },
       include: {
         plant: true,
-        polybag: true
-      }
+        polybag: true,
+      },
     });
 
     if (!device) {
-      return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
+      return sendError(
+        res,
+        404,
+        "Device tidak ditemukan atau Anda tidak memiliki akses.",
+      );
     }
-
 
     let sensorData = await getLatestSensorData(id);
     if (!sensorData) {
@@ -268,36 +324,47 @@ exports.getDeviceRecommendation = async (req, res, next) => {
         sensorData = {
           ph: dbLog.ph,
           moisture: dbLog.moisture,
-          timestamp: dbLog.timestamp
+          timestamp: dbLog.timestamp,
         };
       }
     }
 
     if (!sensorData) {
-      return sendSuccess(res, 200, 'Belum ada data sensor tercatat untuk alat ini.', null);
+      return sendSuccess(
+        res,
+        200,
+        "Belum ada data sensor tercatat untuk alat ini.",
+        null,
+      );
     }
 
-
-    const intervalMinutes = Number.isFinite(device.sensorInterval) && device.sensorInterval > 0 ? device.sensorInterval : 1;
+    const intervalMinutes =
+      Number.isFinite(device.sensorInterval) && device.sensorInterval > 0
+        ? device.sensorInterval
+        : 1;
     const ageMs = Date.now() - new Date(sensorData.timestamp).getTime();
     if (ageMs > 2 * intervalMinutes * 60 * 1000) {
-      return sendSuccess(res, 200, 'Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.', null);
+      return sendSuccess(
+        res,
+        200,
+        "Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.",
+        null,
+      );
     }
 
     const recommendation = await generateRecommendation({
       phValue: sensorData.ph,
       moistureValue: sensorData.moisture,
       polybagPreset: device.polybagId,
-      plantIdOrName: device.plantId
+      plantIdOrName: device.plantId,
     });
 
-    return sendSuccess(res, 200, 'Rekomendasi Fuzzy Logic berhasil dibuat.', {
+    return sendSuccess(res, 200, "Rekomendasi Fuzzy Logic berhasil dibuat.", {
       ...recommendation,
-      timestamp: sensorData.timestamp
+      timestamp: sensorData.timestamp,
     });
-
   } catch (error) {
-    console.error('[DeviceController] Gagal menghasilkan rekomendasi device:', {
+    console.error("[DeviceController] Gagal menghasilkan rekomendasi device:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -319,26 +386,39 @@ exports.sendDeviceConfig = async (req, res, next) => {
 
     const parsedDelay = Number(delay_ms);
     if (!Number.isInteger(parsedDelay) || parsedDelay < 100) {
-      return sendError(res, 400, '"delay_ms" harus berupa bilangan bulat dan minimal 100 ms.');
+      return sendError(
+        res,
+        400,
+        '"delay_ms" harus berupa bilangan bulat dan minimal 100 ms.',
+      );
     }
 
     const device = await prisma.device.findFirst({
-      where: { id, userId }
+      where: { id, userId },
     });
 
     if (!device) {
-      return sendError(res, 404, 'Device tidak ditemukan atau Anda tidak memiliki akses.');
+      return sendError(
+        res,
+        404,
+        "Device tidak ditemukan atau Anda tidak memiliki akses.",
+      );
     }
 
     const result = await publishDeviceConfig(id, parsedDelay);
 
-    return sendSuccess(res, 200, `Konfigurasi delay berhasil dikirim ke device "${id}".`, {
-      deviceId: id,
-      topic: result.topic,
-      payload: result.payload
-    });
+    return sendSuccess(
+      res,
+      200,
+      `Konfigurasi delay berhasil dikirim ke device "${id}".`,
+      {
+        deviceId: id,
+        topic: result.topic,
+        payload: result.payload,
+      },
+    );
   } catch (error) {
-    console.error('[DeviceController] Gagal mengirim konfigurasi ke device:', {
+    console.error("[DeviceController] Gagal mengirim konfigurasi ke device:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,

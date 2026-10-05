@@ -21,7 +21,7 @@ interface NominatimResponse {
 
 async function getAddressFromCoords(
   latitude: number,
-  longitude: number
+  longitude: number,
 ): Promise<{ alamatLengkap: string; detail: NominatimAddress } | null> {
   try {
     const response = await fetch(
@@ -30,7 +30,7 @@ async function getAddressFromCoords(
         headers: {
           "User-Agent": "AplikasiCapstoneSuburin/1.0",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -59,7 +59,10 @@ export default function LiveLocationTracker() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const lastGeocodedCoords = useRef<{ latitude: number; longitude: number } | null>(null);
+  const lastGeocodedCoords = useRef<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const lastFetchTime = useRef<number>(0);
 
   useEffect(() => {
@@ -82,8 +85,10 @@ export default function LiveLocationTracker() {
 
         const isSignificantMove =
           !lastGeocodedCoords.current ||
-          Math.abs(latitude - lastGeocodedCoords.current.latitude) > threshold ||
-          Math.abs(longitude - lastGeocodedCoords.current.longitude) > threshold;
+          Math.abs(latitude - lastGeocodedCoords.current.latitude) >
+            threshold ||
+          Math.abs(longitude - lastGeocodedCoords.current.longitude) >
+            threshold;
 
         const isTimeElapsed = now - lastFetchTime.current > 6000;
 
@@ -96,12 +101,14 @@ export default function LiveLocationTracker() {
               if (res) {
                 setAddress(res.alamatLengkap);
               } else {
-                setAddress("Koordinat terdeteksi, nama alamat tidak ditemukan.");
+                setAddress(
+                  "Koordinat terdeteksi, nama alamat tidak ditemukan.",
+                );
               }
             })
             .catch(() => {
               setAddress(
-                "Nama alamat tidak dapat dimuat (Batas limit API OpenStreetMap terlampaui/Koneksi bermasalah)."
+                "Nama alamat tidak dapat dimuat (Batas limit API OpenStreetMap terlampaui/Koneksi bermasalah).",
               );
             })
             .finally(() => {
@@ -115,7 +122,8 @@ export default function LiveLocationTracker() {
         console.warn("Gagal mengambil lokasi:", err.message);
         let errorMsg = "Gagal mengakses sensor GPS.";
         if (err.code === err.PERMISSION_DENIED) {
-          errorMsg = "Izin lokasi ditolak. Harap izinkan akses GPS di pengaturan browser.";
+          errorMsg =
+            "Izin lokasi ditolak. Harap izinkan akses GPS di pengaturan browser.";
         } else if (err.code === err.POSITION_UNAVAILABLE) {
           errorMsg = "Informasi lokasi tidak tersedia saat ini.";
         } else if (err.code === err.TIMEOUT) {
@@ -128,7 +136,7 @@ export default function LiveLocationTracker() {
         enableHighAccuracy: false,
         timeout: 15000,
         maximumAge: 10000,
-      }
+      },
     );
 
     return () => {
@@ -139,13 +147,13 @@ export default function LiveLocationTracker() {
 
   if (isLoading) {
     return (
-      <Card className="flex-row items-center gap-4 p-5 animate-pulse">
-        <div className="h-11 w-11 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-          <MdMyLocation className="text-gray-400 animate-spin" size={20} />
+      <Card className="animate-pulse flex-row items-center gap-4 p-5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+          <MdMyLocation className="animate-spin text-gray-400" size={20} />
         </div>
-        <div className="flex-1 space-y-2.5 min-w-0">
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-3 bg-gray-100 rounded w-3/4"></div>
+        <div className="min-w-0 flex-1 space-y-2.5">
+          <div className="h-4 w-1/4 rounded bg-gray-200"></div>
+          <div className="h-3 w-3/4 rounded bg-gray-100"></div>
         </div>
       </Card>
     );
@@ -153,43 +161,45 @@ export default function LiveLocationTracker() {
 
   if (error) {
     return (
-      <Card className="flex-row items-start gap-4 p-5 bg-rose-50/70 border-rose-100 hover:shadow-sm transition-all duration-300">
-        <div className="h-11 w-11 rounded-xl bg-rose-100 flex items-center justify-center shrink-0 text-rose-600">
+      <Card className="flex-row items-start gap-4 border-rose-100 bg-rose-50/70 p-5 transition-all duration-300 hover:shadow-sm">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
           <MdWarningAmber size={22} />
         </div>
-        <div className="space-y-1 flex-1 min-w-0">
+        <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-rose-950">Pelacakan Lokasi Gagal</span>
+            <span className="text-sm font-semibold text-rose-950">
+              Pelacakan Lokasi Gagal
+            </span>
             <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
               Tidak Aktif
             </span>
           </div>
-          <p className="text-xs text-rose-700/80 leading-relaxed">
-            {error}
-          </p>
+          <p className="text-xs leading-relaxed text-rose-700/80">{error}</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="flex-col md:flex-row md:items-center justify-between gap-4 p-5 hover:shadow-md transition-all duration-300">
+    <Card className="flex-col justify-between gap-4 p-5 transition-all duration-300 hover:shadow-md md:flex-row md:items-center">
       <div className="flex items-start gap-4">
-        <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-md shadow-primary/10 text-white">
+        <div className="bg-primary shadow-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white shadow-md">
           <MdPlace size={24} />
         </div>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-800">Lokasi Kebun (Live)</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-100">
+            <span className="text-sm font-semibold text-gray-800">
+              Lokasi Kebun (Live)
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               </span>
               Aktif
             </span>
           </div>
-          <p className="text-sm text-gray-600 leading-relaxed max-w-2xl">
+          <p className="max-w-2xl text-sm leading-relaxed text-gray-600">
             {address || "Mendapatkan nama lokasi..."}
           </p>
         </div>

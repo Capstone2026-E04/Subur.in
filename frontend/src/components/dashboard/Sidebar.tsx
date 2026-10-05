@@ -4,7 +4,12 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { motion } from "framer-motion";
 import { MdOutlineLogout, MdOutlineSpa } from "react-icons/md";
-import { Sidebar as SidebarRoot, SidebarBody, SidebarLink, useSidebar } from "@/components/ui/sidebar";
+import {
+  Sidebar as SidebarRoot,
+  SidebarBody,
+  SidebarLink,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { NAV_ITEMS } from "./navConfig";
 
 function LogoutButton() {
@@ -12,12 +17,15 @@ function LogoutButton() {
   return (
     <button
       onClick={() => signOut({ callbackUrl: "/login" })}
-      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer bg-red-800 text-white hover:bg-red-700"
+      className="flex w-full cursor-pointer items-center gap-3 rounded-lg bg-red-800 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
     >
       <MdOutlineLogout size={18} className="shrink-0" />
       <motion.span
-        animate={{ opacity: open ? 1 : 0, display: open ? "inline-block" : "none" }}
-        className="whitespace-pre !p-0 !m-0"
+        animate={{
+          opacity: open ? 1 : 0,
+          display: open ? "inline-block" : "none",
+        }}
+        className="!m-0 !p-0 whitespace-pre"
       >
         Keluar
       </motion.span>
@@ -33,8 +41,11 @@ function Logo() {
         <MdOutlineSpa size={18} className="text-white" />
       </div>
       <motion.span
-        animate={{ opacity: open ? 1 : 0, display: open ? "inline-block" : "none" }}
-        className="text-lg font-semibold tracking-tight text-white whitespace-pre !p-0 !m-0"
+        animate={{
+          opacity: open ? 1 : 0,
+          display: open ? "inline-block" : "none",
+        }}
+        className="!m-0 !p-0 text-lg font-semibold tracking-tight whitespace-pre text-white"
       >
         Subur.in
       </motion.span>
@@ -48,7 +59,7 @@ export default function Sidebar() {
   return (
     <SidebarRoot>
       <SidebarBody className="justify-between gap-10">
-        <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+        <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
           <Logo />
 
           <nav className="mt-6 flex flex-col gap-0.5">

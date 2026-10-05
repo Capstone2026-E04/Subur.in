@@ -1,8 +1,13 @@
 "use strict";
 
 const { addClient, removeClient } = require("../sse/sse_manager");
-const { getLatestSensorData } = require("../repositories/sensor_redis_repository");
-const { getLatestSensorLog, getSensorHistory } = require("../repositories/sensor_repository");
+const {
+  getLatestSensorData,
+} = require("../repositories/sensor_redis_repository");
+const {
+  getLatestSensorLog,
+  getSensorHistory,
+} = require("../repositories/sensor_repository");
 const { sendSuccess, sendError } = require("../utils/response");
 
 exports.streamSensorData = (req, res) => {
@@ -35,7 +40,9 @@ exports.getLatestSensor = async (req, res, next) => {
     let data = await getLatestSensorData(deviceId);
 
     if (!data) {
-      console.log(`[SensorController] Cache miss atau Redis down. Mencari data terbaru di database untuk device "${deviceId}"...`);
+      console.log(
+        `[SensorController] Cache miss atau Redis down. Mencari data terbaru di database untuk device "${deviceId}"...`,
+      );
       const dbLog = await getLatestSensorLog(deviceId);
       if (dbLog) {
         data = {
@@ -48,9 +55,13 @@ exports.getLatestSensor = async (req, res, next) => {
     }
 
     if (!data) {
-      return sendError(res, 404, `Belum ada data sensor untuk device "${deviceId}".`);
+      return sendError(
+        res,
+        404,
+        `Belum ada data sensor untuk device "${deviceId}".`,
+      );
     }
-    return sendSuccess(res, 200, 'Data sensor terbaru berhasil diambil.', data);
+    return sendSuccess(res, 200, "Data sensor terbaru berhasil diambil.", data);
   } catch (err) {
     console.error("[SensorController] Gagal mengambil data sensor terbaru:", {
       message: err.message,
@@ -78,7 +89,7 @@ exports.getSensorHistory = async (req, res, next) => {
       lastError = err;
       if (i < retries - 1) {
         console.warn(
-          `[SensorController] Gagal mengambil riwayat (percobaan ke-${i + 1}/${retries}). Mencoba kembali dalam ${delay}ms...`
+          `[SensorController] Gagal mengambil riwayat (percobaan ke-${i + 1}/${retries}). Mencoba kembali dalam ${delay}ms...`,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -86,13 +97,16 @@ exports.getSensorHistory = async (req, res, next) => {
   }
 
   if (history !== null) {
-    return sendSuccess(res, 200, 'Riwayat sensor berhasil diambil.', history);
+    return sendSuccess(res, 200, "Riwayat sensor berhasil diambil.", history);
   }
 
-  console.error("[SensorController] Gagal mengambil riwayat sensor setelah beberapa percobaan:", {
-    message: lastError.message,
-    stack: lastError.stack,
-    deviceId,
-  });
+  console.error(
+    "[SensorController] Gagal mengambil riwayat sensor setelah beberapa percobaan:",
+    {
+      message: lastError.message,
+      stack: lastError.stack,
+      deviceId,
+    },
+  );
   return next(lastError);
 };

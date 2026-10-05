@@ -16,14 +16,16 @@ async function notifyDevice(deviceId, { title, message, type }) {
 
   const device = await prisma.device.findUnique({
     where: { id: deviceId },
-    select: { user: { select: { telegramChatId: true, telegramNotifyEnabled: true } } },
+    select: {
+      user: { select: { telegramChatId: true, telegramNotifyEnabled: true } },
+    },
   });
 
   if (device?.user?.telegramChatId && device.user.telegramNotifyEnabled) {
     await telegramService.sendMessage(
       device.user.telegramChatId,
       `*${title}*\n${message}`,
-      "Markdown"
+      "Markdown",
     );
   }
 

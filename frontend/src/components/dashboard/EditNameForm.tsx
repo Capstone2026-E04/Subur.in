@@ -9,7 +9,10 @@ interface EditNameFormProps {
   backendToken?: string;
 }
 
-export default function EditNameForm({ currentName, backendToken }: EditNameFormProps) {
+export default function EditNameForm({
+  currentName,
+  backendToken,
+}: EditNameFormProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(currentName);
   const [inputValue, setInputValue] = useState(currentName);
@@ -37,17 +40,16 @@ export default function EditNameForm({ currentName, backendToken }: EditNameForm
 
     startTransition(async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/api/users/me`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              ...(backendToken ? { Authorization: `Bearer ${backendToken}` } : {}),
-            },
-            body: JSON.stringify({ name: trimmed }),
-          }
-        );
+        const res = await fetch(`${API_URL}/api/users/me`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(backendToken
+              ? { Authorization: `Bearer ${backendToken}` }
+              : {}),
+          },
+          body: JSON.stringify({ name: trimmed }),
+        });
 
         if (!res.ok) {
           const errText = await res.text();
@@ -69,7 +71,7 @@ export default function EditNameForm({ currentName, backendToken }: EditNameForm
 
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+      <label className="text-xs font-medium tracking-wide text-gray-500 uppercase">
         Nama Tampilan
       </label>
       {isEditing ? (
@@ -83,21 +85,21 @@ export default function EditNameForm({ currentName, backendToken }: EditNameForm
               if (e.key === "Escape") handleCancel();
             }}
             maxLength={60}
-            className="flex-1 rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+            className="border-primary/30 focus:border-primary focus:ring-primary/10 flex-1 rounded-lg border bg-white px-3 py-2 text-sm text-gray-800 transition-all outline-none focus:ring-2"
             placeholder="Masukkan nama baru..."
           />
           <button
             onClick={handleSave}
             disabled={isPending}
             aria-label="Simpan nama"
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white hover:bg-primary-light disabled:opacity-50 transition-colors cursor-pointer"
+            className="bg-primary hover:bg-primary-light flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-white transition-colors disabled:opacity-50"
           >
             <MdCheck size={18} />
           </button>
           <button
             onClick={handleCancel}
             aria-label="Batal"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-black/10 text-gray-500 transition-colors hover:bg-gray-50"
           >
             <MdClose size={18} />
           </button>
@@ -111,7 +113,7 @@ export default function EditNameForm({ currentName, backendToken }: EditNameForm
           <button
             onClick={handleEdit}
             aria-label="Edit nama"
-            className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/8 transition-colors cursor-pointer"
+            className="text-primary hover:bg-primary/8 flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
           >
             <MdEdit size={14} />
             Edit
@@ -120,12 +122,12 @@ export default function EditNameForm({ currentName, backendToken }: EditNameForm
       )}
 
       {status === "success" && (
-        <p className="text-xs text-emerald-600 font-medium">
+        <p className="text-xs font-medium text-emerald-600">
           ✓ Nama berhasil diperbarui.
         </p>
       )}
       {status === "error" && (
-        <p className="text-xs text-rose-500 font-medium">
+        <p className="text-xs font-medium text-rose-500">
           Gagal menyimpan. Coba lagi.
         </p>
       )}

@@ -1,5 +1,3 @@
-
-
 const DEFAULT_PLANT_PARAMS = {
   minPh: 6.0,
   maxPh: 7.0,
@@ -48,29 +46,28 @@ function buildMembershipFunctions(plantParams = DEFAULT_PLANT_PARAMS) {
   // VWC = Volumetric Water Content, fraksi 0-1 dari persentase kelembaban tanah
   const muKering = (vwc) => {
     if (vwc <= 0.15) return 1;
-    if (vwc <= 0.25) return (0.25 - vwc) / 0.10;
+    if (vwc <= 0.25) return (0.25 - vwc) / 0.1;
     return 0;
   };
 
   const muSedang = (vwc) => {
     if (vwc <= 0.15) return 0;
-    if (vwc <= 0.25) return (vwc - 0.15) / 0.10;
-    if (vwc <= 0.30) return (0.30 - vwc) / 0.05;
+    if (vwc <= 0.25) return (vwc - 0.15) / 0.1;
+    if (vwc <= 0.3) return (0.3 - vwc) / 0.05;
     return 0;
   };
 
-
   const muLembap = (vwc) => {
     if (vwc <= 0.25) return 0;
-    if (vwc <= 0.30) return (vwc - 0.25) / 0.05;
+    if (vwc <= 0.3) return (vwc - 0.25) / 0.05;
     if (vwc <= 0.35) return 1;
-    if (vwc <= 0.40) return (0.40 - vwc) / 0.05;
+    if (vwc <= 0.4) return (0.4 - vwc) / 0.05;
     return 0;
   };
 
   const muJenuh = (vwc) => {
     if (vwc <= 0.35) return 0;
-    if (vwc <= 0.40) return (vwc - 0.35) / 0.05;
+    if (vwc <= 0.4) return (vwc - 0.35) / 0.05;
     return 1;
   };
 
@@ -79,21 +76,21 @@ function buildMembershipFunctions(plantParams = DEFAULT_PLANT_PARAMS) {
   };
 
   const fuzzify = (ph, moisturePercent) => {
-    const { toVwc } = require('../utils/mathematical');
+    const { toVwc } = require("../utils/mathematical");
     const vwc = toVwc(moisturePercent);
     return {
       ph: {
         sangatAsam: muSangatAsam(ph),
-        asam:       muAsam(ph),
-        optimal:    muOptimal(ph),
-        basa:       muBasa(ph),
+        asam: muAsam(ph),
+        optimal: muOptimal(ph),
+        basa: muBasa(ph),
         sangatBasa: muSangatBasa(ph),
       },
       moisture: {
         kering: muKering(vwc),
         sedang: muSedang(vwc),
         lembap: muLembap(vwc),
-        jenuh:  muJenuh(vwc),
+        jenuh: muJenuh(vwc),
       },
     };
   };
@@ -112,8 +109,6 @@ function buildMembershipFunctions(plantParams = DEFAULT_PLANT_PARAMS) {
     fuzzify,
   };
 }
-
-
 
 const defaultMfs = buildMembershipFunctions();
 

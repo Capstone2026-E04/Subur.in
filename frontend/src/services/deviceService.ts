@@ -22,7 +22,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(
-      json?.message || `Request gagal: ${res.status} ${res.statusText}`
+      json?.message || `Request gagal: ${res.status} ${res.statusText}`,
     );
   }
   return json as T;
@@ -33,39 +33,55 @@ export async function fetchDevices(token: string): Promise<RegisteredDevice[]> {
     headers: headers(token),
     cache: "no-store",
   });
-  const json = await handleResponse<{ success: boolean; data: { devices?: RegisteredDevice[]; data?: RegisteredDevice[] } | RegisteredDevice[] }>(res);
+  const json = await handleResponse<{
+    success: boolean;
+    data:
+      | { devices?: RegisteredDevice[]; data?: RegisteredDevice[] }
+      | RegisteredDevice[];
+  }>(res);
   if (Array.isArray(json)) return json;
-  if (Array.isArray((json as { data: RegisteredDevice[] }).data)) return (json as { data: RegisteredDevice[] }).data;
+  if (Array.isArray((json as { data: RegisteredDevice[] }).data))
+    return (json as { data: RegisteredDevice[] }).data;
   const inner = (json as { data: { devices?: RegisteredDevice[] } }).data;
   return inner?.devices ?? [];
 }
 
 export async function claimDevice(
   token: string,
-  payload: ClaimDevicePayload
+  payload: ClaimDevicePayload,
 ): Promise<RegisteredDevice> {
   const res = await fetch(`${API_BASE}/api/devices`, {
     method: "POST",
     headers: headers(token),
     body: JSON.stringify(payload),
   });
-  const json = await handleResponse<{ success: boolean; data: RegisteredDevice | { device: RegisteredDevice } }>(res);
-  const data = (json as { data: RegisteredDevice | { device: RegisteredDevice } }).data;
+  const json = await handleResponse<{
+    success: boolean;
+    data: RegisteredDevice | { device: RegisteredDevice };
+  }>(res);
+  const data = (
+    json as { data: RegisteredDevice | { device: RegisteredDevice } }
+  ).data;
   return (data as { device: RegisteredDevice }).device ?? data;
 }
 
 export async function updateDevice(
   token: string,
   id: string,
-  payload: UpdateDevicePayload
+  payload: UpdateDevicePayload,
 ): Promise<RegisteredDevice> {
   const res = await fetch(`${API_BASE}/api/devices/${id}`, {
     method: "PATCH",
     headers: headers(token),
     body: JSON.stringify(payload),
   });
-  const json = await handleResponse<{ success: boolean; data: RegisteredDevice | { device: RegisteredDevice } }>(res);
-  const data = (json as { data: RegisteredDevice | { device: RegisteredDevice } }).data;
+  const json = await handleResponse<{
+    success: boolean;
+    data: RegisteredDevice | { device: RegisteredDevice };
+  }>(res);
+  const data = (
+    json as { data: RegisteredDevice | { device: RegisteredDevice } }
+  ).data;
   return (data as { device: RegisteredDevice }).device ?? data;
 }
 
@@ -77,13 +93,13 @@ export async function deleteDevice(token: string, id: string): Promise<void> {
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
     throw new Error(
-      json?.message || `Gagal menghapus alat: ${res.status} ${res.statusText}`
+      json?.message || `Gagal menghapus alat: ${res.status} ${res.statusText}`,
     );
   }
 }
 
 export async function fetchDiscoveredDevices(
-  token: string
+  token: string,
 ): Promise<DiscoveredDevice[]> {
   const res = await fetch(`${API_BASE}/api/devices/discovered`, {
     headers: headers(token),
@@ -101,7 +117,10 @@ export async function fetchPlants(token: string): Promise<Plant[]> {
     headers: headers(token),
     cache: "no-store",
   });
-  const json = await handleResponse<{ success: boolean; data: Plant[] | { plants: Plant[] } }>(res);
+  const json = await handleResponse<{
+    success: boolean;
+    data: Plant[] | { plants: Plant[] };
+  }>(res);
   const data = (json as { data: Plant[] | { plants: Plant[] } }).data;
   if (Array.isArray(data)) return data;
   return (data as { plants: Plant[] }).plants ?? [];
@@ -112,8 +131,13 @@ export async function fetchPolybags(token: string): Promise<PolybagOption[]> {
     headers: headers(token),
     cache: "no-store",
   });
-  const json = await handleResponse<{ success: boolean; data: PolybagOption[] | { polybags: PolybagOption[] } }>(res);
-  const data = (json as { data: PolybagOption[] | { polybags: PolybagOption[] } }).data;
+  const json = await handleResponse<{
+    success: boolean;
+    data: PolybagOption[] | { polybags: PolybagOption[] };
+  }>(res);
+  const data = (
+    json as { data: PolybagOption[] | { polybags: PolybagOption[] } }
+  ).data;
   if (Array.isArray(data)) return data;
   return (data as { polybags: PolybagOption[] }).polybags ?? [];
 }
@@ -121,37 +145,52 @@ export async function fetchPolybags(token: string): Promise<PolybagOption[]> {
 export async function fetchSensorHistory(
   token: string,
   deviceId: string,
-  limit: number = 30
-): Promise<SensorHistoryItem[]> { 
-  const res = await fetch(`${API_BASE}/api/sensors/${deviceId}/history?limit=${limit}`, {
-    headers: headers(token),
-    cache: "no-store",
-  });
-  const json = await handleResponse<{ success: boolean; data: SensorHistoryItem[] }>(res);
+  limit: number = 30,
+): Promise<SensorHistoryItem[]> {
+  const res = await fetch(
+    `${API_BASE}/api/sensors/${deviceId}/history?limit=${limit}`,
+    {
+      headers: headers(token),
+      cache: "no-store",
+    },
+  );
+  const json = await handleResponse<{
+    success: boolean;
+    data: SensorHistoryItem[];
+  }>(res);
   return json.data ?? [];
 }
 
 export async function fetchDeviceRecommendation(
   token: string,
-  deviceId: string
+  deviceId: string,
 ): Promise<DeviceRecommendation | null> {
-  const res = await fetch(`${API_BASE}/api/devices/${deviceId}/recommendation`, {
-    headers: headers(token),
-    cache: "no-store",
-  });
-  const json = await handleResponse<{ success: boolean; data: DeviceRecommendation | null }>(res);
+  const res = await fetch(
+    `${API_BASE}/api/devices/${deviceId}/recommendation`,
+    {
+      headers: headers(token),
+      cache: "no-store",
+    },
+  );
+  const json = await handleResponse<{
+    success: boolean;
+    data: DeviceRecommendation | null;
+  }>(res);
   return json.data ?? null;
 }
 
 export async function fetchRecommendationHistory(
   token: string,
-  deviceId?: string
+  deviceId?: string,
 ): Promise<RecommendationLogItem[]> {
   const query = deviceId ? `?deviceId=${deviceId}` : "";
   const res = await fetch(`${API_BASE}/api/recommendations${query}`, {
     headers: headers(token),
     cache: "no-store",
   });
-  const json = await handleResponse<{ success: boolean; data: { logs: RecommendationLogItem[] } }>(res);
+  const json = await handleResponse<{
+    success: boolean;
+    data: { logs: RecommendationLogItem[] };
+  }>(res);
   return json.data?.logs ?? [];
 }

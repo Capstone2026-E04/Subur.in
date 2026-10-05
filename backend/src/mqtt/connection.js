@@ -5,20 +5,19 @@ require("dotenv").config();
 
 let client = null;
 
-
 function connectMQTT() {
   if (client) return client;
 
   const host = process.env.MQTT_BROKER_URL || "localhost";
   const port = process.env.MQTT_PORT || "1883";
   let brokerUrl = host;
-  
+
   if (!/^mqtt(s)?:\/\//.test(host)) {
     const protocol = port === "8883" ? "mqtts" : "mqtt";
     const cleanHost = host.split(":")[0];
     brokerUrl = `${protocol}://${cleanHost}:${port}`;
   }
-  
+
   const options = {
     username: process.env.MQTT_USERNAME,
     password: process.env.MQTT_PASSWORD,
@@ -26,14 +25,14 @@ function connectMQTT() {
     clean: true,
     reconnectPeriod: 5000,
     connectTimeout: 30000,
-    
-    
-    
-    rejectUnauthorized: false 
+
+    rejectUnauthorized: false,
   };
 
-  console.log(`[MQTT Client]  Mencoba terhubung ke EMQX Cloud di: ${brokerUrl}`);
-  
+  console.log(
+    `[MQTT Client]  Mencoba terhubung ke EMQX Cloud di: ${brokerUrl}`,
+  );
+
   client = mqtt.connect(brokerUrl, options);
 
   client.on("connect", () => {

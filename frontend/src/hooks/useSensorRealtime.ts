@@ -28,9 +28,7 @@ export function useSensorRealtime(deviceId: string): SensorData {
 
   const fetchLatest = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${API_BASE}/api/sensors/${deviceId}/latest`
-      );
+      const res = await fetch(`${API_BASE}/api/sensors/${deviceId}/latest`);
       if (!res.ok) return;
       const json = await res.json();
       if (json?.success && json?.data && isMountedRef.current) {
@@ -39,8 +37,7 @@ export function useSensorRealtime(deviceId: string): SensorData {
         if (m !== undefined) setMoisture(m);
         if (timestamp) setLastUpdated(timestamp);
       }
-    } catch {
-    }
+    } catch {}
   }, [deviceId]);
 
   const openStream = useCallback(() => {
@@ -53,9 +50,7 @@ export function useSensorRealtime(deviceId: string): SensorData {
 
     setConnectionStatus("connecting");
 
-    const es = new EventSource(
-      `${API_BASE}/api/sensors/${deviceId}/stream`
-    );
+    const es = new EventSource(`${API_BASE}/api/sensors/${deviceId}/stream`);
     esRef.current = es;
 
     es.onopen = () => {
@@ -76,8 +71,7 @@ export function useSensorRealtime(deviceId: string): SensorData {
         if (payload?.moisture !== undefined) setMoisture(payload.moisture);
         if (payload?.timestamp) setLastUpdated(payload.timestamp);
         setConnectionStatus("connected");
-      } catch {
-      }
+      } catch {}
     };
 
     es.onerror = () => {

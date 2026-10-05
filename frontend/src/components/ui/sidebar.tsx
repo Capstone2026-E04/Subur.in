@@ -19,7 +19,7 @@ interface SidebarContextProps {
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(
-  undefined
+  undefined,
 );
 
 export const useSidebar = () => {
@@ -89,8 +89,8 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-full px-4 py-4 hidden md:flex md:flex-col bg-primary text-white w-[300px] flex-shrink-0",
-        className
+        "bg-primary hidden h-full w-[300px] flex-shrink-0 px-4 py-4 text-white md:flex md:flex-col",
+        className,
       )}
       animate={{
         width: animate ? (open ? "300px" : "72px") : "300px",
@@ -114,16 +114,16 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-14 px-4 py-3 flex flex-row md:hidden items-center justify-between bg-primary text-white w-full"
+          "bg-primary flex h-14 w-full flex-row items-center justify-between px-4 py-3 text-white md:hidden",
         )}
         {...props}
       >
-        <div className="flex justify-end z-20 w-full">
+        <div className="z-20 flex w-full justify-end">
           <button
             type="button"
             onClick={() => setOpen(!open)}
             aria-label="Buka menu navigasi"
-            className="flex h-11 w-11 items-center justify-center text-white cursor-pointer"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center text-white"
           >
             <FiMenu className="h-5 w-5" />
           </button>
@@ -139,15 +139,15 @@ export const MobileSidebar = ({
                 ease: "easeInOut",
               }}
               className={cn(
-                "fixed h-full w-full inset-0 bg-primary text-white p-6 sm:p-10 z-[100] flex flex-col justify-between",
-                className
+                "bg-primary fixed inset-0 z-[100] flex h-full w-full flex-col justify-between p-6 text-white sm:p-10",
+                className,
               )}
             >
               <button
                 type="button"
                 onClick={() => setOpen(!open)}
                 aria-label="Tutup menu navigasi"
-                className="absolute right-4 top-4 sm:right-8 sm:top-8 z-50 flex h-11 w-11 items-center justify-center text-white cursor-pointer"
+                className="absolute top-4 right-4 z-50 flex h-11 w-11 cursor-pointer items-center justify-center text-white sm:top-8 sm:right-8"
               >
                 <FiX className="h-5 w-5" />
               </button>
@@ -176,11 +176,11 @@ export const SidebarLink = ({
     <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-3 group/sidebar rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+        "group/sidebar flex items-center justify-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
         active
           ? "bg-white/15 text-white"
           : "text-white/70 hover:bg-white/10 hover:text-white",
-        className
+        className,
       )}
       {...props}
     >
@@ -190,7 +190,7 @@ export const SidebarLink = ({
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="whitespace-pre inline-block !p-0 !m-0"
+        className="!m-0 inline-block !p-0 whitespace-pre"
       >
         {link.label}
       </motion.span>

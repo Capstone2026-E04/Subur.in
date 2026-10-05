@@ -51,17 +51,14 @@ export default function Topbar({ user }: TopbarProps) {
     if (devices.length === 0 || !token) return;
 
     const streams = devices.map((device) => {
-      const es = new EventSource(
-        `${API_URL}/api/sensors/${device.id}/stream`
-      );
+      const es = new EventSource(`${API_URL}/api/sensors/${device.id}/stream`);
       es.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
           if (payload?.notification) {
             loadUnreadCount();
           }
-        } catch (e) {
-        }
+        } catch (e) {}
       };
       return es;
     });
@@ -74,7 +71,8 @@ export default function Topbar({ user }: TopbarProps) {
   const segments = pathname.split("/").filter(Boolean);
 
   const breadcrumbs = segments.map((segment, index) => {
-    const label = labelMap[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+    const label =
+      labelMap[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
     const href = "/" + segments.slice(0, index + 1).join("/");
     const isLast = index === segments.length - 1;
 
@@ -86,15 +84,21 @@ export default function Topbar({ user }: TopbarProps) {
   });
 
   return (
-    <header className="flex h-16 items-center justify-between gap-3 border-b border-black/5 bg-background px-4 sm:px-6">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs sm:text-sm font-medium min-w-0 overflow-x-auto">
+    <header className="bg-background flex h-16 items-center justify-between gap-3 border-b border-black/5 px-4 sm:px-6">
+      <nav
+        aria-label="Breadcrumb"
+        className="flex min-w-0 items-center gap-1.5 overflow-x-auto text-xs font-medium sm:text-sm"
+      >
         {breadcrumbs.map((crumb, idx) => (
-          <div key={crumb.href} className="flex items-center gap-1.5 shrink-0">
+          <div key={crumb.href} className="flex shrink-0 items-center gap-1.5">
             {idx > 0 && <span className="text-gray-300">/</span>}
             {crumb.isLast ? (
               <span className="text-primary font-semibold">{crumb.label}</span>
             ) : (
-              <Link href={crumb.href} className="text-gray-500 hover:text-primary transition-colors">
+              <Link
+                href={crumb.href}
+                className="hover:text-primary text-gray-500 transition-colors"
+              >
                 {crumb.label}
               </Link>
             )}
@@ -102,19 +106,19 @@ export default function Topbar({ user }: TopbarProps) {
         ))}
       </nav>
 
-      <div className="flex items-center gap-3 shrink-0">
-        <span className="hidden md:block text-sm sm:text-md font-semibold text-gray-700 truncate max-w-[160px]">
+      <div className="flex shrink-0 items-center gap-3">
+        <span className="sm:text-md hidden max-w-[160px] truncate text-sm font-semibold text-gray-700 md:block">
           Halo, {user?.name || "Pengguna"}
         </span>
 
         <Link
           href="/dashboard/notifications"
           aria-label="Notifikasi"
-          className="relative h-9 w-9 flex items-center justify-center rounded-xl border border-black/5 bg-white text-gray-500 hover:text-primary hover:shadow-sm hover:border-black/10 transition-all shrink-0 mr-1 cursor-pointer"
+          className="hover:text-primary relative mr-1 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-black/5 bg-white text-gray-500 transition-all hover:border-black/10 hover:shadow-sm"
         >
           <MdNotifications size={20} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white ring-2 ring-white animate-pulse">
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-pulse items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white ring-2 ring-white">
               {unreadCount}
             </span>
           )}
@@ -123,7 +127,7 @@ export default function Topbar({ user }: TopbarProps) {
         <Link
           href="/dashboard/profile"
           aria-label="Profil"
-          className="flex h-9 w-9 overflow-hidden items-center justify-center rounded-full border border-primary/10 bg-primary text-white hover:border-primary-light transition-colors shrink-0"
+          className="border-primary/10 bg-primary hover:border-primary-light flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border text-white transition-colors"
         >
           {user?.image ? (
             // eslint-disable-next-line @next/next/no-img-element

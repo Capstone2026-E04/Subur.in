@@ -10,7 +10,9 @@ function parseCallbackData(data) {
 }
 
 function buildCallbackData(domain, action, value) {
-  return value !== undefined && value !== null ? `${domain}:${action}:${value}` : `${domain}:${action}`;
+  return value !== undefined && value !== null
+    ? `${domain}:${action}:${value}`
+    : `${domain}:${action}`;
 }
 
 module.exports = { parseCallbackData, buildCallbackData };

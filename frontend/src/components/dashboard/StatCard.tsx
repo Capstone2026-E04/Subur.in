@@ -26,12 +26,14 @@ export default function StatCard({
       >
         <Icon size={20} className="text-white" />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-500 font-medium truncate">{label}</p>
-        <p className="text-xl font-semibold text-primary leading-tight">{value}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        <p className="text-primary text-xl leading-tight font-semibold">
+          {value}
+        </p>
         {trend && (
           <p
-            className={`text-xs font-medium mt-0.5 ${
+            className={`mt-0.5 text-xs font-medium ${
               trend.positive ? "text-emerald-600" : "text-rose-500"
             }`}
           >

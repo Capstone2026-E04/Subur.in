@@ -47,62 +47,67 @@ export default function DeviceCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.06, ease: "easeOut" }}
-      className="group relative flex rounded-2xl bg-card border border-border shadow-xs overflow-hidden hover:shadow-md transition-shadow duration-300"
+      className="group bg-card border-border relative flex overflow-hidden rounded-2xl border shadow-xs transition-shadow duration-300 hover:shadow-md"
     >
       <div
         className={`w-1.5 shrink-0 ${isActive ? "bg-emerald-500" : "bg-gray-200"}`}
       />
 
-      <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
-        <div className="flex items-center gap-3 min-w-0 md:max-w-xs shrink-0">
+      <div className="flex flex-1 flex-col justify-between gap-4 p-5 md:flex-row md:items-center">
+        <div className="flex min-w-0 shrink-0 items-center gap-3 md:max-w-xs">
           <div
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${isActive ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-400"}`}
           >
             <MdOutlineDeviceHub size={22} />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-gray-800 truncate leading-tight">
+            <p className="truncate text-sm leading-tight font-bold text-gray-800">
               {device.label}
             </p>
-            <p className="text-xs text-gray-400 font-mono mt-1 truncate">
+            <p className="mt-1 truncate font-mono text-xs text-gray-400">
               {device.deviceId}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
           <div
-            className={`flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
               isActive
                 ? "bg-emerald-50 text-emerald-700"
                 : "bg-gray-100 text-gray-500"
             }`}
           >
-            <MdCircle size={7} className={isActive ? "text-emerald-500 animate-pulse" : "text-gray-400"} />
+            <MdCircle
+              size={7}
+              className={
+                isActive ? "animate-pulse text-emerald-500" : "text-gray-400"
+              }
+            />
             {isActive ? "Aktif" : "Tidak Aktif"}
           </div>
 
           {device.plant && (
-            <div className="flex items-center gap-1.5 rounded-lg bg-primary/8 px-2.5 py-1.5">
+            <div className="bg-primary/8 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5">
               <MdOutlineSpa size={13} className="text-primary shrink-0" />
-              <span className="text-xs font-medium text-primary/80 truncate max-w-[140px]">
+              <span className="text-primary/80 max-w-[140px] truncate text-xs font-medium">
                 {device.plant.name}
               </span>
             </div>
           )}
           {device.polybag && (
             <div className="flex items-center gap-1.5 rounded-lg bg-sky-50 px-2.5 py-1.5">
-              <MdOutlineWaterDrop size={13} className="text-sky-600 shrink-0" />
-              <span className="text-xs font-medium text-sky-700 truncate max-w-[140px]">
+              <MdOutlineWaterDrop size={13} className="shrink-0 text-sky-600" />
+              <span className="max-w-[140px] truncate text-xs font-medium text-sky-700">
                 {(() => {
                   const pb = device.polybag;
                   const name = pb.polybagType?.name || pb.name;
                   const volume = pb.soilVolumeLiter;
                   const diameter = pb.polybagType?.diameter;
                   const height = pb.polybagType?.height;
-                  
+
                   const nameStr = name && name !== "undefined" ? name : "";
-                  
+
                   let sizeStr = "";
                   if (volume) {
                     sizeStr = `${volume}L`;
@@ -125,16 +130,16 @@ export default function DeviceCard({
             </div>
           )}
           {device.sensorInterval !== undefined && (
-            <div className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 border border-amber-200/40">
-              <MdAccessTime size={13} className="text-amber-600 shrink-0" />
-              <span className="text-xs font-medium text-amber-700 truncate">
+            <div className="flex items-center gap-1.5 rounded-lg border border-amber-200/40 bg-amber-50 px-2.5 py-1.5">
+              <MdAccessTime size={13} className="shrink-0 text-amber-600" />
+              <span className="truncate text-xs font-medium text-amber-700">
                 Tiap {device.sensorInterval} mnt
               </span>
             </div>
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center md:items-end lg:items-center justify-between md:justify-end gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-border">
+        <div className="border-border flex shrink-0 flex-col items-start justify-between gap-3 border-t pt-3 sm:flex-row sm:items-center md:flex-col md:items-end md:justify-end md:border-t-0 md:pt-0 lg:flex-row lg:items-center">
           <div className="flex items-center gap-1.5 text-xs text-gray-400">
             <MdAccessTime size={13} className="shrink-0" />
             <span>{formatRelativeTime(device.lastSeenAt)}</span>
@@ -145,7 +150,7 @@ export default function DeviceCard({
               id={`edit-device-${device.id}`}
               onClick={() => onEdit(device)}
               aria-label={`Edit ${device.label}`}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-primary/8 hover:text-primary transition-colors cursor-pointer"
+              className="hover:bg-primary/8 hover:text-primary flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors"
             >
               <MdOutlineEdit size={14} />
               Edit
@@ -154,7 +159,7 @@ export default function DeviceCard({
               id={`delete-device-${device.id}`}
               onClick={() => onDelete(device)}
               aria-label={`Hapus ${device.label}`}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-rose-50 hover:text-rose-600"
             >
               <MdOutlineDeleteOutline size={14} />
               Hapus

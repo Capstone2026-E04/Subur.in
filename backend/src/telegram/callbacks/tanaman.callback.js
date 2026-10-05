@@ -16,7 +16,9 @@ async function handleCallback(ctx) {
 
   await setActiveDeviceId(ctx.telegramUserId, device.id);
   await ctx.editKeyboard(null);
-  await ctx.reply(`Tanaman aktif diatur ke: ${device.label} (${device.plant?.name || "?"}).`);
+  await ctx.reply(
+    `Tanaman aktif diatur ke: ${device.label} (${device.plant?.name || "?"}).`,
+  );
 }
 
 module.exports = { handleCallback };

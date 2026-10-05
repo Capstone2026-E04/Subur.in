@@ -6,7 +6,8 @@ const { commandMap } = require("./commands/index");
 const { callbackHandlers } = require("./callbacks/index");
 const { parseCallbackData } = require("./utils/parse_callback_data");
 
-const UNKNOWN_COMMAND_MESSAGE = "Perintah tidak dikenali. Kirim /help untuk melihat daftar perintah.";
+const UNKNOWN_COMMAND_MESSAGE =
+  "Perintah tidak dikenali. Kirim /help untuk melihat daftar perintah.";
 
 async function findUserByChatId(chatId) {
   return prisma.user.findUnique({ where: { telegramChatId: String(chatId) } });
@@ -20,7 +21,17 @@ async function fetchDevicesForUser(user) {
   });
 }
 
-function buildCtx({ chatId, telegramUserId, user, devices, message, callbackQueryId, parsed, args, text }) {
+function buildCtx({
+  chatId,
+  telegramUserId,
+  user,
+  devices,
+  message,
+  callbackQueryId,
+  parsed,
+  args,
+  text,
+}) {
   return {
     chatId,
     telegramUserId,
@@ -31,10 +42,22 @@ function buildCtx({ chatId, telegramUserId, user, devices, message, callbackQuer
     parsed,
     args: args || [],
     text,
-    reply: (msgText, replyMarkup) => telegramApi.sendMessage(chatId, msgText, undefined, replyMarkup),
-    replyPhoto: (photoUrl, caption) => telegramApi.sendPhoto(chatId, photoUrl, caption),
-    answerCallback: (text2) => (callbackQueryId ? telegramApi.answerCallbackQuery(callbackQueryId, text2) : Promise.resolve()),
-    editKeyboard: (replyMarkup) => (message ? telegramApi.editMessageReplyMarkup(chatId, message.message_id, replyMarkup) : Promise.resolve()),
+    reply: (msgText, replyMarkup) =>
+      telegramApi.sendMessage(chatId, msgText, undefined, replyMarkup),
+    replyPhoto: (photoUrl, caption) =>
+      telegramApi.sendPhoto(chatId, photoUrl, caption),
+    answerCallback: (text2) =>
+      callbackQueryId
+        ? telegramApi.answerCallbackQuery(callbackQueryId, text2)
+        : Promise.resolve(),
+    editKeyboard: (replyMarkup) =>
+      message
+        ? telegramApi.editMessageReplyMarkup(
+            chatId,
+            message.message_id,
+            replyMarkup,
+          )
+        : Promise.resolve(),
   };
 }
 
@@ -52,7 +75,15 @@ async function handleMessage(message) {
   const commandName = rawCommand.slice(1).split("@")[0].toLowerCase();
   const command = commandMap[commandName];
 
-  const ctx = buildCtx({ chatId, telegramUserId, user, devices, message, args, text });
+  const ctx = buildCtx({
+    chatId,
+    telegramUserId,
+    user,
+    devices,
+    message,
+    args,
+    text,
+  });
 
   if (!command) {
     await ctx.reply(UNKNOWN_COMMAND_MESSAGE);

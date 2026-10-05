@@ -31,7 +31,9 @@ export default async function DashboardLayout({
   }
 
   const backendToken = session.user.backendToken;
-  const backendUser = backendToken ? await fetchUserProfile(backendToken) : null;
+  const backendUser = backendToken
+    ? await fetchUserProfile(backendToken)
+    : null;
 
   const freshUser = {
     name: backendUser?.name ?? session.user.name,
@@ -41,11 +43,13 @@ export default async function DashboardLayout({
 
   return (
     <SessionProvider session={session} basePath="/api/nextauth">
-      <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-background">
+      <div className="bg-background flex h-screen flex-col overflow-hidden md:flex-row">
         <Sidebar />
-        <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <Topbar user={freshUser} />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">{children}</main>
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
+            {children}
+          </main>
         </div>
       </div>
     </SessionProvider>

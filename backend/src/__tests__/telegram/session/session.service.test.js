@@ -28,7 +28,9 @@ describe("getSession", () => {
   });
 
   it("returns the parsed session data when one is stored", async () => {
-    mockRedisClient.get.mockResolvedValue(JSON.stringify({ activeDeviceId: "device-1" }));
+    mockRedisClient.get.mockResolvedValue(
+      JSON.stringify({ activeDeviceId: "device-1" }),
+    );
 
     const result = await getSession(TELEGRAM_USER_ID);
 
@@ -61,7 +63,9 @@ describe("setSession", () => {
 
 describe("updateSession", () => {
   it("merges the patch onto the existing session instead of overwriting it", async () => {
-    mockRedisClient.get.mockResolvedValue(JSON.stringify({ activeDeviceId: "device-1" }));
+    mockRedisClient.get.mockResolvedValue(
+      JSON.stringify({ activeDeviceId: "device-1" }),
+    );
     mockRedisClient.set.mockResolvedValue("OK");
 
     await updateSession(TELEGRAM_USER_ID, { label: "x" });
@@ -81,7 +85,9 @@ describe("clearSession", () => {
 
     await clearSession(TELEGRAM_USER_ID);
 
-    expect(mockRedisClient.del).toHaveBeenCalledWith(`bot_session:${TELEGRAM_USER_ID}`);
+    expect(mockRedisClient.del).toHaveBeenCalledWith(
+      `bot_session:${TELEGRAM_USER_ID}`,
+    );
   });
 });
 
@@ -118,14 +124,18 @@ describe("resolveActiveDevice", () => {
   });
 
   it("auto-resolves a single device without touching Redis", async () => {
-    const result = await resolveActiveDevice(TELEGRAM_USER_ID, [{ id: "only-device" }]);
+    const result = await resolveActiveDevice(TELEGRAM_USER_ID, [
+      { id: "only-device" },
+    ]);
 
     expect(result).toEqual({ id: "only-device" });
     expect(mockRedisClient.get).not.toHaveBeenCalled();
   });
 
   it("picks the active device from the session when there is more than one device", async () => {
-    mockRedisClient.get.mockResolvedValue(JSON.stringify({ activeDeviceId: "device-2" }));
+    mockRedisClient.get.mockResolvedValue(
+      JSON.stringify({ activeDeviceId: "device-2" }),
+    );
     const devices = [{ id: "device-1" }, { id: "device-2" }];
 
     const result = await resolveActiveDevice(TELEGRAM_USER_ID, devices);
@@ -134,7 +144,9 @@ describe("resolveActiveDevice", () => {
   });
 
   it("returns null when the active device id is not among the current devices", async () => {
-    mockRedisClient.get.mockResolvedValue(JSON.stringify({ activeDeviceId: "device-stale" }));
+    mockRedisClient.get.mockResolvedValue(
+      JSON.stringify({ activeDeviceId: "device-stale" }),
+    );
     const devices = [{ id: "device-1" }, { id: "device-2" }];
 
     const result = await resolveActiveDevice(TELEGRAM_USER_ID, devices);

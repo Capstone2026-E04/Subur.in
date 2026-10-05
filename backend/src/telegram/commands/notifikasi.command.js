@@ -1,7 +1,9 @@
 "use strict";
 
 const prisma = require("../../database/connections/prisma_client");
-const { requireLinkedDevice } = require("../middlewares/require_linked_device.middleware");
+const {
+  requireLinkedDevice,
+} = require("../middlewares/require_linked_device.middleware");
 const { buildNotifikasiKeyboard } = require("../keyboards/notifikasi.keyboard");
 
 function statusText(enabled) {
@@ -14,7 +16,9 @@ async function setNotify(ctx, enabled) {
     data: { telegramNotifyEnabled: enabled },
   });
   await ctx.reply(
-    enabled ? "Notifikasi perubahan kategori C1-C9 diaktifkan." : "Notifikasi perubahan kategori C1-C9 dinonaktifkan.",
+    enabled
+      ? "Notifikasi perubahan kategori C1-C9 diaktifkan."
+      : "Notifikasi perubahan kategori C1-C9 dinonaktifkan.",
   );
 }
 

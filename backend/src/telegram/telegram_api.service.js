@@ -15,11 +15,17 @@ async function callTelegramApi(method, body) {
     );
     const result = await response.json();
     if (!result.ok) {
-      console.error(`[TelegramApiService] Telegram API menolak permintaan ${method} (fallback: gagal senyap, tidak menghambat caller):`, { body, description: result.description });
+      console.error(
+        `[TelegramApiService] Telegram API menolak permintaan ${method} (fallback: gagal senyap, tidak menghambat caller):`,
+        { body, description: result.description },
+      );
     }
     return result;
   } catch (error) {
-    console.error(`[TelegramApiService] Gagal memanggil ${method} ke Telegram (fallback: gagal senyap, tidak menghambat caller):`, { message: error.message, stack: error.stack, body });
+    console.error(
+      `[TelegramApiService] Gagal memanggil ${method} ke Telegram (fallback: gagal senyap, tidak menghambat caller):`,
+      { message: error.message, stack: error.stack, body },
+    );
     return null;
   }
 }
@@ -46,7 +52,9 @@ async function editMessageReplyMarkup(chatId, messageId, replyMarkup) {
   return callTelegramApi("editMessageReplyMarkup", {
     chat_id: chatId,
     message_id: messageId,
-    ...(replyMarkup ? { reply_markup: replyMarkup } : { reply_markup: { inline_keyboard: [] } }),
+    ...(replyMarkup
+      ? { reply_markup: replyMarkup }
+      : { reply_markup: { inline_keyboard: [] } }),
   });
 }
 

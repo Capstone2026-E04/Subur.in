@@ -1,7 +1,6 @@
-const prisma = require('../database/connections/prisma_client');
-const telegramService = require('../telegram/telegram_api.service');
-const { sendSuccess, sendError } = require('../utils/response');
-
+const prisma = require("../database/connections/prisma_client");
+const telegramService = require("../telegram/telegram_api.service");
+const { sendSuccess, sendError } = require("../utils/response");
 
 exports.getProfile = async (req, res, next) => {
   try {
@@ -17,21 +16,20 @@ exports.getProfile = async (req, res, next) => {
         telegramChatId: true,
         createdAt: true,
         updatedAt: true,
-      }
+      },
     });
 
     if (!user) {
-      return sendError(res, 404, 'Pengguna tidak ditemukan.');
+      return sendError(res, 404, "Pengguna tidak ditemukan.");
     }
 
     const { telegramChatId, ...userWithoutChatId } = user;
 
-    return sendSuccess(res, 200, 'Data profil berhasil diambil.', {
-      user: { ...userWithoutChatId, isTelegramLinked: Boolean(telegramChatId) }
+    return sendSuccess(res, 200, "Data profil berhasil diambil.", {
+      user: { ...userWithoutChatId, isTelegramLinked: Boolean(telegramChatId) },
     });
-
   } catch (error) {
-    console.error('[UserController] Gagal mengambil data profil:', {
+    console.error("[UserController] Gagal mengambil data profil:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -40,7 +38,6 @@ exports.getProfile = async (req, res, next) => {
   }
 };
 
-
 exports.updateProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -48,15 +45,22 @@ exports.updateProfile = async (req, res, next) => {
     const { name, avatarUrl } = req.body;
 
     if (!name && !avatarUrl) {
-      return sendError(res, 400, 'Minimal satu field (name atau avatarUrl) harus dikirimkan untuk diperbarui.');
+      return sendError(
+        res,
+        400,
+        "Minimal satu field (name atau avatarUrl) harus dikirimkan untuk diperbarui.",
+      );
     }
 
-    if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0)) {
-      return sendError(res, 400, 'Nama tidak boleh kosong.');
+    if (
+      name !== undefined &&
+      (typeof name !== "string" || name.trim().length === 0)
+    ) {
+      return sendError(res, 400, "Nama tidak boleh kosong.");
     }
 
     if (name !== undefined && name.trim().length > 100) {
-      return sendError(res, 400, 'Nama tidak boleh melebihi 100 karakter.');
+      return sendError(res, 400, "Nama tidak boleh melebihi 100 karakter.");
     }
 
     const updateData = {};
@@ -72,13 +76,14 @@ exports.updateProfile = async (req, res, next) => {
         email: true,
         avatarUrl: true,
         updatedAt: true,
-      }
+      },
     });
 
-    return sendSuccess(res, 200, 'Profil berhasil diperbarui.', { user: updatedUser });
-
+    return sendSuccess(res, 200, "Profil berhasil diperbarui.", {
+      user: updatedUser,
+    });
   } catch (error) {
-    console.error('[UserController] Gagal memperbarui profil:', {
+    console.error("[UserController] Gagal memperbarui profil:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -86,7 +91,6 @@ exports.updateProfile = async (req, res, next) => {
     return next(error);
   }
 };
-
 
 exports.deleteAccount = async (req, res, next) => {
   try {
@@ -94,27 +98,28 @@ exports.deleteAccount = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!user) {
-      return sendError(res, 404, 'Pengguna tidak ditemukan.');
+      return sendError(res, 404, "Pengguna tidak ditemukan.");
     }
 
     const devices = await prisma.device.findMany({
       where: { userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     await prisma.$transaction([
-      prisma.rawSensorLog.deleteMany({ where: { deviceId: { in: devices.map((d) => d.id) } } }),
-      prisma.user.delete({ where: { id: userId } })
+      prisma.rawSensorLog.deleteMany({
+        where: { deviceId: { in: devices.map((d) => d.id) } },
+      }),
+      prisma.user.delete({ where: { id: userId } }),
     ]);
 
-    return sendSuccess(res, 200, 'Akun berhasil dihapus secara permanen.');
-
+    return sendSuccess(res, 200, "Akun berhasil dihapus secara permanen.");
   } catch (error) {
-    console.error('[UserController] Gagal menghapus akun:', {
+    console.error("[UserController] Gagal menghapus akun:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -122,7 +127,6 @@ exports.deleteAccount = async (req, res, next) => {
     return next(error);
   }
 };
-
 
 exports.getTelegramLinkCode = async (req, res, next) => {
   try {
@@ -131,13 +135,14 @@ exports.getTelegramLinkCode = async (req, res, next) => {
 
     await prisma.user.update({
       where: { id: userId },
-      data: { telegramLinkCode: code }
+      data: { telegramLinkCode: code },
     });
 
-    return sendSuccess(res, 200, 'Kode penghubung Telegram berhasil dibuat.', { linkCode: code });
-
+    return sendSuccess(res, 200, "Kode penghubung Telegram berhasil dibuat.", {
+      linkCode: code,
+    });
   } catch (error) {
-    console.error('[UserController] Gagal membuat kode penghubung Telegram:', {
+    console.error("[UserController] Gagal membuat kode penghubung Telegram:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,
@@ -146,20 +151,18 @@ exports.getTelegramLinkCode = async (req, res, next) => {
   }
 };
 
-
 exports.unlinkTelegram = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
     await prisma.user.update({
       where: { id: userId },
-      data: { telegramChatId: null, telegramLinkCode: null }
+      data: { telegramChatId: null, telegramLinkCode: null },
     });
 
-    return sendSuccess(res, 200, 'Koneksi Telegram berhasil diputuskan.');
-
+    return sendSuccess(res, 200, "Koneksi Telegram berhasil diputuskan.");
   } catch (error) {
-    console.error('[UserController] Gagal memutuskan koneksi Telegram:', {
+    console.error("[UserController] Gagal memutuskan koneksi Telegram:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,

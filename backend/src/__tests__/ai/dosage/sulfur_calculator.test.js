@@ -1,6 +1,8 @@
 "use strict";
 
-const { calculateSulfurDosage } = require("../../../ai/dosage/sulfur_calculator");
+const {
+  calculateSulfurDosage,
+} = require("../../../ai/dosage/sulfur_calculator");
 
 describe("calculateSulfurDosage", () => {
   it("returns zero dosage when pH is already within tolerance of the maximum", () => {

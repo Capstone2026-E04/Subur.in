@@ -5,11 +5,16 @@ jest.mock("../../database/connections/prisma_client", () => ({
   $queryRawUnsafe: jest.fn(),
   $executeRawUnsafe: jest.fn(),
 }));
-jest.mock("../../database/connections/redis", () => ({ getRedisClient: jest.fn() }));
+jest.mock("../../database/connections/redis", () => ({
+  getRedisClient: jest.fn(),
+}));
 jest.mock("../../sse/sse_manager", () => ({ broadcastToDevice: jest.fn() }));
 
 const prisma = require("../../database/connections/prisma_client");
-const { managePartitions, enableRlsOnPartitions } = require("../../cron/database_cleanup_cron");
+const {
+  managePartitions,
+  enableRlsOnPartitions,
+} = require("../../cron/database_cleanup_cron");
 
 describe("enableRlsOnPartitions", () => {
   it("enables RLS on each partition without RLS and skips unexpected names", async () => {
@@ -22,7 +27,7 @@ describe("enableRlsOnPartitions", () => {
 
     expect(prisma.$executeRawUnsafe).toHaveBeenCalledTimes(1);
     expect(prisma.$executeRawUnsafe).toHaveBeenCalledWith(
-      'ALTER TABLE "raw_sensor_logs_y2026m09" ENABLE ROW LEVEL SECURITY;'
+      'ALTER TABLE "raw_sensor_logs_y2026m09" ENABLE ROW LEVEL SECURITY;',
     );
   });
 
@@ -46,7 +51,11 @@ describe("managePartitions", () => {
     await managePartitions();
 
     const statements = prisma.$executeRawUnsafe.mock.calls.map(([sql]) => sql);
-    expect(statements.filter((s) => s.includes("PARTITION OF"))).toHaveLength(2);
-    expect(statements.filter((s) => s.includes("ENABLE ROW LEVEL SECURITY"))).toHaveLength(2);
+    expect(statements.filter((s) => s.includes("PARTITION OF"))).toHaveLength(
+      2,
+    );
+    expect(
+      statements.filter((s) => s.includes("ENABLE ROW LEVEL SECURITY")),
+    ).toHaveLength(2);
   });
 });

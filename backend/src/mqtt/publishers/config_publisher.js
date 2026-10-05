@@ -14,19 +14,21 @@ function publishDeviceConfig(deviceId, readingIntervalMin) {
     }
 
     const topic = `${CONFIG_TOPIC_PREFIX}/${deviceId}/${CONFIG_TOPIC_SUFFIX}`;
-    const payload = JSON.stringify({ reading_interval_min: readingIntervalMin });
+    const payload = JSON.stringify({
+      reading_interval_min: readingIntervalMin,
+    });
 
     client.publish(topic, payload, { qos: 1, retain: false }, (err) => {
       if (err) {
         console.error(
           `[MQTT Publisher] Gagal mempublikasikan config ke device "${deviceId}":`,
-          err.message
+          err.message,
         );
         return reject(err);
       }
 
       console.log(
-        `[MQTT Publisher] Config berhasil dikirim ke device "${deviceId}" | Topic: ${topic} | reading_interval_min: ${readingIntervalMin}`
+        `[MQTT Publisher] Config berhasil dikirim ke device "${deviceId}" | Topic: ${topic} | reading_interval_min: ${readingIntervalMin}`,
       );
       resolve({ topic, payload: { reading_interval_min: readingIntervalMin } });
     });

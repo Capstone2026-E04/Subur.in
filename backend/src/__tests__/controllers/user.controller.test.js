@@ -30,8 +30,13 @@ describe("deleteAccount", () => {
 
     await deleteAccount({ user: { id: "u" } }, res, jest.fn());
 
-    expect(prisma.rawSensorLog.deleteMany).toHaveBeenCalledWith({ where: { deviceId: { in: ["a", "b"] } } });
-    expect(prisma.$transaction).toHaveBeenCalledWith(["delete-logs", "delete-user"]);
+    expect(prisma.rawSensorLog.deleteMany).toHaveBeenCalledWith({
+      where: { deviceId: { in: ["a", "b"] } },
+    });
+    expect(prisma.$transaction).toHaveBeenCalledWith([
+      "delete-logs",
+      "delete-user",
+    ]);
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });

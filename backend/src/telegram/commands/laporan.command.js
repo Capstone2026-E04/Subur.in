@@ -1,12 +1,20 @@
 "use strict";
 
 const prisma = require("../../database/connections/prisma_client");
-const { requireLinkedDevice } = require("../middlewares/require_linked_device.middleware");
+const {
+  requireLinkedDevice,
+} = require("../middlewares/require_linked_device.middleware");
 const { resolveActiveDevice } = require("../session/session.service");
-const { formatDeviceLabel, formatTimestamp } = require("../utils/format_message");
+const {
+  formatDeviceLabel,
+  formatTimestamp,
+} = require("../utils/format_message");
 
 async function buildLaporanText(deviceId) {
-  const device = await prisma.device.findUnique({ where: { id: deviceId }, include: { plant: true } });
+  const device = await prisma.device.findUnique({
+    where: { id: deviceId },
+    include: { plant: true },
+  });
   if (!device) return null;
 
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -21,9 +29,13 @@ async function buildLaporanText(deviceId) {
 
   const latest = logs[logs.length - 1];
   const avgPh = logs.reduce((sum, log) => sum + log.phValue, 0) / logs.length;
-  const avgMoisture = logs.reduce((sum, log) => sum + log.moistureValue, 0) / logs.length;
+  const avgMoisture =
+    logs.reduce((sum, log) => sum + log.moistureValue, 0) / logs.length;
   const treatmentCount = logs.filter(
-    (log) => log.waterVolumeLiter > 0 || log.limeDosageGram > 0 || log.sulfurDosageGram > 0,
+    (log) =>
+      log.waterVolumeLiter > 0 ||
+      log.limeDosageGram > 0 ||
+      log.sulfurDosageGram > 0,
   ).length;
 
   return [
@@ -41,7 +53,9 @@ async function buildLaporanText(deviceId) {
 async function baseHandler(ctx) {
   const device = await resolveActiveDevice(ctx.telegramUserId, ctx.devices);
   if (!device) {
-    await ctx.reply("Anda memiliki lebih dari satu tanaman. Gunakan /tanaman untuk memilih tanaman aktif terlebih dahulu.");
+    await ctx.reply(
+      "Anda memiliki lebih dari satu tanaman. Gunakan /tanaman untuk memilih tanaman aktif terlebih dahulu.",
+    );
     return;
   }
 

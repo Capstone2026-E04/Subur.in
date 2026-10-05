@@ -22,7 +22,10 @@ function makeCtx(overrides) {
 
 describe("notifikasi command", () => {
   it("shows the current status and a toggle button when called without arguments", async () => {
-    const ctx = makeCtx({ user: { id: "fake-user-1", telegramNotifyEnabled: true }, devices: [] });
+    const ctx = makeCtx({
+      user: { id: "fake-user-1", telegramNotifyEnabled: true },
+      devices: [],
+    });
 
     await notifikasiCommand.handler(ctx);
 
@@ -33,7 +36,11 @@ describe("notifikasi command", () => {
   });
 
   it("turns notifications off and persists the preference", async () => {
-    const ctx = makeCtx({ user: { id: "fake-user-2", telegramNotifyEnabled: true }, devices: [], args: ["off"] });
+    const ctx = makeCtx({
+      user: { id: "fake-user-2", telegramNotifyEnabled: true },
+      devices: [],
+      args: ["off"],
+    });
 
     await notifikasiCommand.handler(ctx);
 
@@ -41,11 +48,17 @@ describe("notifikasi command", () => {
       where: { id: "fake-user-2" },
       data: { telegramNotifyEnabled: false },
     });
-    expect(ctx.reply).toHaveBeenCalledWith(expect.stringContaining("dinonaktifkan"));
+    expect(ctx.reply).toHaveBeenCalledWith(
+      expect.stringContaining("dinonaktifkan"),
+    );
   });
 
   it("turns notifications on and persists the preference", async () => {
-    const ctx = makeCtx({ user: { id: "fake-user-3", telegramNotifyEnabled: false }, devices: [], args: ["on"] });
+    const ctx = makeCtx({
+      user: { id: "fake-user-3", telegramNotifyEnabled: false },
+      devices: [],
+      args: ["on"],
+    });
 
     await notifikasiCommand.handler(ctx);
 
@@ -53,7 +66,9 @@ describe("notifikasi command", () => {
       where: { id: "fake-user-3" },
       data: { telegramNotifyEnabled: true },
     });
-    expect(ctx.reply).toHaveBeenCalledWith(expect.stringContaining("diaktifkan"));
+    expect(ctx.reply).toHaveBeenCalledWith(
+      expect.stringContaining("diaktifkan"),
+    );
   });
 
   it("asks an unlinked user to /link first", async () => {

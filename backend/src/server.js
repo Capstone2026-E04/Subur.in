@@ -4,7 +4,9 @@ const cors = require("cors");
 const { getRedisClient } = require("./database/connections/redis");
 const apiRouter = require("./routes/api");
 const { connectMQTT } = require("./mqtt/connection");
-const { registerSensorSubscriber } = require("./mqtt/subscribers/sensor_subscriber");
+const {
+  registerSensorSubscriber,
+} = require("./mqtt/subscribers/sensor_subscriber");
 const { initCronJobs } = require("./cron/database_cleanup_cron");
 const errorMiddleware = require("./middlewares/error.middleware");
 
@@ -28,7 +30,7 @@ app.use(errorMiddleware);
 
 app.listen(PORT, () => {
   console.log(`Server berjalan di http://localhost:${PORT}`);
-  console.log(process.env.DATABASE_URL)
+  console.log(process.env.DATABASE_URL);
 
   try {
     initCronJobs();
@@ -38,7 +40,6 @@ app.listen(PORT, () => {
       stack: err.stack,
     });
   }
-
 
   try {
     getRedisClient();

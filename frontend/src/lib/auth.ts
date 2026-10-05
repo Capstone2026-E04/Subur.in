@@ -51,7 +51,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
           return false;
         } catch (error) {
-          console.error("Kesalahan koneksi ke backend saat Google Sign-In:", error);
+          console.error(
+            "Kesalahan koneksi ke backend saat Google Sign-In:",
+            error,
+          );
           return false;
         }
       }

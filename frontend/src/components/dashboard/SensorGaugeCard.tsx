@@ -10,7 +10,13 @@ interface SensorGaugeCardProps {
   unit: string;
   min: number;
   max: number;
-  getColor: (value: number) => { stroke: string; glow: string; text: string; badge: string; badgeBg: string };
+  getColor: (value: number) => {
+    stroke: string;
+    glow: string;
+    text: string;
+    badge: string;
+    badgeBg: string;
+  };
   getClassification: (value: number) => string;
   icon: React.ReactNode;
   decimals?: number;
@@ -58,7 +64,13 @@ function CircularGauge({
       className="overflow-visible"
     >
       <defs>
-        <filter id={`glow-${glowColor.replace("#", "")}`} x="-50%" y="-50%" width="200%" height="200%">
+        <filter
+          id={`glow-${glowColor.replace("#", "")}`}
+          x="-50%"
+          y="-50%"
+          width="200%"
+          height="200%"
+        >
           <feGaussianBlur stdDeviation="3" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -93,13 +105,14 @@ function CircularGauge({
         strokeDashoffset={0}
         transform="rotate(135 70 70)"
         filter={`url(#glow-${glowColor.replace("#", "")})`}
-        animate={{ strokeDasharray: `${fill} ${gap + (CIRCUMFERENCE - ARC_LENGTH)}` }}
+        animate={{
+          strokeDasharray: `${fill} ${gap + (CIRCUMFERENCE - ARC_LENGTH)}`,
+        }}
         transition={{ type: "spring", stiffness: 60, damping: 20 }}
       />
     </svg>
   );
 }
-
 
 export default function SensorGaugeCard({
   label,
@@ -113,9 +126,16 @@ export default function SensorGaugeCard({
   decimals = 1,
 }: SensorGaugeCardProps) {
   const pct = value !== null ? (value - min) / (max - min) : 0;
-  const colors = value !== null
-    ? getColor(value)
-    : { stroke: "#d1d5db", glow: "#d1d5db", text: "text-gray-400", badge: "text-gray-500", badgeBg: "bg-gray-100" };
+  const colors =
+    value !== null
+      ? getColor(value)
+      : {
+          stroke: "#d1d5db",
+          glow: "#d1d5db",
+          text: "text-gray-400",
+          badge: "text-gray-500",
+          badgeBg: "bg-gray-100",
+        };
 
   const classification = value !== null ? getClassification(value) : "—";
   const displayValue = value !== null ? value : 0;
@@ -131,11 +151,11 @@ export default function SensorGaugeCard({
   }
 
   return (
-    <Card className="relative items-center rounded-2xl p-6 overflow-hidden gap-4 transition-shadow duration-300 hover:shadow-md">
+    <Card className="relative items-center gap-4 overflow-hidden rounded-2xl p-6 transition-shadow duration-300 hover:shadow-md">
       {flashKey > 0 && (
         <motion.div
           key={flashKey}
-          className="absolute inset-0 rounded-2xl pointer-events-none"
+          className="pointer-events-none absolute inset-0 rounded-2xl"
           style={{ backgroundColor: colors.stroke + "18" }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 0 }}
@@ -149,12 +169,22 @@ export default function SensorGaugeCard({
       </div>
 
       <div className="relative flex items-center justify-center">
-        <CircularGauge pct={pct} strokeColor={colors.stroke} glowColor={colors.glow} />
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-3">
-          <span className={`text-3xl font-bold tabular-nums leading-none ${colors.text}`}>
-            {value !== null ? <AnimatedNumber value={displayValue} decimals={decimals} /> : "—"}
+        <CircularGauge
+          pct={pct}
+          strokeColor={colors.stroke}
+          glowColor={colors.glow}
+        />
+        <div className="pointer-events-none absolute inset-0 mt-3 flex flex-col items-center justify-center">
+          <span
+            className={`text-3xl leading-none font-bold tabular-nums ${colors.text}`}
+          >
+            {value !== null ? (
+              <AnimatedNumber value={displayValue} decimals={decimals} />
+            ) : (
+              "—"
+            )}
           </span>
-          <span className="text-xs text-gray-400 mt-1 font-medium">{unit}</span>
+          <span className="mt-1 text-xs font-medium text-gray-400">{unit}</span>
         </div>
       </div>
 
@@ -163,7 +193,7 @@ export default function SensorGaugeCard({
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className={`self-center px-3 py-1 rounded-full text-xs font-semibold ${colors.badgeBg} ${colors.badge}`}
+        className={`self-center rounded-full px-3 py-1 text-xs font-semibold ${colors.badgeBg} ${colors.badge}`}
       >
         {classification}
       </motion.div>

@@ -14,29 +14,35 @@ const CardContext = React.createContext<CardContextType>({
 
 const useCardContext = () => React.useContext(CardContext);
 
-const cardVariants = cva("flex flex-col items-stretch text-card-foreground rounded-xl", {
-  variants: {
-    variant: {
-      default: "bg-card border border-border shadow-xs",
-      accent: "bg-muted shadow-xs p-1",
+const cardVariants = cva(
+  "flex flex-col items-stretch text-card-foreground rounded-xl",
+  {
+    variants: {
+      variant: {
+        default: "bg-card border border-border shadow-xs",
+        accent: "bg-muted shadow-xs p-1",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
     },
   },
-  defaultVariants: {
-    variant: "default",
-  },
-});
+);
 
-const cardHeaderVariants = cva("flex items-center justify-between flex-wrap px-5 min-h-14 gap-2.5", {
-  variants: {
-    variant: {
-      default: "border-b border-border",
-      accent: "",
+const cardHeaderVariants = cva(
+  "flex items-center justify-between flex-wrap px-5 min-h-14 gap-2.5",
+  {
+    variants: {
+      variant: {
+        default: "border-b border-border",
+        accent: "",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
     },
   },
-  defaultVariants: {
-    variant: "default",
-  },
-});
+);
 
 const cardContentVariants = cva("grow p-5", {
   variants: {
@@ -69,46 +75,110 @@ function Card({
 }: React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof cardVariants>) {
   return (
     <CardContext.Provider value={{ variant: variant || "default" }}>
-      <div data-slot="card" className={cn(cardVariants({ variant }), className)} {...props} />
+      <div
+        data-slot="card"
+        className={cn(cardVariants({ variant }), className)}
+        {...props}
+      />
     </CardContext.Provider>
   );
 }
 
-function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function CardHeader({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   const { variant } = useCardContext();
-  return <div data-slot="card-header" className={cn(cardHeaderVariants({ variant }), className)} {...props} />;
-}
-
-function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  const { variant } = useCardContext();
-  return <div data-slot="card-content" className={cn(cardContentVariants({ variant }), className)} {...props} />;
-}
-
-function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  const { variant } = useCardContext();
-  return <div data-slot="card-footer" className={cn(cardFooterVariants({ variant }), className)} {...props} />;
-}
-
-function CardHeading({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-slot="card-heading" className={cn("space-y-1", className)} {...props} />;
-}
-
-function CardToolbar({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-slot="card-toolbar" className={cn("flex items-center gap-2.5", className)} {...props} />;
-}
-
-function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3
-      data-slot="card-title"
-      className={cn("text-base font-semibold leading-none tracking-tight", className)}
+    <div
+      data-slot="card-header"
+      className={cn(cardHeaderVariants({ variant }), className)}
       {...props}
     />
   );
 }
 
-function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div data-slot="card-description" className={cn("text-sm text-muted-foreground", className)} {...props} />;
+function CardContent({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const { variant } = useCardContext();
+  return (
+    <div
+      data-slot="card-content"
+      className={cn(cardContentVariants({ variant }), className)}
+      {...props}
+    />
+  );
+}
+
+function CardFooter({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const { variant } = useCardContext();
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn(cardFooterVariants({ variant }), className)}
+      {...props}
+    />
+  );
+}
+
+function CardHeading({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-slot="card-heading"
+      className={cn("space-y-1", className)}
+      {...props}
+    />
+  );
+}
+
+function CardToolbar({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-slot="card-toolbar"
+      className={cn("flex items-center gap-2.5", className)}
+      {...props}
+    />
+  );
+}
+
+function CardTitle({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h3
+      data-slot="card-title"
+      className={cn(
+        "text-base leading-none font-semibold tracking-tight",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function CardDescription({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  );
 }
 
 export {

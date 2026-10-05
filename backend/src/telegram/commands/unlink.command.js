@@ -1,18 +1,29 @@
 "use strict";
 
 const prisma = require("../../database/connections/prisma_client");
-const { requireLinkedDevice } = require("../middlewares/require_linked_device.middleware");
+const {
+  requireLinkedDevice,
+} = require("../middlewares/require_linked_device.middleware");
 const { buildCallbackData } = require("../utils/parse_callback_data");
 
 async function baseHandler(ctx) {
-  await ctx.reply("Apakah Anda yakin ingin memutuskan koneksi Telegram dari akun Subur.in?", {
-    inline_keyboard: [
-      [
-        { text: "Ya, putuskan", callback_data: buildCallbackData("unlink", "confirm") },
-        { text: "Batal", callback_data: buildCallbackData("unlink", "cancel") },
+  await ctx.reply(
+    "Apakah Anda yakin ingin memutuskan koneksi Telegram dari akun Subur.in?",
+    {
+      inline_keyboard: [
+        [
+          {
+            text: "Ya, putuskan",
+            callback_data: buildCallbackData("unlink", "confirm"),
+          },
+          {
+            text: "Batal",
+            callback_data: buildCallbackData("unlink", "cancel"),
+          },
+        ],
       ],
-    ],
-  });
+    },
+  );
 }
 
 async function handleCallback(ctx) {
@@ -30,7 +41,9 @@ async function handleCallback(ctx) {
       data: { telegramChatId: null, telegramLinkCode: null },
     });
     await ctx.editKeyboard(null);
-    await ctx.reply("Koneksi Telegram berhasil diputuskan. Kirim /link KODE_ANDA jika ingin menghubungkan kembali.");
+    await ctx.reply(
+      "Koneksi Telegram berhasil diputuskan. Kirim /link KODE_ANDA jika ingin menghubungkan kembali.",
+    );
   }
 }
 

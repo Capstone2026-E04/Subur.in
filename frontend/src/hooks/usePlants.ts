@@ -21,7 +21,9 @@ export function usePlants() {
       const data = await fetchPlants(token);
       setPlants(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal memuat daftar tanaman.");
+      setError(
+        err instanceof Error ? err.message : "Gagal memuat daftar tanaman.",
+      );
     } finally {
       setIsLoading(false);
     }

@@ -80,7 +80,9 @@ export default function SettingsPage() {
       setTelegramLinkCode(code);
     } catch (err) {
       setTelegramError(
-        err instanceof Error ? err.message : "Gagal membuat kode penghubung Telegram."
+        err instanceof Error
+          ? err.message
+          : "Gagal membuat kode penghubung Telegram.",
       );
     } finally {
       setIsTelegramLoading(false);
@@ -97,7 +99,9 @@ export default function SettingsPage() {
       setTelegramLinkCode(null);
     } catch (err) {
       setTelegramError(
-        err instanceof Error ? err.message : "Gagal memutuskan koneksi Telegram."
+        err instanceof Error
+          ? err.message
+          : "Gagal memutuskan koneksi Telegram.",
       );
     } finally {
       setIsTelegramLoading(false);
@@ -129,47 +133,63 @@ export default function SettingsPage() {
       setSuccessMessage("Pengaturan dan preferensi berhasil disimpan.");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Gagal memperbarui pengaturan.");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Gagal memperbarui pengaturan.",
+      );
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+    <div className="mx-auto max-w-4xl space-y-6 pb-12">
       <div>
         <h2 className="text-xl font-bold text-gray-800">Pengaturan</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Konfigurasi preferensi notifikasi, bahasa, dan interval telemetri sensor alat Subur.in Anda.
+        <p className="mt-1 text-sm text-gray-500">
+          Konfigurasi preferensi notifikasi, bahasa, dan interval telemetri
+          sensor alat Subur.in Anda.
         </p>
       </div>
 
-      <Card className="p-5 space-y-4">
-        <div className="flex items-center gap-3 border-b border-border pb-3">
-          <div className="h-9 w-9 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+      <Card className="space-y-4 p-5">
+        <div className="border-border flex items-center gap-3 border-b pb-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-500">
             <MdAccessTime size={18} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-800">Interval Telemetri Perangkat</h3>
-            <p className="text-[10px] text-gray-400">Tentukan durasi pengiriman data sensor dari perangkat ESP32 Anda.</p>
+            <h3 className="text-sm font-semibold text-gray-800">
+              Interval Telemetri Perangkat
+            </h3>
+            <p className="text-[10px] text-gray-400">
+              Tentukan durasi pengiriman data sensor dari perangkat ESP32 Anda.
+            </p>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="py-6 flex flex-col items-center justify-center animate-pulse">
-            <div className="h-8 w-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-            <p className="text-xs text-gray-400 mt-3 font-semibold">Memuat daftar perangkat Anda...</p>
+          <div className="flex animate-pulse flex-col items-center justify-center py-6">
+            <div className="border-primary/20 border-t-primary h-8 w-8 animate-spin rounded-full border-4" />
+            <p className="mt-3 text-xs font-semibold text-gray-400">
+              Memuat daftar perangkat Anda...
+            </p>
           </div>
         ) : devices.length === 0 ? (
           <div className="py-6 text-center">
-            <p className="text-sm text-gray-400 font-semibold">Belum ada perangkat terhubung.</p>
-            <p className="text-xs text-gray-400 mt-1">Silakan daftarkan perangkat terlebih dahulu pada menu Perangkat.</p>
+            <p className="text-sm font-semibold text-gray-400">
+              Belum ada perangkat terhubung.
+            </p>
+            <p className="mt-1 text-xs text-gray-400">
+              Silakan daftarkan perangkat terlebih dahulu pada menu Perangkat.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="settings-device-select" className="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                <label
+                  htmlFor="settings-device-select"
+                  className="flex items-center gap-1 text-[10px] font-bold tracking-wide text-gray-400 uppercase"
+                >
                   <MdOutlineDeviceHub size={12} />
                   Pilih Perangkat
                 </label>
@@ -177,7 +197,7 @@ export default function SettingsPage() {
                   id="settings-device-select"
                   value={selectedDeviceId}
                   onChange={(e) => handleDeviceChange(e.target.value)}
-                  className="w-full text-xs sm:text-sm rounded-lg border border-black/8 bg-white px-3 py-2 text-gray-700 outline-none focus:border-primary transition-all cursor-pointer"
+                  className="focus:border-primary w-full cursor-pointer rounded-lg border border-black/8 bg-white px-3 py-2 text-xs text-gray-700 transition-all outline-none sm:text-sm"
                 >
                   {devices.map((device) => (
                     <option key={device.id} value={device.id}>
@@ -188,7 +208,10 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="settings-interval-select" className="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                <label
+                  htmlFor="settings-interval-select"
+                  className="flex items-center gap-1 text-[10px] font-bold tracking-wide text-gray-400 uppercase"
+                >
                   <MdAccessTime size={12} />
                   Interval Pengambilan Data
                 </label>
@@ -196,7 +219,7 @@ export default function SettingsPage() {
                   id="settings-interval-select"
                   value={sensorInterval}
                   onChange={(e) => setSensorInterval(Number(e.target.value))}
-                  className="w-full text-xs sm:text-sm rounded-lg border border-black/8 bg-white px-3 py-2 text-gray-700 outline-none focus:border-primary transition-all cursor-pointer"
+                  className="focus:border-primary w-full cursor-pointer rounded-lg border border-black/8 bg-white px-3 py-2 text-xs text-gray-700 transition-all outline-none sm:text-sm"
                 >
                   <option value={1}>1 Menit (Real-time / Pengujian)</option>
                   <option value={5}>5 Menit (Responsif Tinggi)</option>
@@ -219,7 +242,7 @@ export default function SettingsPage() {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="text-xs text-emerald-600 font-semibold"
+                  className="text-xs font-semibold text-emerald-600"
                 >
                   ✓ {successMessage}
                 </motion.p>
@@ -229,7 +252,7 @@ export default function SettingsPage() {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="text-xs text-rose-600 font-semibold"
+                  className="text-xs font-semibold text-rose-600"
                 >
                   ⚠ {errorMessage}
                 </motion.p>
@@ -239,75 +262,100 @@ export default function SettingsPage() {
         )}
       </Card>
 
-      <Card className="p-5 space-y-4">
-        <div className="flex items-center gap-3 border-b border-border pb-3">
-          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+      <Card className="space-y-4 p-5">
+        <div className="border-border flex items-center gap-3 border-b pb-3">
+          <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
             <MdNotificationsActive size={18} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-800">Preferensi Notifikasi</h3>
-            <p className="text-[10px] text-gray-400">Atur bagaimana sistem memperingatkan Anda secara real-time.</p>
+            <h3 className="text-sm font-semibold text-gray-800">
+              Preferensi Notifikasi
+            </h3>
+            <p className="text-[10px] text-gray-400">
+              Atur bagaimana sistem memperingatkan Anda secara real-time.
+            </p>
           </div>
         </div>
 
-        <div className="space-y-4 divide-y divide-border">
+        <div className="divide-border space-y-4 divide-y">
           <div className="flex items-center justify-between gap-4 py-2">
             <div>
-              <p className="text-xs sm:text-sm font-medium text-gray-700">Notifikasi Sensor Kelembapan</p>
-              <p className="text-[10px] sm:text-xs text-gray-400">Peringatkan jika kelembapan tanaman di bawah batas aman.</p>
+              <p className="text-xs font-medium text-gray-700 sm:text-sm">
+                Notifikasi Sensor Kelembapan
+              </p>
+              <p className="text-[10px] text-gray-400 sm:text-xs">
+                Peringatkan jika kelembapan tanaman di bawah batas aman.
+              </p>
             </div>
-            <label htmlFor="settings-moisture-notif" className="relative inline-flex items-center cursor-pointer">
+            <label
+              htmlFor="settings-moisture-notif"
+              className="relative inline-flex cursor-pointer items-center"
+            >
               <input
                 id="settings-moisture-notif"
                 type="checkbox"
                 checked={moistureNotif}
                 onChange={(e) => setMoistureNotif(e.target.checked)}
-                className="sr-only peer"
+                className="peer sr-only"
               />
-              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              <div className="peer peer-checked:bg-primary h-5 w-9 rounded-full bg-gray-200 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
             </label>
           </div>
 
           <div className="flex items-center justify-between gap-4 pt-4">
             <div>
-              <p className="text-xs sm:text-sm font-medium text-gray-700">Notifikasi Sensor pH</p>
-              <p className="text-[10px] sm:text-xs text-gray-400">Peringatkan jika pH tanah terdeteksi terlalu asam atau terlalu basa.</p>
+              <p className="text-xs font-medium text-gray-700 sm:text-sm">
+                Notifikasi Sensor pH
+              </p>
+              <p className="text-[10px] text-gray-400 sm:text-xs">
+                Peringatkan jika pH tanah terdeteksi terlalu asam atau terlalu
+                basa.
+              </p>
             </div>
-            <label htmlFor="settings-ph-notif" className="relative inline-flex items-center cursor-pointer">
+            <label
+              htmlFor="settings-ph-notif"
+              className="relative inline-flex cursor-pointer items-center"
+            >
               <input
                 id="settings-ph-notif"
                 type="checkbox"
                 checked={phNotif}
                 onChange={(e) => setPhNotif(e.target.checked)}
-                className="sr-only peer"
+                className="peer sr-only"
               />
-              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              <div className="peer peer-checked:bg-primary h-5 w-9 rounded-full bg-gray-200 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
             </label>
           </div>
         </div>
       </Card>
 
-      <Card className="p-5 space-y-4">
-        <div className="flex items-center gap-3 border-b border-border pb-3">
-          <div className="h-9 w-9 rounded-lg bg-sky-50 text-sky-500 flex items-center justify-center shrink-0">
+      <Card className="space-y-4 p-5">
+        <div className="border-border flex items-center gap-3 border-b pb-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-500">
             <MdSend size={18} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-800">Hubungkan Telegram</h3>
-            <p className="text-[10px] text-gray-400">Terima notifikasi perangkat Anda langsung di Telegram.</p>
+            <h3 className="text-sm font-semibold text-gray-800">
+              Hubungkan Telegram
+            </h3>
+            <p className="text-[10px] text-gray-400">
+              Terima notifikasi perangkat Anda langsung di Telegram.
+            </p>
           </div>
         </div>
 
         {isTelegramLinked ? (
           <div className="flex items-center justify-between gap-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <MdCheckCircle size={18} className="text-emerald-500 shrink-0" />
-              <p className="text-xs sm:text-sm font-medium text-emerald-700">Terhubung ke Telegram</p>
+              <MdCheckCircle size={18} className="shrink-0 text-emerald-500" />
+              <p className="text-xs font-medium text-emerald-700 sm:text-sm">
+                Terhubung ke Telegram
+              </p>
             </div>
             <button
               onClick={handleDisconnectTelegram}
               disabled={isTelegramLoading}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-60 transition-colors cursor-pointer"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-60"
             >
               <MdLinkOff size={14} />
               Putuskan Koneksi
@@ -316,11 +364,13 @@ export default function SettingsPage() {
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-xs sm:text-sm text-gray-500">Akun Telegram Anda belum terhubung.</p>
+              <p className="text-xs text-gray-500 sm:text-sm">
+                Akun Telegram Anda belum terhubung.
+              </p>
               <button
                 onClick={handleGenerateTelegramLinkCode}
                 disabled={isTelegramLoading}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-white hover:bg-primary-light disabled:opacity-60 transition-colors cursor-pointer"
+                className="bg-primary hover:bg-primary-light inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold text-white transition-colors disabled:opacity-60"
               >
                 <MdSend size={14} />
                 Hubungkan Telegram
@@ -328,18 +378,26 @@ export default function SettingsPage() {
             </div>
 
             {telegramLinkCode && (
-              <div className="rounded-lg border border-black/8 bg-gray-50 px-4 py-3 space-y-1.5">
+              <div className="space-y-1.5 rounded-lg border border-black/8 bg-gray-50 px-4 py-3">
                 <p className="text-xs text-gray-500">
-                  Buka bot {TELEGRAM_BOT_USERNAME ? `@${TELEGRAM_BOT_USERNAME}` : "Subur.in"} di Telegram, lalu kirim pesan berikut:
+                  Buka bot{" "}
+                  {TELEGRAM_BOT_USERNAME
+                    ? `@${TELEGRAM_BOT_USERNAME}`
+                    : "Subur.in"}{" "}
+                  di Telegram, lalu kirim pesan berikut:
                 </p>
-                <p className="text-sm font-mono font-semibold text-gray-800">/link {telegramLinkCode}</p>
+                <p className="font-mono text-sm font-semibold text-gray-800">
+                  /link {telegramLinkCode}
+                </p>
               </div>
             )}
           </div>
         )}
 
         {telegramError && (
-          <p className="text-xs text-rose-600 font-semibold">⚠ {telegramError}</p>
+          <p className="text-xs font-semibold text-rose-600">
+            ⚠ {telegramError}
+          </p>
         )}
       </Card>
 
@@ -347,12 +405,12 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-light disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm shadow-primary/10 cursor-pointer"
+          className="bg-primary hover:bg-primary-light shadow-primary/10 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSaving ? (
             <>
               <motion.span
-                className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white block"
+                className="block h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 0.7, repeat: Infinity, ease: "linear" }}
               />

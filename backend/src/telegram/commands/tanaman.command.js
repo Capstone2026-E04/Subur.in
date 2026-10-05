@@ -1,6 +1,8 @@
 "use strict";
 
-const { requireLinkedDevice } = require("../middlewares/require_linked_device.middleware");
+const {
+  requireLinkedDevice,
+} = require("../middlewares/require_linked_device.middleware");
 const { buildTanamanKeyboard } = require("../keyboards/tanaman.keyboard");
 
 async function baseHandler(ctx) {
@@ -9,6 +11,7 @@ async function baseHandler(ctx) {
 
 module.exports = {
   name: "tanaman",
-  description: "Memilih tanaman aktif untuk /status, /riwayat, /rekomendasi, dan /device",
+  description:
+    "Memilih tanaman aktif untuk /status, /riwayat, /rekomendasi, dan /device",
   handler: requireLinkedDevice(baseHandler),
 };

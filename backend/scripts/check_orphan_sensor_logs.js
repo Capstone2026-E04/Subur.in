@@ -18,7 +18,9 @@ async function main() {
   }
 
   const total = rows.reduce((sum, r) => sum + r.jumlah, 0);
-  console.log(`Ditemukan ${rows.length} device_id yatim dengan total ${total} baris:`);
+  console.log(
+    `Ditemukan ${rows.length} device_id yatim dengan total ${total} baris:`,
+  );
   console.table(rows);
 }
 

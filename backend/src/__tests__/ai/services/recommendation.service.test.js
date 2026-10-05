@@ -1,7 +1,9 @@
 "use strict";
 
 const prisma = require("../../../database/connections/prisma_client");
-const { generateRecommendation } = require("../../../ai/services/recommendation.service");
+const {
+  generateRecommendation,
+} = require("../../../ai/services/recommendation.service");
 
 jest.mock("../../../database/connections/prisma_client", () => ({
   polybag: { findUnique: jest.fn(), findFirst: jest.fn() },

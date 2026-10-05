@@ -1,7 +1,10 @@
 "use strict";
 
 const { getRedisClient } = require("../../database/connections/redis");
-const { SESSION_TTL_SECONDS, SESSION_KEY_PREFIX } = require("./session.constants");
+const {
+  SESSION_TTL_SECONDS,
+  SESSION_KEY_PREFIX,
+} = require("./session.constants");
 
 function sessionKey(telegramUserId) {
   return `${SESSION_KEY_PREFIX}${telegramUserId}`;
@@ -13,11 +16,14 @@ async function getSession(telegramUserId) {
     const raw = await redis.get(sessionKey(telegramUserId));
     return raw ? JSON.parse(raw) : null;
   } catch (err) {
-    console.error("[TelegramSessionService] Gagal mengambil sesi (fallback: anggap tidak ada sesi):", {
-      message: err.message,
-      stack: err.stack,
-      telegramUserId,
-    });
+    console.error(
+      "[TelegramSessionService] Gagal mengambil sesi (fallback: anggap tidak ada sesi):",
+      {
+        message: err.message,
+        stack: err.stack,
+        telegramUserId,
+      },
+    );
     return null;
   }
 }
@@ -25,7 +31,12 @@ async function getSession(telegramUserId) {
 async function setSession(telegramUserId, data) {
   try {
     const redis = getRedisClient();
-    await redis.set(sessionKey(telegramUserId), JSON.stringify(data), "EX", SESSION_TTL_SECONDS);
+    await redis.set(
+      sessionKey(telegramUserId),
+      JSON.stringify(data),
+      "EX",
+      SESSION_TTL_SECONDS,
+    );
   } catch (err) {
     console.error("[TelegramSessionService] Gagal menyimpan sesi:", {
       message: err.message,

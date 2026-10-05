@@ -20,8 +20,10 @@ import type { NotificationItem } from "@/types/device";
 import { Card } from "@/components/ui/card";
 
 const iconStyles = {
-  warning: "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30",
-  success: "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30",
+  warning:
+    "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30",
+  success:
+    "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30",
   info: "bg-sky-50 text-sky-600 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30",
 };
 
@@ -80,7 +82,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     isMountedRef.current = true;
     loadDevices();
-    
+
     setTimeout(() => {
       loadNotificationsData();
     }, 0);
@@ -104,17 +106,14 @@ export default function NotificationsPage() {
     if (devices.length === 0 || !token) return;
 
     const streams = devices.map((device) => {
-      const es = new EventSource(
-        `${API_URL}/api/sensors/${device.id}/stream`
-      );
+      const es = new EventSource(`${API_URL}/api/sensors/${device.id}/stream`);
       es.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
           if (payload?.notification) {
             loadNotificationsData();
           }
-        } catch {
-        }
+        } catch {}
       };
       return es;
     });
@@ -129,9 +128,7 @@ export default function NotificationsPage() {
     setIsProcessing(true);
     try {
       await markAllNotificationsAsRead(token);
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (err) {
       console.error("Gagal menandai dibaca:", err);
     } finally {
@@ -171,8 +168,8 @@ export default function NotificationsPage() {
 
     if (!moistureNotif) {
       if (
-        titleLower.includes("media") || 
-        titleLower.includes("kering") || 
+        titleLower.includes("media") ||
+        titleLower.includes("kering") ||
         titleLower.includes("basah") ||
         titleLower.includes("kelembapan") ||
         messageLower.includes("kelembapan") ||
@@ -186,8 +183,8 @@ export default function NotificationsPage() {
 
     if (!phNotif) {
       if (
-        titleLower.includes("ph") || 
-        titleLower.includes("asam") || 
+        titleLower.includes("ph") ||
+        titleLower.includes("asam") ||
         titleLower.includes("basa") ||
         messageLower.includes("ph") ||
         messageLower.includes("kapur") ||
@@ -202,20 +199,23 @@ export default function NotificationsPage() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+    <div className="mx-auto max-w-4xl space-y-6 pb-12">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black tracking-tight text-primary">Notifikasi</h2>
-          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-            Lihat pembaruan penting serta riwayat aktivitas sensor kebun Anda secara real-time.
+          <h2 className="text-primary text-xl font-black tracking-tight">
+            Notifikasi
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-gray-500">
+            Lihat pembaruan penting serta riwayat aktivitas sensor kebun Anda
+            secara real-time.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={handleTestNotification}
             disabled={isProcessing}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary hover:bg-primary/10 hover:shadow-sm transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+            className="border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold shadow-sm transition-all hover:shadow-sm disabled:opacity-50"
           >
             <MdNotificationsNone size={16} />
             Tes Notifikasi
@@ -225,7 +225,7 @@ export default function NotificationsPage() {
             <button
               onClick={handleMarkAllAsRead}
               disabled={isProcessing}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-black/5 bg-white px-3.5 py-2 text-xs font-semibold text-primary hover:bg-gray-50 hover:shadow-sm transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+              className="text-primary inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-black/5 bg-white px-3.5 py-2 text-xs font-semibold shadow-sm transition-all hover:bg-gray-50 hover:shadow-sm disabled:opacity-50"
             >
               <MdCheck size={16} />
               Tandai Dibaca
@@ -235,57 +235,61 @@ export default function NotificationsPage() {
       </div>
 
       {isLoading ? (
-        <Card className="items-center justify-center p-8 animate-pulse space-y-4">
-          <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-          <p className="text-xs text-gray-400 font-semibold">Memuat notifikasi kebun Anda...</p>
+        <Card className="animate-pulse items-center justify-center space-y-4 p-8">
+          <div className="border-primary/20 border-t-primary h-10 w-10 animate-spin rounded-full border-4" />
+          <p className="text-xs font-semibold text-gray-400">
+            Memuat notifikasi kebun Anda...
+          </p>
         </Card>
       ) : filteredNotifications.length === 0 ? (
-        <Card className="items-center justify-center text-center p-8 border-dashed rounded-3xl py-20 max-w-xl mx-auto my-8">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-6">
+        <Card className="mx-auto my-8 max-w-xl items-center justify-center rounded-3xl border-dashed p-8 py-20 text-center">
+          <div className="bg-primary/8 text-primary mb-6 flex h-20 w-20 items-center justify-center rounded-2xl">
             <MdNotificationsNone size={40} className="text-primary/70" />
           </div>
           <h3 className="text-lg font-bold text-gray-800">Semua Terkendali!</h3>
-          <p className="text-sm text-gray-500 mt-2 max-w-sm leading-relaxed">
-            Belum ada notifikasi baru untuk kebun Anda. Sistem akan memberi peringatan jika kelembapan atau pH sensor terdeteksi di luar batas optimal.
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
+            Belum ada notifikasi baru untuk kebun Anda. Sistem akan memberi
+            peringatan jika kelembapan atau pH sensor terdeteksi di luar batas
+            optimal.
           </p>
         </Card>
       ) : (
-        <Card className="divide-y divide-border overflow-hidden">
+        <Card className="divide-border divide-y overflow-hidden">
           {filteredNotifications.map((notif) => {
             const Icon = iconComponents[notif.type] || MdInfoOutline;
             return (
               <div
                 key={notif.id}
-                className={`p-5 flex items-start gap-4 hover:bg-gray-55/20 transition-all duration-200 group ${
+                className={`hover:bg-gray-55/20 group flex items-start gap-4 p-5 transition-all duration-200 ${
                   !notif.isRead ? "bg-primary/[0.015]" : ""
                 }`}
               >
                 <div
-                  className={`h-10 w-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
                     iconStyles[notif.type] || iconStyles.info
                   }`}
                 >
                   <Icon size={20} />
                 </div>
 
-                <div className="flex-1 min-w-0 space-y-1">
+                <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    <h3 className="flex items-center gap-2 text-sm font-bold text-gray-800">
                       {notif.title}
                       {notif.device && (
-                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-500">
+                        <span className="rounded border border-gray-200 bg-gray-100 px-2 py-0.5 text-[10px] font-black text-gray-500 uppercase">
                           {notif.device.label}
                         </span>
                       )}
                       {!notif.isRead && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 animate-ping" />
+                        <span className="bg-primary h-1.5 w-1.5 shrink-0 animate-ping rounded-full" />
                       )}
                     </h3>
-                    <span className="text-xs text-gray-400 shrink-0">
+                    <span className="shrink-0 text-xs text-gray-400">
                       {getFriendlyTime(notif.createdAt)}
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  <p className="text-xs leading-relaxed text-gray-600 sm:text-sm">
                     {notif.message}
                   </p>
                 </div>
@@ -294,7 +298,7 @@ export default function NotificationsPage() {
                   onClick={() => handleDeleteNotif(notif.id)}
                   disabled={isProcessing}
                   title="Hapus Notifikasi"
-                  className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer shrink-0"
+                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-gray-400 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:border-rose-100 hover:bg-rose-50 hover:text-rose-500 focus:opacity-100"
                 >
                   <MdDeleteOutline size={18} />
                 </button>

@@ -30,7 +30,9 @@ export function useDevices() {
       const data = await fetchDevices(token);
       setDevices(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal memuat daftar alat.");
+      setError(
+        err instanceof Error ? err.message : "Gagal memuat daftar alat.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -43,7 +45,7 @@ export function useDevices() {
       setDevices((prev) => [newDevice, ...prev]);
       return newDevice;
     },
-    [token]
+    [token],
   );
 
   const update = useCallback(
@@ -51,10 +53,10 @@ export function useDevices() {
       if (!token) throw new Error("Tidak ada sesi aktif.");
       const updated = await updateDevice(token, id, payload);
       setDevices((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, ...updated } : d))
+        prev.map((d) => (d.id === id ? { ...d, ...updated } : d)),
       );
     },
-    [token]
+    [token],
   );
 
   const remove = useCallback(
@@ -63,7 +65,7 @@ export function useDevices() {
       await deleteDevice(token, id);
       setDevices((prev) => prev.filter((d) => d.id !== id));
     },
-    [token]
+    [token],
   );
 
   return {

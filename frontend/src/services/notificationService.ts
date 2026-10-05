@@ -12,18 +12,23 @@ async function handleResponse<T>(res: Response): Promise<T> {
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(
-      json?.message || `Request gagal: ${res.status} ${res.statusText}`
+      json?.message || `Request gagal: ${res.status} ${res.statusText}`,
     );
   }
   return json as T;
 }
 
-export async function fetchNotifications(token: string): Promise<NotificationItem[]> {
+export async function fetchNotifications(
+  token: string,
+): Promise<NotificationItem[]> {
   const res = await fetch(`${API_BASE}/api/notifications`, {
     headers: headers(token),
     cache: "no-store",
   });
-  const json = await handleResponse<{ success: boolean; data: { notifications: NotificationItem[] } }>(res);
+  const json = await handleResponse<{
+    success: boolean;
+    data: { notifications: NotificationItem[] };
+  }>(res);
   return json.data?.notifications ?? [];
 }
 
@@ -35,7 +40,10 @@ export async function markAllNotificationsAsRead(token: string): Promise<void> {
   await handleResponse<{ success: boolean }>(res);
 }
 
-export async function deleteNotification(token: string, id: string): Promise<void> {
+export async function deleteNotification(
+  token: string,
+  id: string,
+): Promise<void> {
   const res = await fetch(`${API_BASE}/api/notifications/${id}`, {
     method: "DELETE",
     headers: headers(token),

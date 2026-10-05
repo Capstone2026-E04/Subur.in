@@ -13,19 +13,36 @@ jest.mock("../../database/connections/prisma_client", () => ({
   $transaction: jest.fn(),
 }));
 
-jest.mock("../../database/connections/redis", () => ({ getRedisClient: jest.fn() }));
-jest.mock("../../ai/services/recommendation.service", () => ({ generateRecommendation: jest.fn() }));
-jest.mock("../../repositories/sensor_redis_repository", () => ({ getLatestSensorData: jest.fn() }));
-jest.mock("../../repositories/sensor_repository", () => ({ getLatestSensorLog: jest.fn() }));
+jest.mock("../../database/connections/redis", () => ({
+  getRedisClient: jest.fn(),
+}));
+jest.mock("../../ai/services/recommendation.service", () => ({
+  generateRecommendation: jest.fn(),
+}));
+jest.mock("../../repositories/sensor_redis_repository", () => ({
+  getLatestSensorData: jest.fn(),
+}));
+jest.mock("../../repositories/sensor_repository", () => ({
+  getLatestSensorLog: jest.fn(),
+}));
 jest.mock("../../mqtt/publishers/config_publisher", () => ({
   publishDeviceConfig: jest.fn().mockResolvedValue({ topic: "t", payload: {} }),
 }));
 
 const prisma = require("../../database/connections/prisma_client");
-const { generateRecommendation } = require("../../ai/services/recommendation.service");
-const { getLatestSensorData } = require("../../repositories/sensor_redis_repository");
+const {
+  generateRecommendation,
+} = require("../../ai/services/recommendation.service");
+const {
+  getLatestSensorData,
+} = require("../../repositories/sensor_redis_repository");
 const { getLatestSensorLog } = require("../../repositories/sensor_repository");
-const { registerDevice, updateDevice, deleteDevice, getDeviceRecommendation } = require("../../controllers/device.controller");
+const {
+  registerDevice,
+  updateDevice,
+  deleteDevice,
+  getDeviceRecommendation,
+} = require("../../controllers/device.controller");
 
 function makeRes() {
   const res = {};
@@ -34,31 +51,58 @@ function makeRes() {
   return res;
 }
 
-const BASE_BODY = { deviceId: "dev-1", label: "Bayam", plantId: "p", polybagId: "b" };
+const BASE_BODY = {
+  deviceId: "dev-1",
+  label: "Bayam",
+  plantId: "p",
+  polybagId: "b",
+};
 
 describe("sensorInterval validation", () => {
-  it.each([0, -5, 1.5, "abc", null])("registerDevice rejects sensorInterval %p with 400", async (value) => {
-    const res = makeRes();
-    await registerDevice({ user: { id: "u" }, body: { ...BASE_BODY, sensorInterval: value } }, res, jest.fn());
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(prisma.device.findUnique).not.toHaveBeenCalled();
-    expect(prisma.device.create).not.toHaveBeenCalled();
-  });
+  it.each([0, -5, 1.5, "abc", null])(
+    "registerDevice rejects sensorInterval %p with 400",
+    async (value) => {
+      const res = makeRes();
+      await registerDevice(
+        { user: { id: "u" }, body: { ...BASE_BODY, sensorInterval: value } },
+        res,
+        jest.fn(),
+      );
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(prisma.device.findUnique).not.toHaveBeenCalled();
+      expect(prisma.device.create).not.toHaveBeenCalled();
+    },
+  );
 
   it("registerDevice accepts a positive integer interval", async () => {
     prisma.device.findUnique.mockResolvedValue(null);
     prisma.device.create.mockResolvedValue({ id: "dev-1" });
     const res = makeRes();
-    await registerDevice({ user: { id: "u" }, body: { ...BASE_BODY, sensorInterval: 30 } }, res, jest.fn());
+    await registerDevice(
+      { user: { id: "u" }, body: { ...BASE_BODY, sensorInterval: 30 } },
+      res,
+      jest.fn(),
+    );
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
-  it.each([0, -1, 2.5, "x"])("updateDevice rejects sensorInterval %p with 400", async (value) => {
-    const res = makeRes();
-    await updateDevice({ user: { id: "u" }, params: { id: "dev-1" }, body: { sensorInterval: value } }, res, jest.fn());
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(prisma.device.update).not.toHaveBeenCalled();
-  });
+  it.each([0, -1, 2.5, "x"])(
+    "updateDevice rejects sensorInterval %p with 400",
+    async (value) => {
+      const res = makeRes();
+      await updateDevice(
+        {
+          user: { id: "u" },
+          params: { id: "dev-1" },
+          body: { sensorInterval: value },
+        },
+        res,
+        jest.fn(),
+      );
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(prisma.device.update).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe("deleteDevice", () => {
@@ -69,11 +113,22 @@ describe("deleteDevice", () => {
     prisma.$transaction.mockResolvedValue([]);
     const res = makeRes();
 
-    await deleteDevice({ user: { id: "u" }, params: { id: "dev-1" } }, res, jest.fn());
+    await deleteDevice(
+      { user: { id: "u" }, params: { id: "dev-1" } },
+      res,
+      jest.fn(),
+    );
 
-    expect(prisma.rawSensorLog.deleteMany).toHaveBeenCalledWith({ where: { deviceId: "dev-1" } });
-    expect(prisma.device.delete).toHaveBeenCalledWith({ where: { id: "dev-1" } });
-    expect(prisma.$transaction).toHaveBeenCalledWith(["delete-logs", "delete-device"]);
+    expect(prisma.rawSensorLog.deleteMany).toHaveBeenCalledWith({
+      where: { deviceId: "dev-1" },
+    });
+    expect(prisma.device.delete).toHaveBeenCalledWith({
+      where: { id: "dev-1" },
+    });
+    expect(prisma.$transaction).toHaveBeenCalledWith([
+      "delete-logs",
+      "delete-device",
+    ]);
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
@@ -81,7 +136,11 @@ describe("deleteDevice", () => {
     prisma.device.findFirst.mockResolvedValue(null);
     const res = makeRes();
 
-    await deleteDevice({ user: { id: "u" }, params: { id: "dev-1" } }, res, jest.fn());
+    await deleteDevice(
+      { user: { id: "u" }, params: { id: "dev-1" } },
+      res,
+      jest.fn(),
+    );
 
     expect(res.status).toHaveBeenCalledWith(404);
     expect(prisma.$transaction).not.toHaveBeenCalled();
@@ -90,8 +149,18 @@ describe("deleteDevice", () => {
 
 describe("getDeviceRecommendation", () => {
   const req = { user: { id: "u" }, params: { id: "dev-1" } };
-  const device = { id: "dev-1", userId: "u", polybagId: "b", plantId: "p", sensorInterval: 1 };
-  const recommendation = { fuzzyIndex: 3, categoryCode: "C3", actionText: "Siram" };
+  const device = {
+    id: "dev-1",
+    userId: "u",
+    polybagId: "b",
+    plantId: "p",
+    sensorInterval: 1,
+  };
+  const recommendation = {
+    fuzzyIndex: 3,
+    categoryCode: "C3",
+    actionText: "Siram",
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -109,7 +178,10 @@ describe("getDeviceRecommendation", () => {
     await getDeviceRecommendation(req, res, jest.fn());
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json.mock.calls[0][0].data).toEqual({ ...recommendation, timestamp });
+    expect(res.json.mock.calls[0][0].data).toEqual({
+      ...recommendation,
+      timestamp,
+    });
     expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
   });
 
@@ -123,7 +195,9 @@ describe("getDeviceRecommendation", () => {
     const body = res.json.mock.calls[0][0];
     expect(res.status).toHaveBeenCalledWith(200);
     expect(body.data).toBeNull();
-    expect(body.message).toBe("Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.");
+    expect(body.message).toBe(
+      "Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.",
+    );
     expect(generateRecommendation).not.toHaveBeenCalled();
     expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
   });
@@ -165,12 +239,19 @@ describe("getDeviceRecommendation", () => {
     getLatestSensorLog.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
     const fresh = makeRes();
     await getDeviceRecommendation(req, fresh, jest.fn());
-    expect(fresh.json.mock.calls[0][0].data).toEqual({ ...recommendation, timestamp });
+    expect(fresh.json.mock.calls[0][0].data).toEqual({
+      ...recommendation,
+      timestamp,
+    });
 
     jest.clearAllMocks();
     prisma.device.findFirst.mockResolvedValue(device);
     getLatestSensorData.mockResolvedValue(null);
-    getLatestSensorLog.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp: new Date(Date.now() - 10 * 60 * 1000) });
+    getLatestSensorLog.mockResolvedValue({
+      ph: 6.5,
+      moisture: 50,
+      timestamp: new Date(Date.now() - 10 * 60 * 1000),
+    });
     const stale = makeRes();
     await getDeviceRecommendation(req, stale, jest.fn());
     expect(stale.json.mock.calls[0][0].data).toBeNull();

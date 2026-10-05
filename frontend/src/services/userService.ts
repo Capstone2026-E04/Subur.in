@@ -11,14 +11,14 @@ async function handleResponse<T>(res: Response): Promise<T> {
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(
-      json?.message || `Request gagal: ${res.status} ${res.statusText}`
+      json?.message || `Request gagal: ${res.status} ${res.statusText}`,
     );
   }
   return json as T;
 }
 
 export async function fetchMe(
-  token: string
+  token: string,
 ): Promise<{ isTelegramLinked: boolean }> {
   const res = await fetch(`${API_BASE}/api/users/me`, {
     headers: headers(token),

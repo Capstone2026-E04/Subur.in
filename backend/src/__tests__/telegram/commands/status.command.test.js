@@ -9,7 +9,9 @@ jest.mock("../../../telegram/session/session.service", () => ({
 }));
 
 const prisma = require("../../../database/connections/prisma_client");
-const { resolveActiveDevice } = require("../../../telegram/session/session.service");
+const {
+  resolveActiveDevice,
+} = require("../../../telegram/session/session.service");
 const statusCommand = require("../../../telegram/commands/status.command");
 
 function makeCtx(overrides) {
@@ -38,7 +40,9 @@ describe("status command", () => {
 
     await statusCommand.handler(ctx);
 
-    expect(ctx.reply).toHaveBeenCalledWith(expect.stringContaining("belum memiliki device"));
+    expect(ctx.reply).toHaveBeenCalledWith(
+      expect.stringContaining("belum memiliki device"),
+    );
   });
 
   it("asks the user to run /tanaman when no device is currently active", async () => {
@@ -61,7 +65,9 @@ describe("status command", () => {
 
     await statusCommand.handler(ctx);
 
-    expect(ctx.reply).toHaveBeenCalledWith(expect.stringContaining("Belum ada data sensor"));
+    expect(ctx.reply).toHaveBeenCalledWith(
+      expect.stringContaining("Belum ada data sensor"),
+    );
   });
 
   it("reports the latest category and readings for the active device", async () => {

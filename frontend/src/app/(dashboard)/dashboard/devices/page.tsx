@@ -21,21 +21,24 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-border bg-card/60 py-16 text-center"
+      className="border-border bg-card/60 flex flex-col items-center gap-5 rounded-2xl border border-dashed py-16 text-center"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8 text-primary">
+      <div className="bg-primary/8 text-primary flex h-16 w-16 items-center justify-center rounded-2xl">
         <MdOutlineDeviceHub size={32} />
       </div>
       <div>
-        <p className="text-base font-bold text-gray-700">Belum Ada Alat Terdaftar</p>
-        <p className="text-sm text-gray-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
-          Hubungkan perangkat ESP32 pertama Anda agar dapat memantau kondisi tanah secara real-time.
+        <p className="text-base font-bold text-gray-700">
+          Belum Ada Alat Terdaftar
+        </p>
+        <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-gray-400">
+          Hubungkan perangkat ESP32 pertama Anda agar dapat memantau kondisi
+          tanah secara real-time.
         </p>
       </div>
       <button
         id="add-first-device-btn"
         onClick={onAdd}
-        className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-light transition-all shadow-sm cursor-pointer"
+        className="bg-primary hover:bg-primary-light flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all"
       >
         <MdAdd size={16} />
         Hubungkan Alat Pertama
@@ -46,12 +49,12 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 function SkeletonCard() {
   return (
-    <Card className="rounded-2xl overflow-hidden">
+    <Card className="overflow-hidden rounded-2xl">
       <div className="h-1 bg-gray-100" />
-      <div className="flex flex-col gap-4 p-5 animate-pulse">
+      <div className="flex animate-pulse flex-col gap-4 p-5">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gray-100 shrink-0" />
-          <div className="flex flex-col gap-1.5 flex-1">
+          <div className="h-10 w-10 shrink-0 rounded-xl bg-gray-100" />
+          <div className="flex flex-1 flex-col gap-1.5">
             <div className="h-3.5 w-2/3 rounded-md bg-gray-100" />
             <div className="h-2.5 w-1/2 rounded-md bg-gray-100" />
           </div>
@@ -74,12 +77,22 @@ function SkeletonCard() {
 }
 
 export default function DevicesPage() {
-  const { devices, isLoading, error, token, loadDevices, claim, update, remove } =
-    useDevices();
+  const {
+    devices,
+    isLoading,
+    error,
+    token,
+    loadDevices,
+    claim,
+    update,
+    remove,
+  } = useDevices();
 
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<RegisteredDevice | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<RegisteredDevice | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RegisteredDevice | null>(
+    null,
+  );
 
   useEffect(() => {
     loadDevices();
@@ -88,11 +101,11 @@ export default function DevicesPage() {
   const activeCount = devices.filter((d) => d.status === "ACTIVE").length;
 
   return (
-    <div className="max-w-4xl mx-auto w-full space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-primary">Manajemen Alat</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h2 className="text-primary text-lg font-bold">Manajemen Alat</h2>
+          <p className="mt-0.5 text-sm text-gray-500">
             {isLoading
               ? "Memuat daftar alat…"
               : `${devices.length} alat terdaftar · ${activeCount} aktif`}
@@ -105,7 +118,7 @@ export default function DevicesPage() {
             onClick={loadDevices}
             disabled={isLoading}
             aria-label="Segarkan daftar alat"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/8 bg-white text-gray-500 hover:bg-gray-50 hover:text-primary disabled:opacity-50 transition-colors cursor-pointer shadow-sm"
+            className="hover:text-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-gray-500 shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-50"
           >
             <MdRefresh size={17} className={isLoading ? "animate-spin" : ""} />
           </button>
@@ -113,7 +126,7 @@ export default function DevicesPage() {
           <button
             id="open-connect-modal-btn"
             onClick={() => setIsConnectOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-light transition-all shadow-sm cursor-pointer"
+            className="bg-primary hover:bg-primary-light flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all"
           >
             <MdAdd size={17} />
             <span className="hidden sm:inline">Hubungkan Alat Baru</span>
@@ -126,18 +139,31 @@ export default function DevicesPage() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card shadow-xs overflow-hidden"
+          className="divide-border border-border bg-card grid grid-cols-3 divide-x overflow-hidden rounded-2xl border shadow-xs"
         >
           {[
-            { label: "Total Alat", value: devices.length, color: "text-primary" },
+            {
+              label: "Total Alat",
+              value: devices.length,
+              color: "text-primary",
+            },
             { label: "Aktif", value: activeCount, color: "text-emerald-600" },
-            { label: "Tidak Aktif", value: devices.length - activeCount, color: "text-gray-400" },
+            {
+              label: "Tidak Aktif",
+              value: devices.length - activeCount,
+              color: "text-gray-400",
+            },
           ].map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center py-4 px-2">
+            <div
+              key={stat.label}
+              className="flex flex-col items-center px-2 py-4"
+            >
               <p className={`text-2xl font-bold tabular-nums ${stat.color}`}>
                 {stat.value}
               </p>
-              <p className="text-xs text-gray-400 font-medium mt-0.5">{stat.label}</p>
+              <p className="mt-0.5 text-xs font-medium text-gray-400">
+                {stat.label}
+              </p>
             </div>
           ))}
         </motion.div>
@@ -149,13 +175,13 @@ export default function DevicesPage() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="flex items-center gap-3 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3"
+            className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3"
           >
-            <MdOutlineInbox size={16} className="text-rose-500 shrink-0" />
+            <MdOutlineInbox size={16} className="shrink-0 text-rose-500" />
             <p className="text-sm text-rose-700">{error}</p>
             <button
               onClick={loadDevices}
-              className="ml-auto text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
+              className="ml-auto cursor-pointer text-xs font-semibold text-rose-600 hover:underline"
             >
               Coba Lagi
             </button>
@@ -172,10 +198,7 @@ export default function DevicesPage() {
       ) : devices.length === 0 && !error ? (
         <EmptyState onAdd={() => setIsConnectOpen(true)} />
       ) : (
-        <motion.div
-          layout
-          className="grid grid-cols-1 gap-4"
-        >
+        <motion.div layout className="grid grid-cols-1 gap-4">
           <AnimatePresence mode="popLayout">
             {devices.map((device, idx) => (
               <DeviceCard

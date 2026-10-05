@@ -10,10 +10,14 @@ async function handler(ctx) {
     return;
   }
 
-  const user = await prisma.user.findUnique({ where: { telegramLinkCode: code } });
+  const user = await prisma.user.findUnique({
+    where: { telegramLinkCode: code },
+  });
 
   if (!user) {
-    await ctx.reply("Kode tidak valid atau sudah kedaluwarsa. Silakan buat kode baru dari halaman Pengaturan Subur.in.");
+    await ctx.reply(
+      "Kode tidak valid atau sudah kedaluwarsa. Silakan buat kode baru dari halaman Pengaturan Subur.in.",
+    );
     return;
   }
 
@@ -24,13 +28,17 @@ async function handler(ctx) {
     });
   } catch (updateError) {
     if (updateError.code === "P2002") {
-      await ctx.reply("Akun Telegram ini sudah terhubung ke akun Subur.in lain. Putuskan koneksi tersebut terlebih dahulu.");
+      await ctx.reply(
+        "Akun Telegram ini sudah terhubung ke akun Subur.in lain. Putuskan koneksi tersebut terlebih dahulu.",
+      );
       return;
     }
     throw updateError;
   }
 
-  await ctx.reply(`Akun Subur.in Anda (${user.email}) berhasil terhubung. Anda akan menerima notifikasi perangkat di sini mulai sekarang.`);
+  await ctx.reply(
+    `Akun Subur.in Anda (${user.email}) berhasil terhubung. Anda akan menerima notifikasi perangkat di sini mulai sekarang.`,
+  );
 }
 
 module.exports = {
