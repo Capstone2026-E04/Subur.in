@@ -43,6 +43,7 @@ async function tick(userId) {
         await handleSensorMessage(
           `suburin/devices/${id}/telemetry`,
           Buffer.from(JSON.stringify(reading)),
+          { isDev: true },
         );
       }
     }

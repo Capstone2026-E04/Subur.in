@@ -66,6 +66,7 @@ model RecommendationLog {
   limeDosageGram   Float   @default(0) @map("lime_dosage_gram")
   sulfurDosageGram Float   @default(0) @map("sulfur_dosage_gram")
   reduceWatering   Boolean @default(false) @map("reduce_watering")
+  isDev            Boolean @default(false) @map("is_dev")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
 
@@ -82,6 +83,7 @@ model RawSensorLog {
   deviceId  String   @map("device_id") @db.VarChar(50)
   ph        Float    @db.DoublePrecision
   moisture  Float    @db.DoublePrecision
+  isDev     Boolean  @default(false) @map("is_dev")
 
   @@id([timestamp, id])
   @@index([deviceId, timestamp(sort: Desc)], map: "idx_raw_sensor_logs_device_timestamp")

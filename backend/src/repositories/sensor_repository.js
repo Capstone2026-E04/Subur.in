@@ -8,12 +8,13 @@ async function findDeviceById(deviceId) {
   });
 }
 
-async function saveRawSensorLog(deviceId, ph, moisture) {
+async function saveRawSensorLog(deviceId, ph, moisture, isDev = false) {
   return await prisma.rawSensorLog.create({
     data: {
       deviceId: deviceId,
       ph: ph,
       moisture: moisture,
+      isDev,
     },
   });
 }

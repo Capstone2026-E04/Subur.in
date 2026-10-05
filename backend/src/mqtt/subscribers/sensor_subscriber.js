@@ -35,10 +35,12 @@ function registerSensorSubscriber(mqttClient) {
     );
   });
 
-  mqttClient.on("message", handleSensorMessage);
+  mqttClient.on("message", (topic, payload) =>
+    handleSensorMessage(topic, payload),
+  );
 }
 
-async function handleSensorMessage(topic, payload) {
+async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   if (!isSensorTopic(topic)) return;
 
   const deviceId = extractDeviceId(topic);
@@ -145,6 +147,7 @@ async function handleSensorMessage(topic, payload) {
           limeDosageGram: recommendation.limeDosageGram,
           sulfurDosageGram: recommendation.sulfurDosageGram,
           reduceWatering: recommendation.reduceWatering,
+          isDev,
         },
       });
       console.log(
@@ -231,7 +234,7 @@ async function handleSensorMessage(topic, payload) {
 
     const allowWrite = await shouldSaveToDatabase(deviceId);
     if (allowWrite) {
-      await saveRawSensorLog(deviceId, ph, moisture);
+      await saveRawSensorLog(deviceId, ph, moisture, isDev);
       await updateDeviceLastSeen(deviceId);
       console.log(
         `[MQTT Subscriber]  Data sensor disimpan ke Postgres | Device: ${deviceId}`,
