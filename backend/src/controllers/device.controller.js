@@ -81,9 +81,7 @@ exports.registerDevice = async (req, res, next) => {
       );
     }
 
-    if (
-      sensorInterval !== undefined && !isValidInterval(sensorInterval)
-    ) {
+    if (sensorInterval !== undefined && !isValidInterval(sensorInterval)) {
       return sendError(
         res,
         400,
@@ -185,9 +183,7 @@ exports.updateDevice = async (req, res, next) => {
     const { id } = req.params;
     const { label, plantId, polybagId, status, sensorInterval } = req.body;
 
-    if (
-      sensorInterval !== undefined && !isValidInterval(sensorInterval)
-    ) {
+    if (sensorInterval !== undefined && !isValidInterval(sensorInterval)) {
       return sendError(
         res,
         400,
