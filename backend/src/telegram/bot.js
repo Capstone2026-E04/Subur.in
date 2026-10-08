@@ -9,7 +9,7 @@ async function processUpdate(update) {
     console.error("[TelegramBot] Gagal memproses update Telegram:", {
       message: error.message,
       stack: error.stack,
-      update,
+      updateId: update?.update_id,
     });
   }
 }

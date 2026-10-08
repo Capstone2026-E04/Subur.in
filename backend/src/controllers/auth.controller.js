@@ -5,7 +5,7 @@ const { AppError } = require("../errors/AppError");
 const { sendSuccess, sendError } = require("../utils/response");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret_for_development";
+const { JWT_SECRET } = require("../config/jwt");
 
 exports.googleSignIn = async (req, res, next) => {
   try {
@@ -36,13 +36,19 @@ exports.googleSignIn = async (req, res, next) => {
       );
     }
 
-    const { sub: googleId, name, email, picture: avatarUrl } = payload;
+    const {
+      sub: googleId,
+      name,
+      email,
+      email_verified: emailVerified,
+      picture: avatarUrl,
+    } = payload;
 
-    if (!email) {
+    if (!email || !emailVerified) {
       return sendError(
         res,
         400,
-        "Akun Google Anda tidak menyediakan alamat email.",
+        "Akun Google Anda tidak memiliki alamat email yang terverifikasi.",
       );
     }
 
@@ -84,7 +90,7 @@ exports.googleSignIn = async (req, res, next) => {
         name: user.name,
       },
       JWT_SECRET,
-      { expiresIn: "7d" },
+      { expiresIn: "7d", algorithm: "HS256" },
     );
 
     return sendSuccess(res, 200, "Autentikasi Google berhasil!", {

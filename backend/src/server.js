@@ -30,7 +30,6 @@ app.use(errorMiddleware);
 
 app.listen(PORT, () => {
   console.log(`Server berjalan di http://localhost:${PORT}`);
-  console.log(process.env.DATABASE_URL);
 
   try {
     initCronJobs();

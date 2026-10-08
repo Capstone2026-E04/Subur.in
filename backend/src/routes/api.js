@@ -31,7 +31,8 @@ router.get("/health", async (req, res) => {
       const pingResult = await redis.ping();
       redisStatus = pingResult === "PONG" ? "CONNECTED" : "UNHEALTHY";
     } catch (redisErr) {
-      redisStatus = `ERROR: ${redisErr.message}`;
+      console.error("[API] Health check Redis gagal:", redisErr.message);
+      redisStatus = "ERROR";
     }
 
     const message =

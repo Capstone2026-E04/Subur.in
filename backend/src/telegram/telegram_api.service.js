@@ -1,5 +1,8 @@
 "use strict";
 
+const crypto = require("crypto");
+
+const LINK_CODE_LENGTH = 8;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_API_BASE = "https://api.telegram.org";
 
@@ -68,8 +71,8 @@ async function answerCallbackQuery(callbackQueryId, text) {
 function generateLinkCode() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let code = "";
-  for (let i = 0; i < 6; i++) {
-    code += characters.charAt(Math.floor(Math.random() * characters.length));
+  for (let i = 0; i < LINK_CODE_LENGTH; i++) {
+    code += characters.charAt(crypto.randomInt(characters.length));
   }
   return code;
 }

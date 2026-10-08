@@ -14,7 +14,11 @@ async function handler(ctx) {
     where: { telegramLinkCode: code },
   });
 
-  if (!user) {
+  if (
+    !user ||
+    !user.telegramLinkCodeExpiresAt ||
+    user.telegramLinkCodeExpiresAt < new Date()
+  ) {
     await ctx.reply(
       "Kode tidak valid atau sudah kedaluwarsa. Silakan buat kode baru dari halaman Pengaturan Subur.in.",
     );
@@ -24,7 +28,11 @@ async function handler(ctx) {
   try {
     await prisma.user.update({
       where: { id: user.id },
-      data: { telegramChatId: String(ctx.chatId), telegramLinkCode: null },
+      data: {
+        telegramChatId: String(ctx.chatId),
+        telegramLinkCode: null,
+        telegramLinkCodeExpiresAt: null,
+      },
     });
   } catch (updateError) {
     if (updateError.code === "P2002") {

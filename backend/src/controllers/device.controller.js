@@ -18,7 +18,14 @@ exports.getDiscoveredDevices = async (req, res, next) => {
   try {
     const redis = getRedisClient();
 
-    const keys = await redis.keys("sensor:latest:*");
+    const keySet = new Set();
+    for await (const batch of redis.scanStream({
+      match: "sensor:latest:*",
+      count: 100,
+    })) {
+      batch.forEach((k) => keySet.add(k));
+    }
+    const keys = [...keySet];
 
     if (keys.length === 0) {
       return sendSuccess(

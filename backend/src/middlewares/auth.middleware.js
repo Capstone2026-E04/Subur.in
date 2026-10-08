@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { AppError } = require("../errors/AppError");
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret_for_development";
+const { JWT_SECRET } = require("../config/jwt");
 
 module.exports = (req, res, next) => {
   try {
@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
 
     req.user = decoded;
 

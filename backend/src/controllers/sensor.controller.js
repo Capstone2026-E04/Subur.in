@@ -11,6 +11,31 @@ const {
 } = require("../repositories/sensor_repository");
 const { sendSuccess, sendError } = require("../utils/response");
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+exports.requireOwnedDevice = async (req, res, next) => {
+  try {
+    const { deviceId } = req.params;
+    const device = UUID_RE.test(deviceId)
+      ? await prisma.device.findFirst({
+          where: { id: deviceId, userId: req.user.id },
+          select: { id: true },
+        })
+      : null;
+    if (!device) {
+      return sendError(
+        res,
+        404,
+        "Device tidak ditemukan atau Anda tidak memiliki akses.",
+      );
+    }
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+};
+
 exports.streamSensorData = (req, res) => {
   const { deviceId } = req.params;
 
@@ -87,7 +112,7 @@ exports.getLatestSensor = async (req, res, next) => {
 
 exports.getSensorHistory = async (req, res, next) => {
   const { deviceId } = req.params;
-  const limit = parseInt(req.query.limit) || 30;
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 30, 1), 500);
 
   const retries = 3;
   const delay = 250;

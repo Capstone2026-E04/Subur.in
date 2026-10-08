@@ -63,6 +63,22 @@ exports.updateProfile = async (req, res, next) => {
       return sendError(res, 400, "Nama tidak boleh melebihi 100 karakter.");
     }
 
+    if (avatarUrl !== undefined) {
+      let valid = typeof avatarUrl === "string" && avatarUrl.length <= 2048;
+      try {
+        valid = valid && new URL(avatarUrl).protocol === "https:";
+      } catch {
+        valid = false;
+      }
+      if (!valid) {
+        return sendError(
+          res,
+          400,
+          "avatarUrl harus berupa URL https yang valid.",
+        );
+      }
+    }
+
     const updateData = {};
     if (name !== undefined) updateData.name = name.trim();
     if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
@@ -135,7 +151,10 @@ exports.getTelegramLinkCode = async (req, res, next) => {
 
     await prisma.user.update({
       where: { id: userId },
-      data: { telegramLinkCode: code },
+      data: {
+        telegramLinkCode: code,
+        telegramLinkCodeExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      },
     });
 
     return sendSuccess(res, 200, "Kode penghubung Telegram berhasil dibuat.", {

@@ -16,6 +16,7 @@ model User {
   avatarUrl String?  @map("avatar_url") @db.Text
   telegramChatId   String?  @unique @map("telegram_chat_id") @db.VarChar(50)
   telegramLinkCode String?  @unique @map("telegram_link_code") @db.VarChar(10)
+  telegramLinkCodeExpiresAt DateTime? @db.Timestamptz(6) @map("telegram_link_code_expires_at")
   telegramNotifyEnabled Boolean @default(true) @map("telegram_notify_enabled")
   createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
   updatedAt DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
