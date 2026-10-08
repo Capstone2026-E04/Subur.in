@@ -35,6 +35,7 @@ erDiagram
         text avatar_url
         varchar telegram_chat_id UK
         varchar telegram_link_code UK
+        timestamptz telegram_link_code_expires_at
         bool telegram_notify_enabled
     }
     DEVICE {

@@ -6,9 +6,9 @@ Hanya Google Sign-In, dengan JWT yang diterbitkan backend sebagai token sesi unt
 
 1. Client mengirim `{ idToken }`, yaitu ID token yang diterbitkan Google (diperoleh frontend melalui Google provider milik NextAuth).
 2. Backend memverifikasinya dengan `OAuth2Client.verifyIdToken` dari `google-auth-library`, memeriksa audience terhadap `GOOGLE_CLIENT_ID`.
-3. Mengekstrak `sub` (ID user Google), `email`, `name`, `picture` dari payload yang telah diverifikasi.
+3. Mengekstrak `sub` (ID user Google), `email`, `email_verified`, `name`, `picture` dari payload yang telah diverifikasi. Email yang tidak ada atau belum terverifikasi ditolak dengan `400`.
 4. Mencari user berdasarkan `googleId`; jika tidak ditemukan, mencoba mencari berdasarkan `email` dan menautkan Google ID ke akun yang sudah ada tersebut (menangani kasus user yang sudah ada sebelum penautan Google, atau re-auth setelah `googleId` entah bagaimana terhapus); jika tidak, membuat `User` baru.
-5. Menandatangani JWT (`{ id, email, name }`, `JWT_SECRET`, masa berlaku 7 hari) dan mengembalikannya bersama data user.
+5. Menandatangani JWT (`{ id, email, name }`, `JWT_SECRET`, algoritma `HS256`, masa berlaku 7 hari) dan mengembalikannya bersama data user.
 
 ## Otorisasi request ([`middlewares/auth.middleware.js`](../../backend/src/middlewares/auth.middleware.js))
 
@@ -21,7 +21,7 @@ module.exports = (req, res, next) => {
     return next(new AppError('Akses ditolak. ...', 401, true));
   }
   const token = authHeader.split(' ')[1];
-  const decoded = jwt.verify(token, JWT_SECRET);
+  const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
   req.user = decoded;
   next();
 };
@@ -31,7 +31,7 @@ Jika berhasil, `req.user` berisi payload JWT yang telah didekode (`{ id, email, 
 
 ## Secrets
 
-`JWT_SECRET` memiliki fallback hardcoded (`'fallback_secret_for_development'`) jika env var tidak diset. Ini tidak boleh diandalkan di luar development lokal: `JWT_SECRET` yang hilang pada environment mana pun yang di-deploy berarti siapa pun dapat memalsukan token sesi yang valid. Selalu set `JWT_SECRET` yang kuat di production (lihat [setup/environment.md](../setup/environment.md)).
+`JWT_SECRET` dibaca lewat [`config/jwt.js`](../../backend/src/config/jwt.js), yang melempar error saat startup jika env var tidak diset (tidak ada lagi fallback hardcoded). `auth.controller.js` dan `auth.middleware.js` sama-sama mengimpor dari sana. Set `JWT_SECRET` yang kuat di semua environment (lihat [setup/environment.md](../setup/environment.md)).
 
 ## Yang belum dicakup
 

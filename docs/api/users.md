@@ -44,6 +44,7 @@ Memperbarui `name` dan/atau `avatarUrl`. Minimal satu field wajib diisi.
 **Validasi:**
 - Minimal salah satu dari `name`/`avatarUrl` harus ada.
 - `name` harus berupa string tidak kosong, maksimal 100 karakter.
+- `avatarUrl` harus berupa URL `https` yang valid, maksimal 2048 karakter.
 
 **Response sukses `200`:**
 ```json

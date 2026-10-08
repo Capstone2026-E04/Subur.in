@@ -12,7 +12,7 @@ Jangan pernah commit nilai asli: `.env` / `.env.local` sudah masuk gitignore. Sa
 | `DIRECT_URL`                      | Connection string Postgres langsung (non-pooled), diperlukan Prisma untuk migrasi | Supabase project settings -> Database -> Connection string (direct) |
 | `GOOGLE_CLIENT_ID`                | OAuth Client ID yang digunakan untuk memverifikasi Google ID token                | Google Cloud Console -> APIs & Services -> Credentials              |
 | `GOOGLE_CLIENT_SECRET`            | OAuth Client Secret (berpasangan dengan yang di atas)                             | Google Cloud Console -> APIs & Services -> Credentials              |
-| `JWT_SECRET`                      | Secret penanda tangan (signing) untuk JWT sesi backend                            | Buat string acak yang panjang sendiri, misalnya `openssl rand -hex 32` |
+| `JWT_SECRET`                      | Secret penanda tangan (signing) untuk JWT sesi backend (wajib; server gagal start jika kosong) | Buat string acak yang panjang sendiri, misalnya `openssl rand -hex 32` |
 | `MQTT_BROKER_URL`                 | URL broker MQTT (`mqtts://...`)                                                   | Deployment EMQX Cloud (atau broker lain) Anda                       |
 | `MQTT_PORT`                       | Port TLS broker MQTT                                                              | Dashboard broker, biasanya `8883`                                   |
 | `MQTT_USERNAME` / `MQTT_PASSWORD` | Kredensial client MQTT                                                            | Dashboard broker                                                    |
@@ -22,6 +22,7 @@ Jangan pernah commit nilai asli: `.env` / `.env.local` sudah masuk gitignore. Sa
 | `SENSOR_THROTTLE_SECONDS`         | Jeda minimum (detik) antar penulisan log sensor mentah per device                 | Pilihan Anda, default `30`                                          |
 | `METRICS_PASSWORD`                | Password bearer-token yang melindungi `GET /api/metrics` (lihat [backend/logging.md](../backend/logging.md#metrics)) | Pilihan Anda                                          |
 | `TELEGRAM_BOT_TOKEN`               | Token bot yang digunakan untuk mengirim/menerima pesan melalui Telegram Bot API   | [@BotFather](https://t.me/BotFather) di Telegram                    |
+| `TELEGRAM_WEBHOOK_SECRET`          | Secret yang dicocokkan dengan header `X-Telegram-Bot-Api-Secret-Token` pada webhook | Buat sendiri: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` (1-256 karakter `A-Za-z0-9_-`) |
 
 ## Frontend (`frontend/.env.local`)
 
@@ -51,5 +52,8 @@ Kedua aplikasi memverifikasi/menukar Google ID token, sehingga OAuth Client haru
 2. Set `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` (frontend) ke `@username` bot tersebut agar halaman settings dapat memberi tahu pengguna bot mana yang harus mereka hubungi.
 3. Setelah deploy, arahkan Telegram ke webhook satu kali (tidak diotomatisasi oleh CI):
    ```
-   curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://<backend-domain>/api/telegram/webhook"
+   curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+     -d "url=https://<backend-domain>/api/telegram/webhook" \
+     -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
    ```
+   Webhook menolak (`401`) request tanpa header `X-Telegram-Bot-Api-Secret-Token` yang cocok dengan `TELEGRAM_WEBHOOK_SECRET`. Jika secret diganti, jalankan `setWebhook` lagi.

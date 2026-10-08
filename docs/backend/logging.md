@@ -32,4 +32,4 @@ Setiap controller memakai prefix `[<Nama>Controller]` yang konsisten dengan nama
 
 - Kode background/infrastruktur (topik MQTT baru, cron job baru): pilih prefix `[Subsystem]` dan jaga konsistensi dalam file tersebut.
 - Request handler: pakai prefix `[<Nama>Controller]` dan catat objek `{ message, stack, ...konteks }` di blok `catch`, bukan sekadar `error.message` sebagai string.
-- Jangan pernah mencatat secret (`JWT_SECRET`, token, kredensial MQTT/Redis). `server.js` saat ini mencatat `process.env.DATABASE_URL` saat boot untuk keperluan debugging; hindari memperluas pola ini ke file yang membawa secret aplikasi dan pertimbangkan untuk menghapusnya sebelum mengeraskan (harden) log untuk environment bersama.
+- Jangan pernah mencatat secret (`JWT_SECRET`, token, kredensial MQTT/Redis). `server.js` sudah tidak lagi mencatat `DATABASE_URL` saat boot; jangan memperkenalkan kembali log yang membawa secret. Log error webhook Telegram hanya mencatat `update_id`, bukan isi update.

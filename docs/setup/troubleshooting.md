@@ -2,7 +2,7 @@
 
 ## Backend gagal start / crash saat boot
 
-Inisialisasi MQTT, Redis, dan cron di [`server.js`](../../backend/src/server.js) masing-masing dibungkus dalam `try/catch` sendiri dan hanya mencatat warning saat gagal; server HTTP tetap berjalan. Jika `/api/health` melaporkan `redis: "ERROR: ..."` atau data sensor tidak pernah diperbarui, periksa kredensial MQTT/Redis di `.env` alih-alih berasumsi seluruh server crash.
+Inisialisasi MQTT, Redis, dan cron di [`server.js`](../../backend/src/server.js) masing-masing dibungkus dalam `try/catch` sendiri dan hanya mencatat warning saat gagal; server HTTP tetap berjalan. Jika `/api/health` melaporkan `redis: "ERROR"` (detail error ada di log backend) atau data sensor tidak pernah diperbarui, periksa kredensial MQTT/Redis di `.env` alih-alih berasumsi seluruh server crash.
 
 ## `GET /api/health` melaporkan database `DOWN`
 

@@ -65,14 +65,14 @@ Setiap handler callback memanggil `ctx.answerCallback()` (`answerCallbackQuery` 
 
 ## `POST /api/users/me/telegram/link-code`
 
-Memerlukan `Authorization: Bearer <jwt>`. Membuat kode alfanumerik 6 karakter, menyimpannya pada `telegramLinkCode` milik pemanggil, dan mengembalikannya untuk ditampilkan di UI.
+Memerlukan `Authorization: Bearer <jwt>`. Membuat kode alfanumerik 8 karakter (dibangkitkan dengan `crypto.randomInt`), menyimpannya pada `telegramLinkCode` milik pemanggil beserta `telegramLinkCodeExpiresAt` (10 menit dari sekarang), dan mengembalikannya untuk ditampilkan di UI. Perintah `/link <code>` menolak kode yang sudah lewat masa berlakunya.
 
 **Response sukses `200`:**
 ```json
 {
   "success": true,
   "message": "Kode penghubung Telegram berhasil dibuat.",
-  "data": { "linkCode": "AB12CD" }
+  "data": { "linkCode": "AB12CD34" }
 }
 ```
 

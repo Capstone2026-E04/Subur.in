@@ -2,6 +2,14 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-08
+
+- **fix(security):** Webhook Telegram memverifikasi header `X-Telegram-Bot-Api-Secret-Token` terhadap `TELEGRAM_WEBHOOK_SECRET` (perbandingan timing-safe); request tanpa secret yang cocok ditolak `401`. Perlu `setWebhook` ulang dengan `secret_token`.
+- **fix(security):** Endpoint `/api/sensors/:deviceId/{stream,latest,history}` kini wajib JWT dan hanya untuk pemilik device (`404` bila bukan miliknya). `stream` juga menerima `?access_token=` karena `EventSource` tidak bisa mengirim header; frontend (`useSensorRealtime`, dashboard) ikut mengirim token.
+- **fix(security):** `JWT_SECRET` wajib (tanpa fallback, lewat `config/jwt.js`); JWT dikunci ke `HS256`; sign-in Google menolak email yang belum terverifikasi.
+- **fix(security):** Kode link Telegram menjadi 8 karakter via `crypto.randomInt` dan kedaluwarsa 10 menit (kolom baru `users.telegram_link_code_expires_at`, perlu `prisma db push`/migrasi).
+- **fix(security):** `PATCH /api/users/me` memvalidasi `avatarUrl` (https, maks 2048); `limit` riwayat sensor dibatasi 1-500; `GET /api/devices/discovered` memakai `SCAN` alih-alih `KEYS`; `/api/health` tidak lagi membocorkan pesan error Redis; `DATABASE_URL` tidak lagi dicatat saat boot.
+
 ## 2026-10-05
 
 - **fix(mqtt):** Config interval dipublikasikan dengan `retain: true` agar alat yang offline/reboot langsung menerima interval terakhir saat subscribe.
