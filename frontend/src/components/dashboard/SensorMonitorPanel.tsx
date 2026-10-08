@@ -171,14 +171,18 @@ function ConnectionBadge({ status }: { status: ConnectionStatus }) {
 interface SensorMonitorPanelProps {
   deviceId?: string;
   deviceLabel?: string;
+  token?: string | null;
 }
 
 export default function SensorMonitorPanel({
   deviceId = "node_1",
   deviceLabel,
+  token,
 }: SensorMonitorPanelProps) {
-  const { ph, moisture, lastUpdated, connectionStatus } =
-    useSensorRealtime(deviceId);
+  const { ph, moisture, lastUpdated, connectionStatus } = useSensorRealtime(
+    deviceId,
+    token,
+  );
 
   return (
     <Card className="overflow-hidden">

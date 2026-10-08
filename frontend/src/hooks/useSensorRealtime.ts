@@ -14,7 +14,10 @@ export interface SensorData {
 
 const RECONNECT_DELAY_MS = 5000;
 
-export function useSensorRealtime(deviceId: string): SensorData {
+export function useSensorRealtime(
+  deviceId: string,
+  token?: string | null,
+): SensorData {
   const [ph, setPh] = useState<number | null>(null);
   const [moisture, setMoisture] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -27,8 +30,11 @@ export function useSensorRealtime(deviceId: string): SensorData {
   const openStreamRef = useRef<(() => void) | null>(null);
 
   const fetchLatest = useCallback(async () => {
+    if (!deviceId || !token) return;
     try {
-      const res = await fetch(`${API_BASE}/api/sensors/${deviceId}/latest`);
+      const res = await fetch(`${API_BASE}/api/sensors/${deviceId}/latest`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) return;
       const json = await res.json();
       if (json?.success && json?.data && isMountedRef.current) {
@@ -38,10 +44,10 @@ export function useSensorRealtime(deviceId: string): SensorData {
         if (timestamp) setLastUpdated(timestamp);
       }
     } catch {}
-  }, [deviceId]);
+  }, [deviceId, token]);
 
   const openStream = useCallback(() => {
-    if (!isMountedRef.current) return;
+    if (!isMountedRef.current || !deviceId || !token) return;
 
     if (esRef.current) {
       esRef.current.close();
@@ -50,7 +56,9 @@ export function useSensorRealtime(deviceId: string): SensorData {
 
     setConnectionStatus("connecting");
 
-    const es = new EventSource(`${API_BASE}/api/sensors/${deviceId}/stream`);
+    const es = new EventSource(
+      `${API_BASE}/api/sensors/${deviceId}/stream?access_token=${encodeURIComponent(token ?? "")}`,
+    );
     esRef.current = es;
 
     es.onopen = () => {
@@ -86,7 +94,7 @@ export function useSensorRealtime(deviceId: string): SensorData {
         if (isMountedRef.current) openStreamRef.current?.();
       }, RECONNECT_DELAY_MS);
     };
-  }, [deviceId, fetchLatest]);
+  }, [deviceId, token, fetchLatest]);
 
   useEffect(() => {
     openStreamRef.current = openStream;

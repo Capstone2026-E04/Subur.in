@@ -51,7 +51,9 @@ export default function Topbar({ user }: TopbarProps) {
     if (devices.length === 0 || !token) return;
 
     const streams = devices.map((device) => {
-      const es = new EventSource(`${API_URL}/api/sensors/${device.id}/stream`);
+      const es = new EventSource(
+        `${API_URL}/api/sensors/${device.id}/stream?access_token=${encodeURIComponent(token)}`,
+      );
       es.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);

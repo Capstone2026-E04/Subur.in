@@ -96,7 +96,7 @@ export default function SensorHistoryChart({
   const [viewMode, setViewMode] = useState<ChartViewMode>("both");
   const [error, setError] = useState<string | null>(null);
 
-  const { ph, moisture, lastUpdated } = useSensorRealtime(deviceId);
+  const { ph, moisture, lastUpdated } = useSensorRealtime(deviceId, token);
 
   useEffect(() => {
     if (ph !== null && moisture !== null && lastUpdated) {

@@ -143,6 +143,7 @@ export default function DashboardPage() {
 
   const { ph, moisture, lastUpdated } = useSensorRealtime(
     selectedDevice?.id || "",
+    token,
   );
 
   const loadRecommendation = useCallback(
@@ -493,6 +494,7 @@ export default function DashboardPage() {
       <SensorMonitorPanel
         deviceId={selectedDevice.id}
         deviceLabel={selectedDevice.label}
+        token={token}
       />
 
       <SensorHistoryChart
