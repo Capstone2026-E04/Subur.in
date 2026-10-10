@@ -70,6 +70,7 @@ async function startSimulation() {
     const selectedPlant = plants[plantIndex];
     console.log(` Tanaman terpilih: ${selectedPlant.name}`);
 
+    console.log(
       "\nMenghitung rekomendasi menggunakan Fuzzy Inference System...",
     );
     const result = await generateRecommendation({
