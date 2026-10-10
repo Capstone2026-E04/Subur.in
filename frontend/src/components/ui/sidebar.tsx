@@ -176,12 +176,13 @@ export const SidebarLink = ({
     <Link
       href={link.href}
       className={cn(
-        "group/sidebar flex items-center justify-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+        "group/sidebar relative flex items-center justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
         active
-          ? "bg-white/15 text-white"
+          ? "bg-white/15 text-white before:absolute before:top-2 before:bottom-2 before:-left-4 before:w-1 before:rounded-r-full before:bg-white"
           : "text-white/70 hover:bg-white/10 hover:text-white",
         className,
       )}
+      aria-current={active ? "page" : undefined}
       {...props}
     >
       {link.icon}

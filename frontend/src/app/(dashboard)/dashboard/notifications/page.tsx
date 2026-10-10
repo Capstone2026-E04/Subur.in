@@ -18,6 +18,7 @@ import {
 import { API_URL } from "@/services/api";
 import type { NotificationItem } from "@/types/device";
 import { Card } from "@/components/ui/card";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 const iconStyles = {
   warning:
@@ -201,40 +202,31 @@ export default function NotificationsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-12">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-primary text-xl font-black tracking-tight">
-            Notifikasi
-          </h2>
-          <p className="mt-1 text-sm leading-relaxed text-gray-500">
-            Lihat pembaruan penting serta riwayat aktivitas sensor kebun Anda
-            secara real-time.
-          </p>
-        </div>
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      <PageHeader
+        title="Notifikasi"
+        description="Lihat pembaruan penting serta riwayat aktivitas sensor kebun Anda secara real-time."
+      >
+        <button
+          onClick={handleTestNotification}
+          disabled={isProcessing}
+          className="border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold shadow-sm transition-all hover:shadow-sm disabled:opacity-50"
+        >
+          <MdNotificationsNone size={16} />
+          Tes Notifikasi
+        </button>
 
-        <div className="flex shrink-0 items-center gap-2">
+        {filteredNotifications.some((n) => !n.isRead) && (
           <button
-            onClick={handleTestNotification}
+            onClick={handleMarkAllAsRead}
             disabled={isProcessing}
-            className="border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold shadow-sm transition-all hover:shadow-sm disabled:opacity-50"
+            className="text-primary inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-black/5 bg-white px-3.5 py-2 text-xs font-semibold shadow-sm transition-all hover:bg-gray-50 hover:shadow-sm disabled:opacity-50"
           >
-            <MdNotificationsNone size={16} />
-            Tes Notifikasi
+            <MdCheck size={16} />
+            Tandai Dibaca
           </button>
-
-          {filteredNotifications.some((n) => !n.isRead) && (
-            <button
-              onClick={handleMarkAllAsRead}
-              disabled={isProcessing}
-              className="text-primary inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-black/5 bg-white px-3.5 py-2 text-xs font-semibold shadow-sm transition-all hover:bg-gray-50 hover:shadow-sm disabled:opacity-50"
-            >
-              <MdCheck size={16} />
-              Tandai Dibaca
-            </button>
-          )}
-        </div>
-      </div>
+        )}
+      </PageHeader>
 
       {isLoading ? (
         <Card className="animate-pulse items-center justify-center space-y-4 p-8">

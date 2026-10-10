@@ -1,5 +1,6 @@
 import Sidebar from "@/components/dashboard/Sidebar";
 import Topbar from "@/components/dashboard/Topbar";
+import DashboardMotion from "@/components/dashboard/DashboardMotion";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
@@ -43,13 +44,13 @@ export default async function DashboardLayout({
 
   return (
     <SessionProvider session={session} basePath="/api/nextauth">
-      <div className="bg-background flex h-screen flex-col overflow-hidden md:flex-row">
+      <div className="bg-background flex h-dvh flex-col overflow-hidden md:flex-row">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <Topbar user={freshUser} />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
+          <DashboardMotion className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
             {children}
-          </main>
+          </DashboardMotion>
         </div>
       </div>
     </SessionProvider>

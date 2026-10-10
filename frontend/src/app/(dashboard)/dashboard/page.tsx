@@ -25,6 +25,7 @@ import SensorMonitorPanel from "@/components/dashboard/SensorMonitorPanel";
 import SensorHistoryChart from "@/components/dashboard/SensorHistoryChart";
 import type { RegisteredDevice, DeviceRecommendation } from "@/types/device";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 function DashboardSkeleton() {
   return (
@@ -226,18 +227,18 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="w-full space-y-6">
-      <div className="flex flex-col justify-between gap-4 border-b border-black/5 pb-4 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-primary text-lg font-bold">Ringkasan Kondisi</h2>
-          <p className="mt-1 text-xs text-gray-400">
-            Menampilkan data real-time untuk perangkat:{" "}
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <PageHeader
+        title="Ringkasan Kondisi"
+        description={
+          <>
+            Data real-time untuk perangkat{" "}
             <span className="font-semibold text-gray-700">
               {selectedDevice.label}
             </span>
-          </p>
-        </div>
-
+          </>
+        }
+      >
         <div className="relative">
           <label className="sr-only" htmlFor="dashboard-device-selector">
             Pilih Alat
@@ -260,240 +261,247 @@ export default function DashboardPage() {
             <MdOutlineArrowDropDown size={20} />
           </div>
         </div>
-      </div>
-
-      <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/60 py-4">
-          <div className="flex items-center gap-2">
-            <h3 className="text-primary text-sm font-bold">
-              Rekomendasi Perawatan AI
-            </h3>
-          </div>
-          <button
-            onClick={() => loadRecommendation()}
-            disabled={isRecLoading}
-            className="text-primary flex cursor-pointer items-center gap-1 text-xs font-bold hover:underline"
-          >
-            {isRecLoading ? "Memuat..." : "Hitung Ulang"}
-          </button>
-        </CardHeader>
-
-        <CardContent className="p-6">
-          {isRecLoading ? (
-            <div className="flex animate-pulse flex-col items-center justify-center py-10">
-              <div className="border-primary/20 border-t-primary h-10 w-10 animate-spin rounded-full border-4" />
-              <p className="mt-3 text-xs font-semibold text-gray-400">
-                Mengalkulasi rekomendasi perawatan terbaik...
-              </p>
-            </div>
-          ) : !recommendation ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
-                <MdWarningAmber size={24} />
-              </div>
-              <p className="text-sm font-bold text-gray-700">
-                Belum Ada Rekomendasi
-              </p>
-              <p className="mt-1 max-w-sm text-xs text-gray-400">
-                Rekomendasi fuzzy belum dapat dihitung karena belum ada
-                telemetri sensor yang masuk dari perangkat ini.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="flex items-center justify-start gap-8 rounded-xl border border-black/5 bg-gray-50 p-4">
-                <div>
-                  <span className="block text-xs font-semibold text-gray-400">
-                    pH Terukur
-                  </span>
-                  <span className="text-base font-bold text-emerald-600">
-                    {(ph !== null ? ph : recommendation.phValue).toFixed(1)}
-                  </span>
-                </div>
-                <div className="h-8 w-px bg-black/5" />
-                <div>
-                  <span className="block text-xs font-semibold text-gray-400">
-                    Kelembapan Terukur
-                  </span>
-                  <span className="text-base font-bold text-sky-600">
-                    {(moisture !== null
-                      ? moisture
-                      : recommendation.moistureValue
-                    ).toFixed(0)}
-                    %
-                  </span>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50 to-teal-50/30 p-5 shadow-sm">
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-extrabold text-white shadow-sm shadow-emerald-600/10">
-                    <MdGrass size={14} />
-                    TINDAKAN PERAWATAN YANG DISARANKAN
-                  </span>
-                </div>
-                <p className="text-base leading-relaxed font-extrabold text-emerald-950 sm:text-lg">
-                  {recommendation.actionText}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="bg-violet-650 shadow-violet-650/10 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-extrabold text-white shadow-sm">
-                    <MdScience size={14} />
-                    PANDUAN DOSIS PENGAIRAN & NUTRISI
-                  </span>
-                </div>
-
-                {recommendation.waterVolumeLiter === 0 &&
-                recommendation.limeDosageGram === 0 &&
-                recommendation.sulfurDosageGram === 0 &&
-                !recommendation.reduceWatering ? (
-                  <div className="flex items-start gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50 p-4">
-                    <div className="shrink-0 rounded-lg bg-emerald-100 p-2 text-emerald-600">
-                      <MdCheckCircleOutline size={20} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-extrabold text-emerald-900">
-                        Kondisi Sangat Baik
-                      </p>
-                      <p className="mt-1 text-xs leading-relaxed text-emerald-700">
-                        Tingkat keasaman (pH) dan kelembapan tanah Anda saat ini
-                        sangat ideal untuk pertumbuhan optimal tanaman{" "}
-                        <strong>{plantName}</strong>. Teruskan pola penyiraman
-                        harian normal.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {recommendation.waterVolumeLiter > 0 && (
-                      <div className="flex items-center justify-between gap-3 rounded-xl border border-sky-200/85 bg-sky-50 p-4 shadow-sm">
-                        <div className="flex items-start gap-3">
-                          <div className="shrink-0 rounded-lg bg-sky-100 p-2 text-sky-600">
-                            <MdOpacity size={20} />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs font-extrabold text-sky-900">
-                              Saran Penyiraman
-                            </p>
-                            <p className="text-xs leading-relaxed text-sky-700">
-                              Siram media tanam untuk mengembalikan kelembapan.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex min-w-[85px] shrink-0 flex-col items-center justify-center rounded-lg border border-sky-200 bg-white px-3.5 py-2 shadow-sm">
-                          <span className="text-sky-650 text-2xl leading-none font-extrabold">
-                            {recommendation.waterVolumeLiter.toFixed(1)}
-                          </span>
-                          <span className="mt-1.5 text-[10px] font-bold tracking-wider text-sky-500 uppercase">
-                            Liter Air
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {recommendation.reduceWatering && (
-                      <div className="flex items-start gap-3 rounded-xl border border-amber-200/85 bg-amber-50 p-4 shadow-sm">
-                        <div className="shrink-0 rounded-lg bg-amber-100 p-2 text-amber-600">
-                          <MdWarningAmber size={20} />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-extrabold text-amber-900">
-                            Kurangi / Hentikan Penyiraman
-                          </p>
-                          <p className="text-xs leading-relaxed text-amber-700">
-                            Tanah terlalu basah. Hentikan penyiraman sementara
-                            waktu untuk menghindari pembusukan akar tanaman.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {recommendation.limeDosageGram > 0 && (
-                      <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200/85 bg-emerald-50 p-4 shadow-sm">
-                        <div className="flex items-start gap-3">
-                          <div className="shrink-0 rounded-lg bg-emerald-100 p-2 text-emerald-600">
-                            <MdScience size={20} />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs font-extrabold text-emerald-900">
-                              Saran Pengapuran (Naikkan pH)
-                            </p>
-                            <p className="text-xs leading-relaxed text-emerald-700">
-                              Taburkan Kapur (Dolomit) rata untuk menetralkan
-                              tanah asam.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex min-w-[85px] shrink-0 flex-col items-center justify-center rounded-lg border border-emerald-200 bg-white px-3.5 py-2 shadow-sm">
-                          <span className="text-emerald-650 text-2xl leading-none font-extrabold">
-                            {recommendation.limeDosageGram.toFixed(0)}
-                          </span>
-                          <span className="mt-1.5 text-[10px] font-bold tracking-wider text-emerald-500 uppercase">
-                            Gram Kapur
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {recommendation.sulfurDosageGram > 0 && (
-                      <div className="flex items-center justify-between gap-3 rounded-xl border border-violet-200/85 bg-violet-50 p-4 shadow-sm">
-                        <div className="flex items-start gap-3">
-                          <div className="shrink-0 rounded-lg bg-violet-100 p-2 text-violet-600">
-                            <MdScience size={20} />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs font-extrabold text-violet-900">
-                              Saran Pemberian Belerang
-                            </p>
-                            <p className="text-xs leading-relaxed text-violet-700">
-                              Taburkan bubuk belerang rata untuk menyeimbangkan
-                              tanah basa.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex min-w-[85px] shrink-0 flex-col items-center justify-center rounded-lg border border-violet-200 bg-white px-3.5 py-2 shadow-sm">
-                          <span className="text-violet-650 text-2xl leading-none font-extrabold">
-                            {recommendation.sulfurDosageGram.toFixed(0)}
-                          </span>
-                          <span className="mt-1.5 text-[10px] font-bold tracking-wider text-violet-500 uppercase">
-                            Gram Belerang
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <SensorMonitorPanel
-        deviceId={selectedDevice.id}
-        deviceLabel={selectedDevice.label}
-        token={token}
-        phRange={
-          devicePlant
-            ? { min: devicePlant.minPh, max: devicePlant.maxPh }
-            : undefined
-        }
-        nmiTrigger={devicePlant?.nmiTrigger ?? null}
-      />
-
-      <SensorHistoryChart
-        deviceId={selectedDevice.id}
-        token={token}
-        simple={true}
-      />
+      </PageHeader>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
+
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-5">
+          <SensorMonitorPanel
+            deviceId={selectedDevice.id}
+            deviceLabel={selectedDevice.label}
+            token={token}
+            phRange={
+              devicePlant
+                ? { min: devicePlant.minPh, max: devicePlant.maxPh }
+                : undefined
+            }
+            nmiTrigger={devicePlant?.nmiTrigger ?? null}
+          />
+        </div>
+        <div className="xl:col-span-7">
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-muted/60 py-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-primary text-sm font-bold">
+                  Rekomendasi Perawatan AI
+                </h3>
+              </div>
+              <button
+                onClick={() => loadRecommendation()}
+                disabled={isRecLoading}
+                className="text-primary flex cursor-pointer items-center gap-1 text-xs font-bold hover:underline"
+              >
+                {isRecLoading ? "Memuat..." : "Hitung Ulang"}
+              </button>
+            </CardHeader>
+
+            <CardContent className="p-6">
+              {isRecLoading ? (
+                <div className="flex animate-pulse flex-col items-center justify-center py-10">
+                  <div className="border-primary/20 border-t-primary h-10 w-10 animate-spin rounded-full border-4" />
+                  <p className="mt-3 text-xs font-semibold text-gray-400">
+                    Mengalkulasi rekomendasi perawatan terbaik...
+                  </p>
+                </div>
+              ) : !recommendation ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
+                    <MdWarningAmber size={24} />
+                  </div>
+                  <p className="text-sm font-bold text-gray-700">
+                    Belum Ada Rekomendasi
+                  </p>
+                  <p className="mt-1 max-w-sm text-xs text-gray-400">
+                    Rekomendasi fuzzy belum dapat dihitung karena belum ada
+                    telemetri sensor yang masuk dari perangkat ini.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-start gap-8 rounded-xl border border-black/5 bg-gray-50 p-4">
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400">
+                        pH Terukur
+                      </span>
+                      <span className="text-base font-bold text-emerald-600">
+                        {(ph !== null ? ph : recommendation.phValue).toFixed(1)}
+                      </span>
+                    </div>
+                    <div className="h-8 w-px bg-black/5" />
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400">
+                        Kelembapan Terukur
+                      </span>
+                      <span className="text-base font-bold text-sky-600">
+                        {(moisture !== null
+                          ? moisture
+                          : recommendation.moistureValue
+                        ).toFixed(0)}
+                        %
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50 to-teal-50/30 p-5 shadow-sm">
+                    <div className="mb-3 flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-extrabold text-white shadow-sm shadow-emerald-600/10">
+                        <MdGrass size={14} />
+                        TINDAKAN PERAWATAN YANG DISARANKAN
+                      </span>
+                    </div>
+                    <p className="text-base leading-relaxed font-extrabold text-emerald-950 sm:text-lg">
+                      {recommendation.actionText}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-violet-650 shadow-violet-650/10 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-extrabold text-white shadow-sm">
+                        <MdScience size={14} />
+                        PANDUAN DOSIS PENGAIRAN & NUTRISI
+                      </span>
+                    </div>
+
+                    {recommendation.waterVolumeLiter === 0 &&
+                    recommendation.limeDosageGram === 0 &&
+                    recommendation.sulfurDosageGram === 0 &&
+                    !recommendation.reduceWatering ? (
+                      <div className="flex items-start gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50 p-4">
+                        <div className="shrink-0 rounded-lg bg-emerald-100 p-2 text-emerald-600">
+                          <MdCheckCircleOutline size={20} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-extrabold text-emerald-900">
+                            Kondisi Sangat Baik
+                          </p>
+                          <p className="mt-1 text-xs leading-relaxed text-emerald-700">
+                            Tingkat keasaman (pH) dan kelembapan tanah Anda saat
+                            ini sangat ideal untuk pertumbuhan optimal tanaman{" "}
+                            <strong>{plantName}</strong>. Teruskan pola
+                            penyiraman harian normal.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        {recommendation.waterVolumeLiter > 0 && (
+                          <div className="flex items-center justify-between gap-3 rounded-xl border border-sky-200/85 bg-sky-50 p-4 shadow-sm">
+                            <div className="flex items-start gap-3">
+                              <div className="shrink-0 rounded-lg bg-sky-100 p-2 text-sky-600">
+                                <MdOpacity size={20} />
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-xs font-extrabold text-sky-900">
+                                  Saran Penyiraman
+                                </p>
+                                <p className="text-xs leading-relaxed text-sky-700">
+                                  Siram media tanam untuk mengembalikan
+                                  kelembapan.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex min-w-[85px] shrink-0 flex-col items-center justify-center rounded-lg border border-sky-200 bg-white px-3.5 py-2 shadow-sm">
+                              <span className="text-sky-650 text-2xl leading-none font-extrabold">
+                                {recommendation.waterVolumeLiter.toFixed(1)}
+                              </span>
+                              <span className="mt-1.5 text-[10px] font-bold tracking-wider text-sky-500 uppercase">
+                                Liter Air
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {recommendation.reduceWatering && (
+                          <div className="flex items-start gap-3 rounded-xl border border-amber-200/85 bg-amber-50 p-4 shadow-sm">
+                            <div className="shrink-0 rounded-lg bg-amber-100 p-2 text-amber-600">
+                              <MdWarningAmber size={20} />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-xs font-extrabold text-amber-900">
+                                Kurangi / Hentikan Penyiraman
+                              </p>
+                              <p className="text-xs leading-relaxed text-amber-700">
+                                Tanah terlalu basah. Hentikan penyiraman
+                                sementara waktu untuk menghindari pembusukan
+                                akar tanaman.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {recommendation.limeDosageGram > 0 && (
+                          <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200/85 bg-emerald-50 p-4 shadow-sm">
+                            <div className="flex items-start gap-3">
+                              <div className="shrink-0 rounded-lg bg-emerald-100 p-2 text-emerald-600">
+                                <MdScience size={20} />
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-xs font-extrabold text-emerald-900">
+                                  Saran Pengapuran (Naikkan pH)
+                                </p>
+                                <p className="text-xs leading-relaxed text-emerald-700">
+                                  Taburkan Kapur (Dolomit) rata untuk
+                                  menetralkan tanah asam.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex min-w-[85px] shrink-0 flex-col items-center justify-center rounded-lg border border-emerald-200 bg-white px-3.5 py-2 shadow-sm">
+                              <span className="text-emerald-650 text-2xl leading-none font-extrabold">
+                                {recommendation.limeDosageGram.toFixed(0)}
+                              </span>
+                              <span className="mt-1.5 text-[10px] font-bold tracking-wider text-emerald-500 uppercase">
+                                Gram Kapur
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {recommendation.sulfurDosageGram > 0 && (
+                          <div className="flex items-center justify-between gap-3 rounded-xl border border-violet-200/85 bg-violet-50 p-4 shadow-sm">
+                            <div className="flex items-start gap-3">
+                              <div className="shrink-0 rounded-lg bg-violet-100 p-2 text-violet-600">
+                                <MdScience size={20} />
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-xs font-extrabold text-violet-900">
+                                  Saran Pemberian Belerang
+                                </p>
+                                <p className="text-xs leading-relaxed text-violet-700">
+                                  Taburkan bubuk belerang rata untuk
+                                  menyeimbangkan tanah basa.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex min-w-[85px] shrink-0 flex-col items-center justify-center rounded-lg border border-violet-200 bg-white px-3.5 py-2 shadow-sm">
+                              <span className="text-violet-650 text-2xl leading-none font-extrabold">
+                                {recommendation.sulfurDosageGram.toFixed(0)}
+                              </span>
+                              <span className="mt-1.5 text-[10px] font-bold tracking-wider text-violet-500 uppercase">
+                                Gram Belerang
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <SensorHistoryChart
+        deviceId={selectedDevice.id}
+        token={token}
+        simple={true}
+      />
     </div>
   );
 }

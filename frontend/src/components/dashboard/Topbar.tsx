@@ -86,7 +86,7 @@ export default function Topbar({ user }: TopbarProps) {
   });
 
   return (
-    <header className="bg-background flex h-16 items-center justify-between gap-3 border-b border-black/5 px-4 sm:px-6">
+    <header className="bg-background/85 supports-[backdrop-filter]:bg-background/70 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-black/5 px-4 backdrop-blur sm:px-6 lg:px-8">
       <nav
         aria-label="Breadcrumb"
         className="flex min-w-0 items-center gap-1.5 overflow-x-auto text-xs font-medium sm:text-sm"
@@ -120,7 +120,7 @@ export default function Topbar({ user }: TopbarProps) {
         >
           <MdNotifications size={20} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-pulse items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white ring-2 ring-white">
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white ring-2 ring-white">
               {unreadCount}
             </span>
           )}

@@ -30,6 +30,7 @@ import type {
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import PhCorrectionStatus from "@/components/recommendations/PhCorrectionStatus";
 import CorrectionPanel from "@/components/recommendations/CorrectionPanel";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 function PageSkeleton() {
   return (
@@ -178,14 +179,11 @@ export default function RecommendationsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-10">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-primary text-xl font-black tracking-tight">
-            Rekomendasi Perawatan
-          </h2>
-        </div>
-
+    <div className="mx-auto max-w-6xl space-y-6 pb-10">
+      <PageHeader
+        title="Rekomendasi Perawatan"
+        description="Saran penyiraman dan koreksi pH berdasarkan data sensor terbaru."
+      >
         <div className="relative">
           <label className="sr-only" htmlFor="rec-device-selector">
             Pilih Alat
@@ -206,7 +204,7 @@ export default function RecommendationsPage() {
             <MdOutlineArrowDropDown size={20} />
           </div>
         </div>
-      </div>
+      </PageHeader>
 
       <Card className="overflow-hidden">
         <CardHeader className="py-4">

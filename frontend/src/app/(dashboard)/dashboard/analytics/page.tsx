@@ -28,6 +28,7 @@ import {
   Legend,
 } from "recharts";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 type ChartViewMode = "both" | "ph" | "moisture";
 
@@ -272,14 +273,11 @@ export default function AnalyticsPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-12">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-primary text-xl leading-tight font-black">
-            Analitik Kebun
-          </h2>
-        </div>
-
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      <PageHeader
+        title="Analitik Kebun"
+        description="Pantau tren pH dan kelembapan tanah dari waktu ke waktu."
+      >
         <div className="relative shrink-0">
           <label className="sr-only" htmlFor="analytics-device-selector">
             Pilih Alat
@@ -300,7 +298,7 @@ export default function AnalyticsPage() {
             <MdOutlineArrowDropDown size={20} />
           </div>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card className="flex-row items-center justify-between gap-4 p-5">

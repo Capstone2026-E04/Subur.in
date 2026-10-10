@@ -20,15 +20,15 @@ export default function StatCard({
   trend,
 }: StatCardProps) {
   return (
-    <Card className="flex-row items-center gap-4 p-5">
+    <Card className="hover:border-primary/25 flex-row items-center gap-4 p-5 transition-all duration-300 hover:-translate-y-0.5">
       <div
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${iconBg}`}
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${iconBg}`}
       >
-        <Icon size={20} className="text-white" />
+        <Icon size={22} className="text-white" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs font-medium text-gray-500">{label}</p>
-        <p className="text-primary text-xl leading-tight font-semibold">
+        <p className="text-primary truncate text-lg leading-tight font-semibold">
           {value}
         </p>
         {trend && (

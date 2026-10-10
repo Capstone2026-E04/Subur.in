@@ -15,6 +15,7 @@ import EditDeviceModal from "@/components/devices/EditDeviceModal";
 import DeleteConfirmDialog from "@/components/devices/DeleteConfirmDialog";
 import type { RegisteredDevice } from "@/types/device";
 import { Card } from "@/components/ui/card";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
@@ -101,39 +102,35 @@ export default function DevicesPage() {
   const activeCount = devices.filter((d) => d.status === "ACTIVE").length;
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="text-primary text-lg font-bold">Manajemen Alat</h2>
-          <p className="mt-0.5 text-sm text-gray-500">
-            {isLoading
-              ? "Memuat daftar alat…"
-              : `${devices.length} alat terdaftar · ${activeCount} aktif`}
-          </p>
-        </div>
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <PageHeader
+        title="Manajemen Alat"
+        description={
+          isLoading
+            ? "Memuat daftar alat…"
+            : `${devices.length} alat terdaftar · ${activeCount} aktif`
+        }
+      >
+        <button
+          id="refresh-devices-btn"
+          onClick={loadDevices}
+          disabled={isLoading}
+          aria-label="Segarkan daftar alat"
+          className="hover:text-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-gray-500 shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-50"
+        >
+          <MdRefresh size={17} className={isLoading ? "animate-spin" : ""} />
+        </button>
 
-        <div className="flex items-center gap-2">
-          <button
-            id="refresh-devices-btn"
-            onClick={loadDevices}
-            disabled={isLoading}
-            aria-label="Segarkan daftar alat"
-            className="hover:text-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-gray-500 shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-50"
-          >
-            <MdRefresh size={17} className={isLoading ? "animate-spin" : ""} />
-          </button>
-
-          <button
-            id="open-connect-modal-btn"
-            onClick={() => setIsConnectOpen(true)}
-            className="bg-primary hover:bg-primary-light flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all"
-          >
-            <MdAdd size={17} />
-            <span className="hidden sm:inline">Hubungkan Alat Baru</span>
-            <span className="sm:hidden">Tambah</span>
-          </button>
-        </div>
-      </div>
+        <button
+          id="open-connect-modal-btn"
+          onClick={() => setIsConnectOpen(true)}
+          className="bg-primary hover:bg-primary-light flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all"
+        >
+          <MdAdd size={17} />
+          <span className="hidden sm:inline">Hubungkan Alat Baru</span>
+          <span className="sm:hidden">Tambah</span>
+        </button>
+      </PageHeader>
 
       {!isLoading && devices.length > 0 && (
         <motion.div

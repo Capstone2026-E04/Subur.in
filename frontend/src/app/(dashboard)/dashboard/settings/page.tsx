@@ -19,6 +19,7 @@ import {
   generateTelegramLinkCode,
   disconnectTelegram,
 } from "@/services/userService";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
 
@@ -143,13 +144,10 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-12">
-      <div>
-        <h2 className="text-xl font-bold text-gray-800">Pengaturan</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Konfigurasi preferensi notifikasi, bahasa, dan interval telemetri
-          sensor alat Subur.in Anda.
-        </p>
-      </div>
+      <PageHeader
+        title="Pengaturan"
+        description="Konfigurasi preferensi notifikasi, bahasa, dan interval telemetri sensor alat Subur.in Anda."
+      />
 
       <Card className="space-y-4 p-5">
         <div className="border-border flex items-center gap-3 border-b pb-3">

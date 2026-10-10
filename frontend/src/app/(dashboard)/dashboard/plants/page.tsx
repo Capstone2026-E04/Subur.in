@@ -12,6 +12,7 @@ import {
 } from "react-icons/md";
 import { usePlants } from "@/hooks/usePlants";
 import { Card } from "@/components/ui/card";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 function PlantSkeletonCard() {
   return (
@@ -40,17 +41,15 @@ export default function PlantsPage() {
   }, [loadPlants]);
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-primary text-lg font-bold">Katalog Tanaman</h2>
-          <p className="mt-0.5 text-sm text-gray-500">
-            {isLoading
-              ? "Memuat daftar tanaman…"
-              : `${plants.length} jenis tanaman didukung di Subur.in`}
-          </p>
-        </div>
-
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <PageHeader
+        title="Katalog Tanaman"
+        description={
+          isLoading
+            ? "Memuat daftar tanaman…"
+            : `${plants.length} jenis tanaman didukung di Subur.in`
+        }
+      >
         <button
           id="refresh-plants-btn"
           onClick={loadPlants}
@@ -60,7 +59,7 @@ export default function PlantsPage() {
         >
           <MdRefresh size={17} className={isLoading ? "animate-spin" : ""} />
         </button>
-      </div>
+      </PageHeader>
 
       <AnimatePresence>
         {error && (

@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { MdDeveloperMode } from "react-icons/md";
 import { Card } from "@/components/ui/card";
 import { fetchDevMode, setDevMode } from "@/services/devModeService";
+import PageHeader from "@/components/dashboard/PageHeader";
 
 export default function DevModePage() {
   const { data: session } = useSession();
@@ -35,12 +36,10 @@ export default function DevModePage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-12">
-      <div>
-        <h2 className="text-xl font-bold text-gray-800">Dev Mode</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Simulasikan penerimaan data MQTT tanpa perangkat asli.
-        </p>
-      </div>
+      <PageHeader
+        title="Dev Mode"
+        description="Simulasikan penerimaan data MQTT tanpa perangkat asli."
+      />
 
       <Card className="space-y-4 p-5">
         <div className="flex items-center justify-between gap-4">

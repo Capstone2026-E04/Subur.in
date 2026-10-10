@@ -15,11 +15,12 @@ const CardContext = React.createContext<CardContextType>({
 const useCardContext = () => React.useContext(CardContext);
 
 const cardVariants = cva(
-  "flex flex-col items-stretch text-card-foreground rounded-xl",
+  "flex flex-col items-stretch text-card-foreground rounded-2xl",
   {
     variants: {
       variant: {
-        default: "bg-card border border-border shadow-xs",
+        default:
+          "bg-card border border-border shadow-[0_1px_2px_rgba(28,45,27,0.04),0_4px_16px_-6px_rgba(28,45,27,0.08)]",
         accent: "bg-muted shadow-xs p-1",
       },
     },
@@ -77,6 +78,7 @@ function Card({
     <CardContext.Provider value={{ variant: variant || "default" }}>
       <div
         data-slot="card"
+        data-reveal
         className={cn(cardVariants({ variant }), className)}
         {...props}
       />
