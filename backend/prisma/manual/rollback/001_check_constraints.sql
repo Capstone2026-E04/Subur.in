@@ -15,8 +15,5 @@ ALTER TABLE "plants" DROP CONSTRAINT IF EXISTS "chk_plants_max_ph_range";
 ALTER TABLE "plants" DROP CONSTRAINT IF EXISTS "chk_plants_ph_order";
 ALTER TABLE "plants" DROP CONSTRAINT IF EXISTS "chk_plants_ph_target_between";
 ALTER TABLE "devices" DROP CONSTRAINT IF EXISTS "chk_devices_sensor_interval_positive";
-ALTER TABLE "polybag_types" DROP CONSTRAINT IF EXISTS "chk_polybag_types_diameter_positive";
-ALTER TABLE "polybag_types" DROP CONSTRAINT IF EXISTS "chk_polybag_types_height_positive";
-ALTER TABLE "polybags" DROP CONSTRAINT IF EXISTS "chk_polybags_soil_volume_liter_positive";
 
 COMMIT;

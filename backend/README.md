@@ -63,13 +63,12 @@ Daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
 
 ### 3. Simulasi fuzzy logic & rekomendasi
 * **Endpoint:** `POST /api/recommendations/simulate`
-* **Deskripsi:** Menyimulasikan kalkulasi logika fuzzy Mamdani dan menghitung dosis penyiraman air, kapur dolomit, dan sulfur elemental secara dinamis berdasarkan jenis tanaman dan ukuran polybag yang aktif di database.
+* **Deskripsi:** Menyimulasikan kalkulasi logika fuzzy Mamdani dan menghitung dosis penyiraman air, kapur dolomit, dan sulfur elemental secara dinamis berdasarkan jenis tanaman pada preset polybag prototipe (20x20 cm, media 2 L).
 * **Request Body:**
   ```json
   {
     "phValue": 5.5,
-    "moistureValue": 40.0,
-    "polybagPreset": "UUID_OR_NAME_POLYBAG",
+    "moistureValue": 50.0,
     "plantIdOrName": "UUID_OR_NAME_PLANT"
   }
   ```
@@ -80,22 +79,25 @@ Daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
     "message": "Simulasi Fuzzy Logic berhasil dijalankan!",
     "data": {
       "phValue": 5.5,
-      "moistureValue": 40,
-      "fuzzyIndex": 3.42,
+      "moistureValue": 50,
+      "fuzzyIndex": 1,
       "categoryCode": "C5",
-      "actionText": "pH tanah terlalu asam DAN tanah kering. Tambahkan kapur pertanian (dolomit) sesuai dosis, kemudian lakukan penyiraman sesuai volume yang direkomendasikan.",
-      "waterVolumeLiter": 0.864,
-      "limeDosageGram": 4.24,
+      "actionText": "pH media terlalu asam dan media kering. Pertimbangkan dolomit, lalu siram sesuai estimasi volume.",
+      "waterAction": "IRRIGATE",
+      "phAction": "LIME",
+      "phCorrection": { "status": "READY", "reasons": [] },
+      "waterVolumeLiter": 0.3,
+      "limeDosageGram": 8.45,
       "sulfurDosageGram": 0,
       "reduceWatering": false,
       "_debug": {
-        "inputClamped": { "ph": 5.5, "moisture": 40 },
         "polybagPresetUsed": "STANDAR",
         "areaM2": 0.03142,
         "volumeLiterUsed": 5,
-        "plantUsed": "Pakcoy (Brassica rapa L. var. chinensis)",
-        "phTarget": 6.5,
-        "vwcTarget": 0.7
+        "plantUsed": "Pakcoy (Brassica rapa subsp. chinensis)",
+        "phTarget": 6.8,
+        "nmiTrigger": 60,
+        "nmiTarget": 80
       }
     }
   }

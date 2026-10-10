@@ -13,9 +13,9 @@ async function main() {
   const plants = [
     {
       name: "Bayam",
-      scientificName: "Spinacia oleracea",
+      scientificName: "Amaranthus spp.",
       description:
-        "Sayuran hijau kaya zat besi dan vitamin. Memiliki sensitivitas tinggi terhadap genangan air serta tanah masam.",
+        "Sayuran hijau kaya zat besi dan vitamin. Bayam sayur lokal (Amaranthus); toleran kekeringan sedang namun rentan busuk akar saat media terlalu basah.",
       minPh: 6.0,
       maxPh: 7.0,
       phTarget: 6.5,
@@ -33,7 +33,7 @@ async function main() {
       name: "Selada",
       scientificName: "Lactuca sativa",
       description:
-        "Sayuran daun yang sangat sensitif terhadap cekaman kekeringan. Memerlukan kelembaban konstan di atas ambang MAD.",
+        "Sayuran daun yang sangat sensitif terhadap cekaman kekeringan. Memerlukan kelembapan media terjaga di atas trigger NMI.",
       minPh: 6.0,
       maxPh: 6.7,
       phTarget: 6.5,
@@ -45,57 +45,6 @@ async function main() {
       data: plant,
     });
     console.log(` Berhasil membuat tanaman: ${createdPlant.name}`);
-  }
-
-  console.log(" Membersihkan data polybag lama (jika ada)...");
-  await prisma.polybag.deleteMany({});
-  await prisma.polybagType.deleteMany({});
-
-  console.log(" Memasukkan tipe polybag default...");
-  const polybagTypes = [
-    {
-      name: "Kecil",
-      diameter: 20.0,
-      height: 25.0,
-    },
-    {
-      name: "Standar",
-      diameter: 25.0,
-      height: 25.0,
-    },
-  ];
-
-  const createdTypes = {};
-  for (const type of polybagTypes) {
-    const createdType = await prisma.polybagType.create({
-      data: type,
-    });
-    createdTypes[createdType.name.toLowerCase()] = createdType;
-    console.log(
-      ` Berhasil membuat tipe polybag: ${createdType.name} (Dia: ${createdType.diameter}cm, T: ${createdType.height}cm)`,
-    );
-  }
-
-  console.log(" Memasukkan data polybag (penggunaan) default...");
-  const polybags = [
-    {
-      polybagTypeId: createdTypes["kecil"].id,
-      soilVolumeLiter: 7.07,
-    },
-    {
-      polybagTypeId: createdTypes["standar"].id,
-      soilVolumeLiter: 11.04,
-    },
-  ];
-
-  for (const polybag of polybags) {
-    const createdPolybag = await prisma.polybag.create({
-      data: polybag,
-      include: { polybagType: true },
-    });
-    console.log(
-      ` Berhasil membuat polybag: ${createdPolybag.polybagType.name} dengan Volume Tanah ${createdPolybag.soilVolumeLiter}L`,
-    );
   }
 
   console.log(" Proses seeding database selesai dengan sukses!");

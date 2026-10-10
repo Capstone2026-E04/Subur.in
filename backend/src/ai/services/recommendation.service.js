@@ -5,14 +5,17 @@ const { interpretCategory } = require("../utils/interpreter");
 const { calculateWaterVolume } = require("../dosage/water_calculator");
 const { calculateLimeDosage } = require("../dosage/lime_calculator");
 const { calculateSulfurDosage } = require("../dosage/sulfur_calculator");
-const { getPhysicalPreset } = require("../config/physical_presets");
-const { VWC_TARGET } = require("../config/treatment_constants");
+const POLYBAG = require("../config/polybag");
+const PLANT_MOISTURE = require("../config/plant_moisture");
+const { checkPhCorrection } = require("../core/safety_gate");
 
 async function generateRecommendation({
   phValue,
   moistureValue,
-  polybagPreset,
   plantIdOrName,
+  consistentReadings = Infinity,
+  lastCorrectionAt = null,
+  deviceId = null,
 }) {
   if (typeof phValue !== "number" || typeof moistureValue !== "number") {
     throw new AppError("phValue dan moistureValue harus berupa angka.", 400);
@@ -26,14 +29,9 @@ async function generateRecommendation({
       400,
     );
   }
-  if (!polybagPreset) {
-    throw new AppError("polybagPreset wajib diisi.", 400);
-  }
   if (!plantIdOrName) {
     throw new AppError("plantIdOrName wajib diisi.", 400);
   }
-
-  const preset = await getPhysicalPreset(polybagPreset);
 
   let plant = null;
 
@@ -72,73 +70,87 @@ async function generateRecommendation({
     );
   }
 
-  const phTarget = plant.phTarget;
+  const moistureParams = PLANT_MOISTURE[plant.name.trim().toLowerCase()];
+  if (!moistureParams) {
+    throw new AppError(
+      `Tanaman "${plant.name}" belum memiliki parameter NMI (didukung: ${Object.keys(PLANT_MOISTURE).join(", ")}).`,
+      422,
+    );
+  }
 
-  const plantParams = {
-    minPh: plant.minPh,
-    maxPh: plant.maxPh,
-    phTarget: plant.phTarget,
-  };
+  if (deviceId && !lastCorrectionAt) {
+    const last = await prisma.correctionLog.findFirst({
+      where: { deviceId },
+      orderBy: { appliedAt: "desc" },
+      select: { appliedAt: true },
+    });
+    lastCorrectionAt = last?.appliedAt ?? null;
+  }
 
-  const inference = runInference(phValue, moistureValue, plantParams);
-
+  const { minPh, maxPh, phTarget } = plant;
+  const inference = runInference(phValue, moistureValue, {
+    minPh,
+    maxPh,
+    trigger: moistureParams.trigger,
+  });
   const interpretation = interpretCategory(inference.categoryCode);
+  const { waterAction, phAction } = inference;
 
-  let waterVolumeLiter = 0;
-  let limeDosageGram = 0;
-  let sulfurDosageGram = 0;
-  let waterDetail = null;
-  let limeDetail = null;
-  let sulfurDetail = null;
+  const phCorrection = checkPhCorrection({
+    phAction,
+    waterAction,
+    ph: phValue,
+    minPh,
+    maxPh,
+    consistentReadings,
+    lastCorrectionAt,
+  });
+  const correctionReady = phCorrection.status === "READY";
 
-  if (interpretation.needsWater) {
-    waterDetail = calculateWaterVolume(moistureValue, preset.volumeLiter);
-    waterVolumeLiter = waterDetail.waterVolumeLiter;
-  }
-
-  if (interpretation.needsLime) {
-    limeDetail = calculateLimeDosage(
-      phValue,
-      preset.volumeLiter,
-      phTarget,
-      plant.minPh,
-    );
-    limeDosageGram = limeDetail.limeDosageGram;
-  }
-
-  if (interpretation.needsSulfur) {
-    sulfurDetail = calculateSulfurDosage(
-      phValue,
-      preset.volumeLiter,
-      phTarget,
-      plant.maxPh,
-    );
-    sulfurDosageGram = sulfurDetail.sulfurDosageGram;
-  }
+  const waterDetail =
+    waterAction === "IRRIGATE"
+      ? calculateWaterVolume(
+          moistureValue,
+          moistureParams.target,
+          POLYBAG.volumeLiter,
+        )
+      : null;
+  const limeDetail =
+    phAction === "LIME"
+      ? calculateLimeDosage(phValue, POLYBAG.volumeLiter, phTarget)
+      : null;
+  const sulfurDetail =
+    phAction === "SULFUR"
+      ? calculateSulfurDosage(phValue, POLYBAG.volumeLiter, phTarget)
+      : null;
 
   return {
     phValue,
     moistureValue,
-    fuzzyIndex: inference.yStar,
+    fuzzyIndex: parseFloat(inference.strength.toFixed(4)),
     categoryCode: inference.categoryCode,
     actionText: interpretation.actionText,
-    waterVolumeLiter,
-    limeDosageGram,
-    sulfurDosageGram,
-    reduceWatering: interpretation.reduceWatering,
+    waterAction,
+    phAction,
+    phCorrection,
+    waterVolumeLiter: waterDetail?.waterVolumeLiter ?? 0,
+    limeDosageGram: correctionReady ? (limeDetail?.limeDosageGram ?? 0) : 0,
+    sulfurDosageGram: correctionReady
+      ? (sulfurDetail?.sulfurDosageGram ?? 0)
+      : 0,
+    reduceWatering: waterAction === "STOP",
 
     _debug: {
-      inputClamped: inference.inputClamped,
       membership: inference.membership,
       activeRules: inference.activeRules,
-      yStar: inference.yStar,
-      categoryStar: inference.categoryStar,
-      polybagPresetUsed: preset.name,
-      areaM2: parseFloat(preset.areaM2.toFixed(5)),
-      volumeLiterUsed: parseFloat(preset.volumeLiter.toFixed(3)),
+      aggregation: inference.aggregation,
+      polybagPresetUsed: POLYBAG.name,
+      areaM2: POLYBAG.areaM2,
+      volumeLiterUsed: POLYBAG.volumeLiter,
       plantUsed: `${plant.name} (${plant.scientificName || "n/a"})`,
       phTarget: parseFloat(phTarget.toFixed(3)),
-      vwcTarget: VWC_TARGET,
+      nmiTrigger: moistureParams.trigger,
+      nmiTarget: moistureParams.target,
       waterDetail,
       limeDetail,
       sulfurDetail,

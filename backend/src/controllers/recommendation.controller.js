@@ -6,21 +6,13 @@ const { sendSuccess, sendError } = require("../utils/response");
 
 exports.simulateRecommendation = async (req, res, next) => {
   try {
-    const { phValue, moistureValue, polybagPreset, plantIdOrName } = req.body;
+    const { phValue, moistureValue, plantIdOrName } = req.body;
 
     if (phValue === undefined || moistureValue === undefined) {
       return sendError(
         res,
         400,
         "Parameter phValue dan moistureValue wajib dikirimkan!",
-      );
-    }
-
-    if (!polybagPreset) {
-      return sendError(
-        res,
-        400,
-        'Parameter polybagPreset wajib diisi (misal: "STANDAR", "BESAR", atau UUID).',
       );
     }
 
@@ -62,7 +54,6 @@ exports.simulateRecommendation = async (req, res, next) => {
     const result = await generateRecommendation({
       phValue: ph,
       moistureValue: moisture,
-      polybagPreset,
       plantIdOrName,
     });
 

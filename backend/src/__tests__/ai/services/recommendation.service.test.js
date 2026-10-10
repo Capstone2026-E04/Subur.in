@@ -6,114 +6,139 @@ const {
 } = require("../../../ai/services/recommendation.service");
 
 jest.mock("../../../database/connections/prisma_client", () => ({
-  polybag: { findUnique: jest.fn(), findFirst: jest.fn() },
   plant: { findUnique: jest.fn(), findFirst: jest.fn() },
+  correctionLog: { findFirst: jest.fn() },
 }));
 
-const POLYBAG_ID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 const PLANT_ID = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
-
-const polybagFixture = {
-  id: POLYBAG_ID,
-  polybagType: { name: "Standar", diameter: 25, height: 30 },
-};
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const plantFixture = {
   id: PLANT_ID,
   name: "Selada",
   scientificName: "Lactuca sativa",
   minPh: 6.0,
-  maxPh: 7.0,
+  maxPh: 6.7,
   phTarget: 6.5,
 };
 
+const request = (overrides) => ({
+  phValue: 6.5,
+  moistureValue: 80,
+  plantIdOrName: PLANT_ID,
+  ...overrides,
+});
+
+const acidicDryRequest = (overrides) =>
+  request({ phValue: 5.4, moistureValue: 50, ...overrides });
+
 describe("generateRecommendation", () => {
   beforeEach(() => {
-    prisma.polybag.findUnique.mockResolvedValue(polybagFixture);
     prisma.plant.findUnique.mockResolvedValue(plantFixture);
+    prisma.correctionLog.findFirst.mockResolvedValue(null);
   });
 
-  it("returns no treatment needed for an optimal reading (category C1)", async () => {
-    const result = await generateRecommendation({
-      phValue: 6.5,
-      moistureValue: 30,
-      polybagPreset: POLYBAG_ID,
-      plantIdOrName: PLANT_ID,
+  describe("correction history", () => {
+    it("defers lime but keeps the water estimate with fewer than two consistent readings", async () => {
+      const input = acidicDryRequest({ consistentReadings: 1 });
+
+      const result = await generateRecommendation(input);
+
+      expect(result.categoryCode).toBe("C5");
+      expect(result.limeDosageGram).toBe(0);
+      expect(result.waterVolumeLiter).toBeGreaterThan(0);
     });
 
-    expect(result.categoryCode).toBe("C1");
-    expect(result.waterVolumeLiter).toBe(0);
-    expect(result.limeDosageGram).toBe(0);
-    expect(result.sulfurDosageGram).toBe(0);
-  });
+    it("defers the correction when the last logged correction is 3 days old", async () => {
+      prisma.correctionLog.findFirst.mockResolvedValue({
+        appliedAt: new Date(Date.now() - 3 * DAY_MS),
+      });
 
-  it("returns lime and water dosage for acidic and dry soil (category C5)", async () => {
-    const result = await generateRecommendation({
-      phValue: 4.0,
-      moistureValue: 5,
-      polybagPreset: POLYBAG_ID,
-      plantIdOrName: PLANT_ID,
+      const result = await generateRecommendation(
+        acidicDryRequest({ deviceId: "device-1" }),
+      );
+
+      expect(result.phCorrection.status).toBe("DEFERRED");
+      expect(result.limeDosageGram).toBe(0);
     });
 
-    expect(result.categoryCode).toBe("C5");
-    expect(result.limeDosageGram).toBeGreaterThan(0);
-    expect(result.waterVolumeLiter).toBeGreaterThan(0);
-    expect(result.sulfurDosageGram).toBe(0);
-  });
+    it("marks the correction ready when the device has no logged correction", async () => {
+      const input = acidicDryRequest({ deviceId: "device-1" });
 
-  it("resolves the physical preset dynamically from the polybag UUID", async () => {
-    const result = await generateRecommendation({
-      phValue: 6.5,
-      moistureValue: 30,
-      polybagPreset: POLYBAG_ID,
-      plantIdOrName: PLANT_ID,
+      const result = await generateRecommendation(input);
+
+      expect(result.phCorrection.status).toBe("READY");
     });
 
-    expect(prisma.polybag.findUnique).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: POLYBAG_ID } }),
-    );
-    expect(result._debug.polybagPresetUsed).toBe("STANDAR");
-    expect(result._debug.volumeLiterUsed).toBe(13.5);
-  });
+    it("looks up the last correction of the given device", async () => {
+      const input = acidicDryRequest({ deviceId: "device-1" });
 
-  it("rejects a pH value outside the 0-14 range", async () => {
-    await expect(
-      generateRecommendation({
-        phValue: 15.0,
-        moistureValue: 40.0,
-        polybagPreset: POLYBAG_ID,
-        plantIdOrName: PLANT_ID,
-      }),
-    ).rejects.toMatchObject({
-      statusCode: 400,
-      message: "phValue harus berada dalam rentang 0 sampai 14.",
+      await generateRecommendation(input);
+
+      expect(prisma.correctionLog.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { deviceId: "device-1" } }),
+      );
+    });
+
+    it("skips the correction lookup when no device is given", async () => {
+      const input = acidicDryRequest();
+
+      await generateRecommendation(input);
+
+      expect(prisma.correctionLog.findFirst).not.toHaveBeenCalled();
     });
   });
 
-  it("rejects a moisture value outside the 0-100 range", async () => {
-    await expect(
-      generateRecommendation({
-        phValue: 6.0,
-        moistureValue: -10.0,
-        polybagPreset: POLYBAG_ID,
-        plantIdOrName: PLANT_ID,
-      }),
-    ).rejects.toMatchObject({
-      statusCode: 400,
-      message: "moistureValue harus berada dalam rentang 0 sampai 100.",
+  describe("prototype configuration", () => {
+    it("uses the fixed polybag preset", async () => {
+      const result = await generateRecommendation(request());
+
+      expect(result._debug.polybagPresetUsed).toBe("STANDAR");
+    });
+
+    it("uses 2 L of media for the dosage calculators", async () => {
+      const result = await generateRecommendation(request());
+
+      expect(result._debug.volumeLiterUsed).toBe(2);
     });
   });
 
-  it("rejects when the plant cannot be found in the database", async () => {
-    prisma.plant.findUnique.mockResolvedValue(null);
+  describe("input validation", () => {
+    it("rejects a pH value outside the 0-14 range", async () => {
+      const input = request({ phValue: 15.0 });
 
-    await expect(
-      generateRecommendation({
-        phValue: 6.5,
-        moistureValue: 30,
-        polybagPreset: POLYBAG_ID,
-        plantIdOrName: PLANT_ID,
-      }),
-    ).rejects.toMatchObject({ statusCode: 404 });
+      await expect(generateRecommendation(input)).rejects.toMatchObject({
+        statusCode: 400,
+        message: "phValue harus berada dalam rentang 0 sampai 14.",
+      });
+    });
+
+    it("rejects a moisture value outside the 0-100 range", async () => {
+      const input = request({ moistureValue: -10.0 });
+
+      await expect(generateRecommendation(input)).rejects.toMatchObject({
+        statusCode: 400,
+        message: "moistureValue harus berada dalam rentang 0 sampai 100.",
+      });
+    });
+
+    it("rejects when the plant cannot be found in the database", async () => {
+      prisma.plant.findUnique.mockResolvedValue(null);
+
+      await expect(generateRecommendation(request())).rejects.toMatchObject({
+        statusCode: 404,
+      });
+    });
+
+    it("rejects a plant without NMI parameters", async () => {
+      prisma.plant.findUnique.mockResolvedValue({
+        ...plantFixture,
+        name: "Kangkung",
+      });
+
+      await expect(generateRecommendation(request())).rejects.toMatchObject({
+        statusCode: 422,
+      });
+    });
   });
 });

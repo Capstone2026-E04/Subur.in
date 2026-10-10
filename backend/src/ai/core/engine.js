@@ -1,109 +1,78 @@
-const { buildMembershipFunctions } = require("./membership");
-const RULE_BASE = require("./rules");
-const FUZZY_PARAMETERS = require("../config/fuzzy_parameters");
+const { fuzzifyPh, fuzzifyMoisture } = require("./membership");
+const {
+  CATEGORIES,
+  RULE_BASE,
+  WATER_PRIORITY,
+  PH_PRIORITY,
+} = require("./rules");
+
+const TIE_EPSILON = 1e-9;
 
 function evaluateRules(membership) {
-  const activeRules = [];
-
-  for (const rule of RULE_BASE) {
-    const muPh = membership.ph[rule.phSet];
-    const muMoisture = membership.moisture[rule.moistureSet];
-    const alpha = Math.min(muPh, muMoisture);
-
-    if (alpha > 0) {
-      activeRules.push({
-        ruleId: rule.id,
-        phSet: rule.phSet,
-        moistureSet: rule.moistureSet,
-        outputCategory: rule.outputCategory,
-        alpha,
-      });
-    }
-  }
-
-  return activeRules;
+  return RULE_BASE.map((rule) => ({
+    ruleId: rule.id,
+    phSet: rule.phSet,
+    moistureSet: rule.moistureSet,
+    category: rule.category,
+    alpha: Math.min(
+      membership.ph[rule.phSet],
+      membership.moisture[rule.moistureSet],
+    ),
+  })).filter((r) => r.alpha > 0);
 }
 
-function aggregateAt(activeRules, y, muOutputFn) {
-  let maxVal = 0;
-
-  for (const rule of activeRules) {
-    const outputVal = muOutputFn
-      ? muOutputFn(rule.outputCategory, y)
-      : Math.max(0, 1 - Math.abs(y - (rule.outputCategory - 1)));
-    const clipped = Math.min(rule.alpha, outputVal);
-    if (clipped > maxVal) maxVal = clipped;
+// h(c) = max(alpha) per kategori (agregasi MAX).
+function aggregateCategories(activeRules) {
+  const h = {};
+  for (const { category, alpha } of activeRules) {
+    h[category] = Math.max(h[category] ?? 0, alpha);
   }
-
-  return maxVal;
+  return h;
 }
 
-function defuzzify(activeRules, muOutputFn) {
-  const { Y_MIN, Y_MAX, Y_STEP } = FUZZY_PARAMETERS;
-
-  let numerator = 0;
-  let denominator = 0;
-
-  for (let y = Y_MIN; y <= Y_MAX + 1e-9; y += Y_STEP) {
-    const mu = aggregateAt(activeRules, y, muOutputFn);
-    numerator += y * mu;
-    denominator += mu;
+// Pilih nilai agregasi terbesar per dimensi; seri -> urutan prioritas.
+function pickAction(h, key, priority) {
+  const score = {};
+  for (const [code, value] of Object.entries(h)) {
+    const action = CATEGORIES[code][key];
+    score[action] = Math.max(score[action] ?? 0, value);
   }
-
-  if (denominator === 0) {
-    return 4;
-  }
-
-  return numerator / denominator;
+  const best = Math.max(...Object.values(score));
+  const action = priority.find((a) => (score[a] ?? 0) >= best - TIE_EPSILON);
+  return { action, score: best };
 }
 
-function lookupCategory(yStar) {
-  let bestK = 1;
-  let minDist = Infinity;
-
-  for (let k = 1; k <= 9; k++) {
-    const dist = Math.abs(yStar - (k - 1));
-    if (dist < minDist) {
-      minDist = dist;
-      bestK = k;
-    }
+function runInference(ph, nmi, { minPh, maxPh, trigger }) {
+  if (typeof ph !== "number" || typeof nmi !== "number") {
+    throw new TypeError("Input pH dan NMI harus berupa angka.");
   }
 
-  return bestK;
-}
-
-function runInference(x1, x2, plantParams) {
-  if (typeof x1 !== "number" || typeof x2 !== "number") {
-    throw new TypeError(
-      "Input x1 (pH) dan x2 (kelembaban) harus berupa angka.",
-    );
-  }
-
-  const phClamped = Math.max(0, Math.min(14, x1));
-  const moistureClamped = Math.max(0, Math.min(100, x2));
-
-  const { fuzzify, muOutput } = buildMembershipFunctions(plantParams);
-
-  const membership = fuzzify(phClamped, moistureClamped);
+  const membership = {
+    ph: fuzzifyPh(ph, minPh, maxPh),
+    moisture: fuzzifyMoisture(nmi, trigger),
+  };
   const activeRules = evaluateRules(membership);
-  const yStar = defuzzify(activeRules, muOutput);
-  const categoryStar = lookupCategory(yStar);
+  const h = aggregateCategories(activeRules);
+  const water = pickAction(h, "waterAction", WATER_PRIORITY);
+  const phPick = pickAction(h, "phAction", PH_PRIORITY);
+  const waterAction = water.action;
+  const phAction = phPick.action;
+  const categoryCode = Object.keys(CATEGORIES).find(
+    (c) =>
+      CATEGORIES[c].waterAction === waterAction &&
+      CATEGORIES[c].phAction === phAction,
+  );
 
   return {
-    input: { ph: x1, moisture: x2 },
-    inputClamped: { ph: phClamped, moisture: moistureClamped },
     membership,
     activeRules,
-    yStar: parseFloat(yStar.toFixed(4)),
-    categoryStar,
-    categoryCode: `C${categoryStar}`,
+    aggregation: h,
+    waterAction,
+    phAction,
+    categoryCode,
+    // Dukungan terlemah dari kedua keputusan final (0-1).
+    strength: Math.min(water.score, phPick.score),
   };
 }
 
-module.exports = {
-  runInference,
-  evaluateRules,
-  defuzzify,
-  lookupCategory,
-  aggregateAt,
-};
+module.exports = { runInference, evaluateRules, aggregateCategories };

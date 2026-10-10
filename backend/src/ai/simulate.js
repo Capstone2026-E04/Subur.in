@@ -13,7 +13,7 @@ console.log("====================================================");
 console.log("Simulator ini mensimulasikan perhitungan Fuzzy Logic");
 console.log("Mamdani untuk menentukan dosis penyiraman air, kapur,");
 console.log("atau sulfur secara dinamis berdasarkan jenis tanaman");
-console.log("dan spesifikasi polybag yang ada di database.\n");
+console.log("dan preset polybag prototipe (20x20 cm, media 2 L).\n");
 
 function askQuestion(query) {
   return new Promise((resolve) => rl.question(query, resolve));
@@ -22,21 +22,9 @@ function askQuestion(query) {
 async function startSimulation() {
   try {
     const plants = await prisma.plant.findMany();
-    const polybags = await prisma.polybag.findMany({
-      include: { polybagType: true },
-    });
-
     if (plants.length === 0) {
       console.log(
         " Tidak ada data tanaman di database. Harap jalankan seeder terlebih dahulu.",
-      );
-      rl.close();
-      return;
-    }
-
-    if (polybags.length === 0) {
-      console.log(
-        " Tidak ada data polybag di database. Harap jalankan seeder terlebih dahulu.",
       );
       rl.close();
       return;
@@ -53,7 +41,7 @@ async function startSimulation() {
     }
 
     const moistureInput = await askQuestion(
-      "Masukkan nilai kelembaban tanah % (0 - 100): ",
+      "Masukkan nilai NMI kelembapan (0 - 100): ",
     );
     const moisture = parseFloat(moistureInput);
     if (isNaN(moisture) || moisture < 0 || moisture > 100) {
@@ -67,7 +55,7 @@ async function startSimulation() {
     console.log("\nPilih Jenis Tanaman (Wajib):");
     plants.forEach((plant, index) => {
       console.log(
-        `${index + 1}. ${plant.name} (${plant.scientificName || "n/a"}) [Ideal: pH ${plant.minPh}-${plant.maxPh}, Kelembaban 20%-40%]`,
+        `${index + 1}. ${plant.name} (${plant.scientificName || "n/a"}) [Ideal: pH ${plant.minPh}-${plant.maxPh}, pH-Target sesuai C501]`,
       );
     });
     const plantChoiceInput = await askQuestion("Pilihan Anda (1/2/3...): ");
@@ -82,37 +70,11 @@ async function startSimulation() {
     const selectedPlant = plants[plantIndex];
     console.log(` Tanaman terpilih: ${selectedPlant.name}`);
 
-    console.log("\nPilih Penggunaan Polybag (Wajib):");
-    polybags.forEach((polybag, index) => {
-      console.log(
-        `${index + 1}. ${polybag.polybagType.name} (Dia: ${polybag.polybagType.diameter}cm, T: ${polybag.polybagType.height}cm, Volume Tanah: ${polybag.soilVolumeLiter}L)`,
-      );
-    });
-    const polybagChoiceInput = await askQuestion("Pilihan Anda (1/2/3...): ");
-    const polybagIndex = parseInt(polybagChoiceInput) - 1;
-
-    if (
-      isNaN(polybagIndex) ||
-      polybagIndex < 0 ||
-      polybagIndex >= polybags.length
-    ) {
-      console.log(" Pilihan polybag tidak valid.");
-      rl.close();
-      return;
-    }
-
-    const selectedPolybag = polybags[polybagIndex];
-    console.log(
-      ` Polybag terpilih: ${selectedPolybag.polybagType.name} (${selectedPolybag.soilVolumeLiter}L)`,
-    );
-
-    console.log(
       "\nMenghitung rekomendasi menggunakan Fuzzy Inference System...",
     );
     const result = await generateRecommendation({
       phValue: ph,
       moistureValue: moisture,
-      polybagPreset: selectedPolybag.id,
       plantIdOrName: selectedPlant.id,
     });
 
@@ -120,19 +82,23 @@ async function startSimulation() {
     console.log("                HASIL REKOMENDASI                   ");
     console.log("====================================================");
     console.log(
-      `Input Sensor      : pH = ${result.phValue}, Kelembaban = ${result.moistureValue}%`,
+      `Input Sensor      : pH = ${result.phValue}, NMI = ${result.moistureValue}`,
     );
     console.log(`Tanaman Terpilih  : ${result._debug.plantUsed}`);
     console.log(
-      `Target Parameter  : pH ideal = ${result._debug.phTarget.toFixed(2)}, Kelembaban ideal = ${(result._debug.vwcTarget * 100).toFixed(1)}%`,
+      `Target Parameter  : pH ideal = ${result._debug.phTarget.toFixed(2)}, NMI trigger = ${result._debug.nmiTrigger}, NMI target = ${result._debug.nmiTarget}`,
     );
     console.log(`Preset Polybag    : ${result._debug.polybagPresetUsed}`);
     console.log(`Luas Permukaan    : ${result._debug.areaM2} m²`);
     console.log(`Volume Tanah      : ${result._debug.volumeLiterUsed} Liter`);
     console.log("----------------------------------------------------");
-    console.log(`Indeks Fuzzy (y*) : ${result.fuzzyIndex.toFixed(4)}`);
+    console.log(`Kekuatan Aturan   : ${result.fuzzyIndex.toFixed(4)}`);
     console.log(`Kode Kategori     : ${result.categoryCode}`);
     console.log(`Tindakan          : ${result.actionText}`);
+    console.log(
+      `Aksi Air / pH     : ${result.waterAction} / ${result.phAction} (${result.phCorrection.status})`,
+    );
+    result.phCorrection.reasons.forEach((r) => console.log(`  - ${r}`));
     console.log("----------------------------------------------------");
     console.log("DOSIS REKOMENDASI:");
     console.log(` Volume Air     : ${result.waterVolumeLiter} Liter`);

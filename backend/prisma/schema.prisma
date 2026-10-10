@@ -32,7 +32,6 @@ model Device {
   userId     String       @map("user_id") @db.Uuid
   label      String       @db.VarChar(100)
   plantId    String       @map("plant_id") @db.Uuid
-  polybagId  String       @map("polybag_id") @db.Uuid
   status     DeviceStatus @default(ACTIVE)
   lastSeenAt DateTime?    @db.Timestamptz(6) @map("last_seen_at")
   createdAt  DateTime     @default(now()) @db.Timestamptz(6) @map("created_at")
@@ -41,14 +40,13 @@ model Device {
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   plant   Plant   @relation(fields: [plantId], references: [id], onDelete: Restrict)
-  polybag Polybag @relation(fields: [polybagId], references: [id], onDelete: Restrict)
 
   recommendations RecommendationLog[]
   notifications   Notification[]
+  corrections     CorrectionLog[]
 
   @@index([userId], map: "idx_devices_user_id")
   @@index([plantId], map: "idx_devices_plant_id")
-  @@index([polybagId], map: "idx_devices_polybag_id")
 
   @@map("devices")
 }
@@ -77,6 +75,23 @@ model RecommendationLog {
   @@index([deviceId, createdAt(sort: Desc)], map: "idx_recommendation_logs_device_created")
 
   @@map("recommendation_logs")
+}
+
+model CorrectionLog {
+  id        String           @id @default(uuid()) @db.Uuid
+  deviceId  String           @map("device_id") @db.Uuid
+  type      CorrectionType
+  method    CorrectionMethod
+  doseGram  Float            @map("dose_gram")
+  phBefore  Float            @map("ph_before")
+  appliedAt DateTime         @default(now()) @db.Timestamptz(6) @map("applied_at")
+  createdAt DateTime         @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId, appliedAt(sort: Desc)], map: "idx_correction_logs_device_applied")
+
+  @@map("correction_logs")
 }
 
 model RawSensorLog {
@@ -109,32 +124,18 @@ model Plant {
   @@map("plants")
 }
 
-model PolybagType {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @db.VarChar(100)
-  diameter  Float
-  height    Float
-  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
+enum CorrectionType {
+  LIME
+  SULFUR
 
-  polybags  Polybag[]
-
-  @@map("polybag_types")
+  @@map("correction_type")
 }
 
-model Polybag {
-  id              String      @id @default(uuid()) @db.Uuid
-  polybagTypeId   String      @map("polybag_type_id") @db.Uuid
-  soilVolumeLiter Float       @map("soil_volume_liter")
-  createdAt       DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt       DateTime    @updatedAt @db.Timestamptz(6) @map("updated_at")
+enum CorrectionMethod {
+  INCORPORATION
+  TOP_DRESSING
 
-  polybagType PolybagType @relation(fields: [polybagTypeId], references: [id], onDelete: Restrict)
-  devices     Device[]
-
-  @@index([polybagTypeId], map: "idx_polybags_polybag_type_id")
-
-  @@map("polybags")
+  @@map("correction_method")
 }
 
 enum DeviceStatus {

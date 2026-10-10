@@ -78,14 +78,10 @@ exports.getDiscoveredDevices = async (req, res, next) => {
 exports.registerDevice = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { deviceCode, label, plantId, polybagId, sensorInterval } = req.body;
+    const { deviceCode, label, plantId, sensorInterval } = req.body;
 
-    if (!deviceCode || !label || !plantId || !polybagId) {
-      return sendError(
-        res,
-        400,
-        "deviceCode, label, plantId, dan polybagId wajib diisi.",
-      );
+    if (!deviceCode || !label || !plantId) {
+      return sendError(res, 400, "deviceCode, label, dan plantId wajib diisi.");
     }
 
     if (sensorInterval !== undefined && !isValidInterval(sensorInterval)) {
@@ -114,16 +110,12 @@ exports.registerDevice = async (req, res, next) => {
         userId: userId,
         label: label.trim(),
         plantId: plantId,
-        polybagId: polybagId,
         status: "ACTIVE",
         sensorInterval:
           sensorInterval !== undefined ? Number(sensorInterval) : 15,
       },
       include: {
         plant: true,
-        polybag: {
-          include: { polybagType: true },
-        },
       },
     });
 
@@ -165,9 +157,6 @@ exports.getMyDevices = async (req, res, next) => {
       where: { userId: userId },
       include: {
         plant: true,
-        polybag: {
-          include: { polybagType: true },
-        },
       },
     });
 
@@ -188,7 +177,7 @@ exports.updateDevice = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
-    const { label, plantId, polybagId, status, sensorInterval } = req.body;
+    const { label, plantId, status, sensorInterval } = req.body;
 
     if (sensorInterval !== undefined && !isValidInterval(sensorInterval)) {
       return sendError(
@@ -215,7 +204,6 @@ exports.updateDevice = async (req, res, next) => {
       data: {
         label: label !== undefined ? label.trim() : device.label,
         plantId: plantId !== undefined ? plantId : device.plantId,
-        polybagId: polybagId !== undefined ? polybagId : device.polybagId,
         status: status !== undefined ? status : device.status,
         sensorInterval:
           sensorInterval !== undefined
@@ -224,9 +212,6 @@ exports.updateDevice = async (req, res, next) => {
       },
       include: {
         plant: true,
-        polybag: {
-          include: { polybagType: true },
-        },
       },
     });
 
@@ -310,7 +295,6 @@ exports.getDeviceRecommendation = async (req, res, next) => {
       where: { id: id, userId: userId },
       include: {
         plant: true,
-        polybag: true,
       },
     });
 
@@ -360,8 +344,8 @@ exports.getDeviceRecommendation = async (req, res, next) => {
     const recommendation = await generateRecommendation({
       phValue: sensorData.ph,
       moistureValue: sensorData.moisture,
-      polybagPreset: device.polybagId,
       plantIdOrName: device.plantId,
+      deviceId: device.id,
     });
 
     return sendSuccess(res, 200, "Rekomendasi Fuzzy Logic berhasil dibuat.", {

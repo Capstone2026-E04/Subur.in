@@ -132,11 +132,23 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     broadcastToDevice(device.id, sensorPayload);
 
     try {
+      const redis = getRedisClient();
+      const phOutKey = `sensor:ph_out_of_range:${deviceCode}`;
+      const phOutOfRange =
+        ph <= device.plant.minPh - 0.5 || ph >= device.plant.maxPh + 0.5;
+      let consistentReadings = 0;
+      if (phOutOfRange) {
+        consistentReadings = await redis.incr(phOutKey);
+      } else {
+        await redis.del(phOutKey);
+      }
+
       const recommendation = await generateRecommendation({
         phValue: ph,
         moistureValue: moisture,
-        polybagPreset: device.polybagId,
         plantIdOrName: device.plantId,
+        deviceId: device.id,
+        consistentReadings,
       });
 
       await prisma.recommendationLog.create({
@@ -158,7 +170,6 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         `[MQTT Subscriber]  Recommendation log disimpan ke Postgres | Device: ${deviceCode}`,
       );
 
-      const redis = getRedisClient();
       const dryKey = `sensor:consecutive_dry:${deviceCode}`;
       const wetKey = `sensor:consecutive_wet:${deviceCode}`;
       const offlineNotifiedKey = `sensor:offline_notified:${deviceCode}`;
@@ -169,10 +180,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       await redis.del(offlineNotifiedKey);
       await redis.del(invalidNotifiedKey);
 
-      const moistureLowBound = 25;
-      const moistureHighBound = 35;
-
-      if (moisture < moistureLowBound) {
+      if (recommendation.waterAction === "IRRIGATE") {
         const dryCount = await redis.incr(dryKey);
         await redis.del(wetKey);
         if (dryCount === 2 && recommendation.waterVolumeLiter > 0) {
@@ -182,10 +190,10 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
             type: "warning",
           });
         }
-      } else if (moisture > moistureHighBound) {
+      } else if (recommendation.waterAction === "STOP") {
         const wetCount = await redis.incr(wetKey);
         await redis.del(dryKey);
-        if (wetCount === 2 && recommendation.reduceWatering) {
+        if (wetCount === 2) {
           await notifyDevice(device.id, {
             title: "Media Terlalu Basah",
             message:
@@ -198,25 +206,22 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         await redis.del(wetKey);
       }
 
-      const minPh = device.plant.minPh;
-      const maxPh = device.plant.maxPh;
-
-      if (ph < minPh - 0.2 && recommendation.limeDosageGram > 0) {
+      if (recommendation.limeDosageGram > 0) {
         const alreadyNotified = await redis.get(phAcidNotifiedKey);
         if (!alreadyNotified) {
           await notifyDevice(device.id, {
             title: "pH Terlalu Asam",
-            message: `pH terlalu asam. Tambahkan kapur/dolomit sekitar ${Math.round(recommendation.limeDosageGram)} gram.`,
+            message: `pH terlalu asam. Pertimbangkan dolomit sekitar ${Math.round(recommendation.limeDosageGram * 10) / 10} gram (estimasi).`,
             type: "warning",
           });
           await redis.setex(phAcidNotifiedKey, 3600, "1");
         }
-      } else if (ph > maxPh + 0.2 && recommendation.sulfurDosageGram > 0) {
+      } else if (recommendation.sulfurDosageGram > 0) {
         const alreadyNotified = await redis.get(phAlkalineNotifiedKey);
         if (!alreadyNotified) {
           await notifyDevice(device.id, {
             title: "pH Terlalu Basa",
-            message: `pH terlalu basa. Tambahkan sulfur elemental sekitar ${Math.round(recommendation.sulfurDosageGram)} gram.`,
+            message: `pH terlalu basa. Pertimbangkan sulfur elemental sekitar ${Math.round(recommendation.sulfurDosageGram * 10) / 10} gram (estimasi).`,
             type: "warning",
           });
           await redis.setex(phAlkalineNotifiedKey, 3600, "1");

@@ -123,13 +123,12 @@ exports.createTestNotification = async (req, res, next) => {
 
     if (!device) {
       const plant = await prisma.plant.findFirst();
-      const polybag = await prisma.polybag.findFirst();
 
-      if (!plant || !polybag) {
+      if (!plant) {
         return sendError(
           res,
           400,
-          "Database tanaman atau polybag kosong. Harap jalankan seed data terlebih dahulu.",
+          "Database tanaman kosong. Harap jalankan seed data terlebih dahulu.",
         );
       }
 
@@ -139,7 +138,6 @@ exports.createTestNotification = async (req, res, next) => {
           userId: userId,
           label: "Sensor Uji Coba",
           plantId: plant.id,
-          polybagId: polybag.id,
           status: "ACTIVE",
         },
       });

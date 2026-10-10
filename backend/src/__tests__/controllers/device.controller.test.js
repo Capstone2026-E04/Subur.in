@@ -58,7 +58,6 @@ const BASE_BODY = {
   deviceCode: "dev-1",
   label: "Bayam",
   plantId: "p",
-  polybagId: "b",
 };
 
 describe("sensorInterval validation", () => {
@@ -172,7 +171,6 @@ describe("getDeviceRecommendation", () => {
   const device = {
     id: "dev-1",
     userId: "u",
-    polybagId: "b",
     plantId: "p",
     sensorInterval: 1,
   };

@@ -60,16 +60,4 @@ ALTER TABLE "devices" DROP CONSTRAINT IF EXISTS "chk_devices_sensor_interval_pos
 ALTER TABLE "devices" ADD CONSTRAINT "chk_devices_sensor_interval_positive"
   CHECK ("sensor_interval" > 0);
 
-ALTER TABLE "polybag_types" DROP CONSTRAINT IF EXISTS "chk_polybag_types_diameter_positive";
-ALTER TABLE "polybag_types" ADD CONSTRAINT "chk_polybag_types_diameter_positive"
-  CHECK ("diameter" > 0);
-
-ALTER TABLE "polybag_types" DROP CONSTRAINT IF EXISTS "chk_polybag_types_height_positive";
-ALTER TABLE "polybag_types" ADD CONSTRAINT "chk_polybag_types_height_positive"
-  CHECK ("height" > 0);
-
-ALTER TABLE "polybags" DROP CONSTRAINT IF EXISTS "chk_polybags_soil_volume_liter_positive";
-ALTER TABLE "polybags" ADD CONSTRAINT "chk_polybags_soil_volume_liter_positive"
-  CHECK ("soil_volume_liter" > 0);
-
 COMMIT;

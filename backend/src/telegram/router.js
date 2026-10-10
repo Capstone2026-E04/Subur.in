@@ -17,7 +17,7 @@ async function fetchDevicesForUser(user) {
   if (!user) return [];
   return prisma.device.findMany({
     where: { userId: user.id },
-    include: { plant: true, polybag: { include: { polybagType: true } } },
+    include: { plant: true },
   });
 }
 

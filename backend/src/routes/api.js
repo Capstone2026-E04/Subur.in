@@ -7,7 +7,6 @@ const userRoutes = require("./user.routes");
 const sensorRoutes = require("./sensor.routes");
 const deviceRoutes = require("./device.routes");
 const plantRoutes = require("./plant.routes");
-const polybagRoutes = require("./polybag.routes");
 const recommendationRoutes = require("./recommendation.routes");
 const notificationRoutes = require("./notification.routes");
 const telegramRoutes = require("./telegram.routes");
@@ -79,9 +78,6 @@ router.get("/", (req, res) => {
       plants: {
         list: "GET /api/plants",
       },
-      polybags: {
-        list: "GET /api/polybags",
-      },
       recommendations: {
         history: "GET /api/recommendations",
         simulate: "POST /api/recommendations/simulate",
@@ -108,7 +104,6 @@ router.use("/users", userRoutes);
 router.use("/devices", deviceRoutes);
 router.use("/sensors", sensorRoutes);
 router.use("/plants", plantRoutes);
-router.use("/polybags", polybagRoutes);
 router.use("/recommendations", recommendationRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/telegram", telegramRoutes);
