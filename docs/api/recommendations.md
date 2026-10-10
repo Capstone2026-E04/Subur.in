@@ -4,7 +4,7 @@ Mengekspos mesin rekomendasi fuzzy logic ([architecture/system-design.md](../arc
 
 ## `POST /api/recommendations/simulate`
 
-Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyentuh device sungguhan atau menyimpan log. Berguna untuk menguji kombinasi plant/polybag.
+Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyentuh device sungguhan atau menyimpan log. Berguna untuk menguji kombinasi pH, NMI, dan tanaman pada preset polybag prototipe (20x20 cm, media 2 L).
 
 **Perlu autentikasi:** Tidak
 
@@ -13,17 +13,16 @@ Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyent
 {
   "phValue": 5.5,
   "moistureValue": 40.0,
-  "polybagPreset": "STANDAR",
   "plantIdOrName": "Pakcoy"
 }
 ```
 
-`polybagPreset` dan `plantIdOrName` masing-masing dapat berupa UUID atau nama (tidak case-sensitive).
+`plantIdOrName` dapat berupa UUID atau nama (tidak case-sensitive).
 
 **Validasi:**
 - `phValue`, `moistureValue` wajib diisi dan berupa angka.
 - `phValue` pada rentang `[0, 14]`, `moistureValue` pada rentang `[0, 100]`.
-- `polybagPreset`, `plantIdOrName` wajib diisi.
+- `plantIdOrName` wajib diisi.
 
 **Response sukses `200`:**
 ```json
@@ -33,33 +32,37 @@ Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyent
   "data": {
     "phValue": 5.5,
     "moistureValue": 40,
-    "fuzzyIndex": 3.42,
+    "fuzzyIndex": 1,
     "categoryCode": "C5",
-    "actionText": "pH tanah terlalu asam DAN tanah kering. Tambahkan kapur pertanian (dolomit) sesuai dosis, kemudian lakukan penyiraman sesuai volume yang direkomendasikan.",
-    "waterVolumeLiter": 0.864,
-    "limeDosageGram": 4.24,
+    "actionText": "pH media terlalu asam dan media kering. Pertimbangkan dolomit, lalu siram sesuai estimasi volume.",
+    "waterAction": "IRRIGATE",
+    "phAction": "LIME",
+    "phCorrection": { "status": "READY", "reasons": [] },
+    "waterVolumeLiter": 0.3,
+    "limeDosageGram": 8.45,
     "sulfurDosageGram": 0,
     "reduceWatering": false,
     "_debug": {
-      "inputClamped": { "ph": 5.5, "moisture": 40 },
       "membership": { "ph": {}, "moisture": {} },
       "activeRules": [],
-      "yStar": 3.42,
-      "categoryStar": 5,
+      "aggregation": { "C5": 1 },
       "polybagPresetUsed": "STANDAR",
       "areaM2": 0.03142,
       "volumeLiterUsed": 5,
       "plantUsed": "Pakcoy (Brassica rapa subsp. chinensis)",
       "phTarget": 6.8,
-      "vwcTarget": 0.3
+      "nmiTrigger": 60,
+      "nmiTarget": 80
     }
   }
 }
 ```
 
-`_debug` mengekspos state fuzzy inference antara (derajat keanggotaan, rule aktif, indeks defuzzifikasi) dan dimaksudkan untuk pemeriksaan developer/QA, bukan untuk ditampilkan ke end user.
+`moistureValue` adalah NMI (0-100). `fuzzyIndex` adalah kekuatan aturan terlemah dari kedua keputusan final (0-1). `phCorrection.status` bernilai `NONE`, `READY`, `DEFERRED`, atau `NEEDS_CONFIRMATION`; dosis kapur/sulfur hanya terisi saat `READY`. Tanaman selain Selada/Bayam/Pakcoy ditolak `422`.
 
-**Response error:** `400` (input tidak ada/tidak valid), `500`.
+`_debug` mengekspos state fuzzy inference antara (derajat keanggotaan, rule aktif, agregasi per kategori) dan dimaksudkan untuk pemeriksaan developer/QA, bukan untuk ditampilkan ke end user.
+
+**Response error:** `400` (input tidak ada/tidak valid), `404` (tanaman tidak ditemukan), `422` (tanaman tanpa parameter NMI), `500`.
 
 ## `GET /api/recommendations`
 

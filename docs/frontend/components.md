@@ -25,7 +25,7 @@ Widget khusus dashboard, sebagian besar digerakkan oleh [`navConfig.ts`](../../f
 | `StatCard.tsx` | Tile stat/metrik yang dapat digunakan ulang (misalnya jumlah device, sensor aktif) |
 | `SensorGaugeCard.tsx` | Tampilan gaya gauge untuk satu nilai sensor live (pH atau kelembapan) |
 | `SensorHistoryChart.tsx` | Time series berbasis Recharts untuk riwayat sensor (`GET /api/sensors/:id/history`) |
-| `SensorMonitorPanel.tsx` | Menggabungkan gauge + chart + status live untuk satu device |
+| `SensorMonitorPanel.tsx` | Menggabungkan gauge + chart + status live untuk satu device; klasifikasi gauge pH dan NMI mengikuti rentang pH dan trigger NMI tanaman (props `phRange`, `nmiTrigger`) |
 | `LiveLocationTracker.tsx` | Indikator status yang diperbarui secara live, digerakkan oleh `useSensorRealtime`/`useDeviceStatus` |
 | `EditNameForm.tsx` | Form inline untuk mengedit nama tampilan pengguna (`PATCH /api/users/me`) |
 
@@ -37,8 +37,15 @@ UI manajemen device, semuanya didukung oleh [`useDevices`](../../frontend/src/ho
 |---|---|
 | `DeviceCard.tsx` | Kartu ringkasan untuk satu device terdaftar |
 | `ConnectDeviceModal.tsx` | Alur klaim untuk device yang baru ditemukan (`POST /api/devices`) |
-| `EditDeviceModal.tsx` | Edit label/plant/polybag/interval (`PATCH /api/devices/:id`) |
+| `EditDeviceModal.tsx` | Edit label/plant/interval (`PATCH /api/devices/:id`) |
 | `DeleteConfirmDialog.tsx` | Dialog konfirmasi hapus generik, digunakan ulang untuk penghapusan device |
+
+### `src/components/recommendations/`
+
+| Component | Tujuan |
+|---|---|
+| `PhCorrectionStatus.tsx` | Banner status safety gate koreksi pH (`READY`, `DEFERRED`, `NEEDS_CONFIRMATION`) beserta alasannya; tidak dirender bila `NONE` |
+| `CorrectionPanel.tsx` | Form pencatatan koreksi dolomit/sulfur (`POST /api/devices/:id/corrections`), status periode tunggu 14 hari, dan riwayat koreksi (`GET`) |
 
 ## Konvensi
 

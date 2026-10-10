@@ -73,4 +73,4 @@ Mengirim notifikasi sungguhan melalui `notifyDevice` untuk device pertama milik 
 }
 ```
 
-**Response error:** `400` (tidak ada data plants/polybags yang di-seed untuk membuat device fallback).
+**Response error:** `400` (tidak ada data plants yang di-seed untuk membuat device fallback).

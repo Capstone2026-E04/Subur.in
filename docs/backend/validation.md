@@ -6,8 +6,8 @@ Tidak ada library validasi skema (tidak ada Joi/Zod/express-validator). Setiap c
 
 **Pemeriksaan field wajib:**
 ```javascript
-if (!deviceId || !label || !plantId || !polybagId) {
-  return sendError(res, 400, 'deviceId, label, plantId, dan polybagId wajib diisi.');
+if (!deviceCode || !label || !plantId) {
+  return sendError(res, 400, 'deviceCode, label, dan plantId wajib diisi.');
 }
 ```
 

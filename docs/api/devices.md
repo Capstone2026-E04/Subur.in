@@ -31,7 +31,6 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
   "deviceCode": "ESP32-A1B2C3",
   "label": "Pakcoy Balkon",
   "plantId": "b6f1c2e0-...-plant-uuid",
-  "polybagId": "d9a7e5f0-...-polybag-uuid",
   "sensorInterval": 15
 }
 ```
@@ -50,11 +49,9 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
       "userId": "3fa85f64-...",
       "label": "Pakcoy Balkon",
       "plantId": "b6f1c2e0-...",
-      "polybagId": "d9a7e5f0-...",
       "status": "ACTIVE",
       "sensorInterval": 15,
-      "plant": { "id": "b6f1c2e0-...", "name": "Pakcoy", "phTarget": 6.8 },
-      "polybag": { "id": "d9a7e5f0-...", "soilVolumeLiter": 11.04, "polybagType": { "name": "Standar" } }
+      "plant": { "id": "b6f1c2e0-...", "name": "Pakcoy", "phTarget": 6.8 }
     }
   }
 }
@@ -64,13 +61,13 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
 
 ## `GET /api/devices`
 
-Menampilkan semua device milik user yang sedang login, beserta `plant` dan `polybag` (+`polybagType`).
+Menampilkan semua device milik user yang sedang login, beserta `plant`.
 
 **Response sukses `200`:** bentuk `device` sama seperti di atas, di dalam `data.devices` (array).
 
 ## `PATCH /api/devices/:id`
 
-Memperbarui device milik pemanggil. Salah satu dari `label`, `plantId`, `polybagId`, `status`, `sensorInterval` dapat diberikan; field yang tidak diset akan mempertahankan nilai saat ini. Jika `sensorInterval` berubah, backend akan mempublikasikan ulang interval baru ke device melalui MQTT.
+Memperbarui device milik pemanggil. Salah satu dari `label`, `plantId`, `status`, `sensorInterval` dapat diberikan; field yang tidak diset akan mempertahankan nilai saat ini. Jika `sensorInterval` berubah, backend akan mempublikasikan ulang interval baru ke device melalui MQTT.
 
 **Request body (parsial):**
 ```json
@@ -105,3 +102,28 @@ Menjalankan mesin fuzzy logic terhadap pembacaan sensor terbaru dari device (Red
 ```json
 { "success": true, "message": "Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.", "data": null }
 ```
+
+## `POST /api/devices/:id/corrections`
+
+**Perlu autentikasi:** Ya. Hanya pemilik device (`404` bila bukan).
+
+Mencatat koreksi pH yang benar-benar sudah dilakukan. Catatan terbaru mengaktifkan periode tunggu 14 hari pada safety gate ([fuzzy-logic.md](../backend/fuzzy-logic.md#safety-gate-koreksi-ph)).
+
+```json
+{
+  "type": "LIME",
+  "method": "INCORPORATION",
+  "doseGram": 2.86,
+  "phBefore": 5.4,
+  "appliedAt": "2026-10-10T08:00:00Z"
+}
+```
+
+- `type`: `LIME` | `SULFUR`; `method`: `INCORPORATION` | `TOP_DRESSING`.
+- `doseGram` > 0 (dosis aktual); `phBefore` 0-14; `appliedAt` opsional (default sekarang, tidak boleh di masa depan).
+
+**Response `201`:** `data.correction`. **Error:** `400`, `404`.
+
+## `GET /api/devices/:id/corrections`
+
+Riwayat koreksi device (terbaru dulu, maks 100) pada `data.corrections`.

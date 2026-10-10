@@ -7,7 +7,7 @@ Subur.in/
 ├── backend/
 │   ├── prisma/
 │   │   ├── schema.prisma        # Model data (lihat database-schema.md)
-│   │   └── seed.js              # Mengisi data awal plants + polybag types/instances
+│   │   └── seed.js              # Mengisi data awal plants
 │   └── src/
 │       ├── ai/                  # Mesin rekomendasi fuzzy logic (logika murni, tanpa I/O)
 │       │   ├── config/          # Parameter fuzzy set, preset fisik, konstanta treatment
@@ -40,8 +40,10 @@ Subur.in/
 │       │   ├── middlewares/         # require_linked_device.middleware.js (guard akun/device tertaut)
 │       │   └── utils/                # parse_callback_data, format_message, format_chart (quickchart.io)
 │       ├── utils/               # response.js (sendSuccess/sendError, envelope response bersama)
-│       ├── __tests__/           # Test Jest tersentralisasi, mencerminkan struktur src/ (lihat backend/coding-standards.md)
-│       │   ├── ai/                  # dosage/, services/ - mencerminkan src/ai/
+│       ├── __tests__/           # Test Jest tersentralisasi, mencerminkan struktur src/ (lihat backend/testing.md)
+│       │   ├── ai/                  # c501/ (test berbasis dokumen C501), services/ - mencerminkan src/ai/
+│       │   ├── controllers/         # correction, device, user
+│       │   ├── cron/ · mqtt/subscribers/ · services/
 │       │   └── telegram/            # session/, commands/, router.test.js - mencerminkan src/telegram/
 │       └── server.js            # Bootstrap aplikasi: Express, CORS, MQTT, Redis, inisialisasi cron
 │

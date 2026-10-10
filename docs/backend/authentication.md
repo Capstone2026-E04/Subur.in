@@ -12,7 +12,7 @@ Hanya Google Sign-In, dengan JWT yang diterbitkan backend sebagai token sesi unt
 
 ## Otorisasi request ([`middlewares/auth.middleware.js`](../../backend/src/middlewares/auth.middleware.js))
 
-Diterapkan per-router dengan `router.use(authMiddleware)` (devices, users, notifications) atau per-route (plants, polybags, recommendation history). Lihat masing-masing file router untuk mengetahui route mana yang publik dan mana yang terproteksi.
+Diterapkan per-router dengan `router.use(authMiddleware)` (devices, users, notifications) atau per-route (plants, recommendation history). Lihat masing-masing file router untuk mengetahui route mana yang publik dan mana yang terproteksi.
 
 ```javascript
 module.exports = (req, res, next) => {

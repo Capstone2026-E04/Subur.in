@@ -2,6 +2,18 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-10
+
+- **refactor(fuzzy)!:** Mesin fuzzy disesuaikan dengan dokumen C501: rule base 3x3 (pH ASAM/OPTIMAL/BASA x NMI KERING/OPTIMAL/BASAH), inferensi MIN-MAX dengan tie-break berprioritas (menggantikan 20 rule + centroid), kelembapan kini berupa NMI dengan trigger/target per tanaman (`config/plant_moisture.js`; hanya Selada, Bayam, Pakcoy), kalkulator air/dolomit/sulfur mengikuti rumus C501, dan safety gate koreksi pH baru. `fuzzyIndex` kini 0-1 (kekuatan aturan). Response menambah `waterAction`, `phAction`, `phCorrection`. Lihat [backend/fuzzy-logic.md](backend/fuzzy-logic.md).
+- **refactor(polybag)!:** Preset polybag disederhanakan menjadi satu (`Standar`, 20x20 cm, media 2 L); preset `Kecil` dan `Standar` lama dihapus. Volume media kini dibaca dari `soilVolumeLiter`, bukan dihitung dari dimensi.
+- **feat(frontend):** Animasi landing page memakai GSAP + ScrollTrigger (`LandingMotion.tsx`): timeline hero, reveal bertahap, progres langkah mengikuti scroll, dan hitung naik angka; dependency baru `gsap` dan `@gsap/react`. Menggantikan `Reveal` berbasis framer-motion.
+- **feat(frontend):** Landing page dan halaman login didesain ulang (hero asimetris dengan pratinjau komponen asli, langkah kerja, bento rekomendasi, CTA penutup); font dimuat lewat `next/font`. Lihat [frontend/design-system.md](frontend/design-system.md#halaman-publik-landing-dan-login).
+- **feat(frontend):** Halaman Rekomendasi menampilkan status safety gate koreksi pH dan panel pencatatan/riwayat koreksi; kelembapan ditampilkan sebagai NMI (bukan persen), volume air dalam mL, gauge dashboard dan halaman Tanaman memakai rentang pH serta trigger/target NMI per tanaman. `GET /api/plants` menambah `nmiTrigger`/`nmiTarget`.
+- **test:** Test fuzzy ditulis ulang berdasarkan contoh dokumen C501 (`__tests__/ai/c501/`), ditambah test subscriber MQTT, controller koreksi, dan riwayat koreksi pada service. Panduan baru: [backend/testing.md](backend/testing.md).
+- **refactor(polybag)!:** Tabel `polybags`/`polybag_types` dan kolom `devices.polybag_id` dihapus (`prisma/manual/005_drop_polybags.sql`, rollback tersedia), serta endpoint `GET /api/polybags`. Preset kini konstanta `ai/config/polybag.js`. `polybagId` dihapus dari `POST/PATCH /api/devices` dan `polybagPreset` dari `POST /api/recommendations/simulate`. Frontend tidak lagi memilih polybag.
+- **feat(correction):** Pencatatan koreksi pH: tabel `correction_logs`, `POST/GET /api/devices/:id/corrections`. Koreksi terakhir mengaktifkan periode tunggu 14 hari pada safety gate (subscriber MQTT dan `GET /api/devices/:id/recommendation`). Perlu `prisma db push` lalu `prisma/manual/004_correction_logs.sql` (rollback tersedia).
+- **refactor(mqtt):** Notifikasi kering/basah dan koreksi pH di subscriber kini mengikuti keputusan fuzzy (bukan ambang moisture 25/35); pembacaan pH berturut-turut di luar ambang dihitung via Redis untuk safety gate.
+
 ## 2026-10-08
 
 - **fix(security):** Webhook Telegram memverifikasi header `X-Telegram-Bot-Api-Secret-Token` terhadap `TELEGRAM_WEBHOOK_SECRET` (perbandingan timing-safe); request tanpa secret yang cocok ditolak `401`. Perlu `setWebhook` ulang dengan `secret_token`.

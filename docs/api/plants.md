@@ -17,11 +17,13 @@ Menampilkan semua spesies tanaman, diurutkan berdasarkan nama secara ascending.
     {
       "id": "b6f1c2e0-0000-0000-0000-000000000001",
       "name": "Bayam",
-      "scientificName": "Spinacia oleracea",
+      "scientificName": "Amaranthus spp.",
       "description": "Sayuran hijau kaya zat besi dan vitamin...",
       "minPh": 6.0,
       "maxPh": 7.0,
       "phTarget": 6.5,
+      "nmiTrigger": 70,
+      "nmiTarget": 80,
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z"
     }
@@ -29,4 +31,4 @@ Menampilkan semua spesies tanaman, diurutkan berdasarkan nama secara ascending.
 }
 ```
 
-`minPh`/`maxPh`/`phTarget` langsung digunakan sebagai input mesin rekomendasi fuzzy, lihat [architecture/system-design.md](../architecture/system-design.md#why-fuzzy-logic). Data seed (`Bayam`, `Pakcoy`, `Selada`) berada di [`backend/prisma/seed.js`](../../backend/prisma/seed.js).
+`nmiTrigger`/`nmiTarget` berasal dari `src/ai/config/plant_moisture.js` (bukan kolom database) dan bernilai `null` untuk tanaman yang belum punya parameter NMI. `minPh`/`maxPh`/`phTarget` langsung digunakan sebagai input mesin rekomendasi fuzzy, lihat [architecture/system-design.md](../architecture/system-design.md#why-fuzzy-logic). Data seed (`Bayam`, `Pakcoy`, `Selada`) berada di [`backend/prisma/seed.js`](../../backend/prisma/seed.js).

@@ -32,7 +32,7 @@ Telusuri pipeline secara berurutan:
 
 ## Endpoint rekomendasi mengembalikan 500 dengan pesan error bergaya "not found" dari Prisma
 
-`generateRecommendation` melempar error ketika `plantIdOrName` atau `polybagPreset` tidak cocok dengan baris data mana pun (berdasarkan UUID atau nama case-insensitive); ini muncul sebagai `500` dari controller. Pastikan `plantId`/`polybagId` device masih merujuk ke baris data yang ada (seharusnya tidak dapat dihapus karena `onDelete: Restrict`, tetapi data yang di-seed/migrasi di luar jalur normal tetap bisa menjadi tidak konsisten).
+`generateRecommendation` melempar error ketika `plantIdOrName` tidak cocok dengan baris data mana pun (berdasarkan UUID atau nama case-insensitive); ini muncul sebagai `500` dari controller. Pastikan `plantId` device masih merujuk ke baris data yang ada (seharusnya tidak dapat dihapus karena `onDelete: Restrict`, tetapi data yang di-seed/migrasi di luar jalur normal tetap bisa menjadi tidak konsisten).
 
 ## `/tanaman` untuk device kedua tidak pernah "menempel"
 

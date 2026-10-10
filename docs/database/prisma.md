@@ -11,8 +11,8 @@ Schema: [`backend/prisma/schema.prisma`](../../backend/prisma/schema.prisma). Cl
 ## Pola query
 
 - **Ownership-scoped reads/writes:** `prisma.device.findFirst({ where: { id, userId } })` sebelum melakukan update/delete apa pun pada resource milik user. Jangan pernah percaya `id` saja dari URL. Lihat [backend/coding-standards.md](../backend/coding-standards.md).
-- **Pencarian nama case-insensitive:** `where: { name: { equals: value, mode: 'insensitive' } }`, digunakan oleh layer AI untuk me-resolve plant/polybag berdasarkan nama yang human-readable sebagai alternatif dari UUID (lihat [`ai/services/recommendation.service.js`](../../backend/src/ai/services/recommendation.service.js)).
-- **Selective includes:** controller melakukan `include` hanya untuk relasi yang benar-benar dibutuhkan response (misalnya `plant`, `polybag: { include: { polybagType: true } }`) daripada blanket include, agar payload dan query tetap ringan.
+- **Pencarian nama case-insensitive:** `where: { name: { equals: value, mode: 'insensitive' } }`, digunakan oleh layer AI untuk me-resolve plant berdasarkan nama yang human-readable sebagai alternatif dari UUID (lihat [`ai/services/recommendation.service.js`](../../backend/src/ai/services/recommendation.service.js)).
+- **Selective includes:** controller melakukan `include` hanya untuk relasi yang benar-benar dibutuhkan response (misalnya `plant`) daripada blanket include, agar payload dan query tetap ringan.
 - **Raw SQL untuk manajemen partisi:** `prisma.$queryRawUnsafe`/`$executeRawUnsafe` digunakan di [`cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js) untuk mengelola partisi tabel Postgres, karena schema DSL Prisma tidak memodelkan partitioning. Nama tabel/partisi yang di-interpolasi ke dalam raw query ini dihasilkan secara internal (year/month), tidak pernah diambil dari input user. Jangan memperluas pola ini untuk menerima string eksternal tanpa parameterisasi.
 
 ## Mocking di unit test

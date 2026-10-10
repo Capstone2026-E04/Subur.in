@@ -28,6 +28,8 @@
 
 ## Testing
 
+Panduan lengkap (cara menjalankan, struktur folder, pola mock, test berbasis C501) ada di [testing.md](testing.md). Ringkasan:
+
 `npm test` menjalankan **Jest** (`jest.config.js`), yang mencari seluruh `src/__tests__/**/*.test.js` — satu folder test tersentralisasi yang mencerminkan struktur `src/`, bukan `__tests__/` yang tersebar di tiap modul. Lihat [database/prisma.md](../database/prisma.md) untuk cara mocking Prisma dan [ADR-008](../decisions/adr-008-jest-for-testing.md) untuk konteks migrasi dari test `assert`+`node` manual sebelumnya ke Jest.
 
 - Mock Prisma (`jest.mock('.../database/connections/prisma_client')`) dan Redis (`jest.mock('.../database/connections/redis')`) di unit test — jangan menyentuh database/Redis sungguhan.

@@ -14,7 +14,7 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 ## Fitur utama
 
 - Monitoring real-time: pH & kelembapan tanah dari perangkat IoT, di-streaming ke dashboard lewat Server-Sent Events.
-- Rekomendasi berbasis fuzzy logic: mesin inferensi Mamdani menerjemahkan kondisi tanah menjadi aksi konkret (volume air, dosis kapur, atau dosis sulfur), dipersonalisasi per tanaman dan ukuran polybag.
+- Rekomendasi berbasis fuzzy logic: mesin inferensi Mamdani menerjemahkan kondisi tanah menjadi aksi konkret (volume air, dosis kapur, atau dosis sulfur), dipersonalisasi per tanaman pada preset polybag prototipe (20x20 cm, media 2 L).
 - Login dengan Google: autentikasi OAuth2 tanpa kelola password, disinkronkan ke sesi JWT backend.
 - Riwayat & analitik: riwayat rekomendasi dan grafik histori sensor per perangkat.
 - Notifikasi otomatis: peringatan real-time saat data sensor tidak valid atau perangkat bermasalah, dikirim ke dashboard (SSE) sekaligus Telegram.
@@ -87,10 +87,10 @@ Dokumentasi lengkap ada di [`docs/`](docs/), terbagi per topik:
 | Topik                                | Deskripsi                                                                                                         |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | [`architecture/`](docs/architecture) | Desain sistem, struktur folder, skema database, alur API                                                          |
-| [`api/`](docs/api)                   | Referensi endpoint per resource (auth, users, devices, plants, polybags, recommendations, sensors, notifications) |
+| [`api/`](docs/api)                   | Referensi endpoint per resource (auth, users, devices, plants, recommendations, sensors, notifications) |
 | [`setup/`](docs/setup)               | Instalasi, environment variable, deployment, troubleshooting                                                      |
 | [`frontend/`](docs/frontend)         | Design system, komponen, routing, state management                                                                |
-| [`backend/`](docs/backend)           | Coding standards, validasi, autentikasi, logging                                                                  |
+| [`backend/`](docs/backend)           | Coding standards, validasi, autentikasi, logging, testing                                                                  |
 | [`database/`](docs/database)         | Konvensi Prisma, migrasi, seeding                                                                                 |
 | [`decisions/`](docs/decisions)       | Catatan keputusan teknis (ADR)                                                                                    |
 | [`changelog.md`](docs/changelog.md)  | Riwayat perubahan                                                                                                 |

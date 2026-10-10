@@ -36,7 +36,7 @@ Error tak terduga (exception yang tidak ditangani lokal di controller) diteruska
 | `201` | Dibuat | Device berhasil didaftarkan, notifikasi uji coba dibuat |
 | `400` | Bad request / gagal validasi | Field wajib tidak ada, nilai di luar rentang |
 | `401` | Tidak terautentikasi | Header `Authorization` tidak ada/tidak valid, ID token Google tidak valid, JWT kedaluwarsa |
-| `404` | Tidak ditemukan / bukan milik pemanggil | Device, notifikasi, user, tanaman, atau polybag tidak ditemukan untuk request yang bersangkutan |
+| `404` | Tidak ditemukan / bukan milik pemanggil | Device, notifikasi, user, atau tanaman tidak ditemukan untuk request yang bersangkutan |
 | `500` | Error server yang tidak tertangani | Error database, exception yang tidak terduga |
 
 ## Authorization vs. Not Found

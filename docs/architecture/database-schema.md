@@ -7,10 +7,8 @@ PostgreSQL (dihosting di Supabase), diakses melalui Prisma. Sumber skema: [`back
 | Model               | Tujuan                                                                                       |
 | ------------------- | -------------------------------------------------------------------------------------------- |
 | `User`              | Akun yang dibuat/disinkronkan melalui Google Sign-In                                         |
-| `Device`            | Unit sensor IoT terdaftar, dimiliki oleh seorang user, terhubung ke sebuah plant dan polybag |
+| `Device`            | Unit sensor IoT terdaftar, dimiliki oleh seorang user, terhubung ke sebuah plant    |
 | `Plant`             | Data referensi spesies tanaman (rentang/target toleransi pH)                                 |
-| `PolybagType`       | Dimensi fisik polybag (diameter, tinggi)                                                     |
-| `Polybag`           | Instance polybag yang diturunkan dari `PolybagType`, dengan volume tanah yang dihitung       |
 | `RecommendationLog` | Satu hasil rekomendasi fuzzy logic, terkait dengan sebuah device                             |
 | `RawSensorLog`      | Telemetri pH/kelembaban mentah, dipartisi per bulan untuk retensi/pembersihan                |
 | `Notification`      | Peringatan yang ditujukan ke user, terikat pada device (misalnya data sensor tidak valid)    |
@@ -21,8 +19,6 @@ PostgreSQL (dihosting di Supabase), diakses melalui Prisma. Sumber skema: [`back
 erDiagram
     USER ||--o{ DEVICE : owns
     PLANT ||--o{ DEVICE : "used by"
-    POLYBAG ||--o{ DEVICE : "used by"
-    POLYBAG_TYPE ||--o{ POLYBAG : defines
     DEVICE ||--o{ RECOMMENDATION_LOG : produces
     DEVICE ||--o{ RAW_SENSOR_LOG : produces
     DEVICE ||--o{ NOTIFICATION : triggers
@@ -44,7 +40,6 @@ erDiagram
         uuid user_id FK
         varchar label
         uuid plant_id FK
-        uuid polybag_id FK
         enum status
         timestamptz last_seen_at
         int sensor_interval
@@ -56,17 +51,6 @@ erDiagram
         float min_ph
         float max_ph
         float ph_target
-    }
-    POLYBAG_TYPE {
-        uuid id PK
-        varchar name
-        float diameter
-        float height
-    }
-    POLYBAG {
-        uuid id PK
-        uuid polybag_type_id FK
-        float soil_volume_liter
     }
     RECOMMENDATION_LOG {
         uuid id PK
@@ -101,7 +85,7 @@ erDiagram
 ## Catatan
 
 - `Device.id` adalah natural key (varchar), yang mencocokkan identifier fisik perangkat alih-alih UUID yang dihasilkan otomatis, karena topik MQTT dan provisioning hardware merujuk langsung padanya.
-- Relasi `Device` -> `Plant`/`Polybag` menggunakan `onDelete: Restrict`: plant atau polybag yang sedang digunakan oleh device tidak dapat dihapus, sehingga device tidak menjadi yatim (orphaned).
+- Relasi `Device` -> `Plant` menggunakan `onDelete: Restrict`: plant yang sedang digunakan oleh device tidak dapat dihapus, sehingga device tidak menjadi yatim (orphaned).
 - `Device` -> `User` menggunakan `onDelete: Cascade`: menghapus user akan menghapus device miliknya (dan secara transitif juga recommendation log serta notifikasi terkait).
 - `RawSensorLog` menggunakan kunci `(timestamp, id)` dan dipartisi berdasarkan rentang bulan di level database (dikelola oleh [`src/cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) agar penulisan telemetri berfrekuensi tinggi dan pembersihan retensi tetap murah.
 - Enum `DeviceStatus`: `ACTIVE`, `INACTIVE`, `OFFLINE`.
@@ -118,10 +102,9 @@ Semua index dideklarasikan dengan `@@index` di `schema.prisma` (wajib, karena `p
 | Tabel                | Index                                                 |
 | -------------------- | ----------------------------------------------------- |
 | `raw_sensor_logs`    | `idx_raw_sensor_logs_device_timestamp (device_id, timestamp DESC)` |
-| `devices`            | `idx_devices_user_id`, `idx_devices_plant_id`, `idx_devices_polybag_id` |
+| `devices`            | `idx_devices_user_id`, `idx_devices_plant_id` |
 | `notifications`      | `idx_notifications_device_created (device_id, created_at DESC)` |
 | `recommendation_logs`| `idx_recommendation_logs_device_created (device_id, created_at DESC)` |
-| `polybags`           | `idx_polybags_polybag_type_id`                        |
 
 ## Constraint (CHECK)
 
@@ -134,8 +117,6 @@ Dikelola lewat SQL manual [`prisma/manual/001_check_constraints.sql`](../../back
 | `raw_sensor_logs`     | `ph` 0-14; `moisture` 0-100 (berlaku di semua partisi)                            |
 | `plants`              | `min_ph`, `max_ph` 0-14; `min_ph < max_ph`; `ph_target` di antara keduanya        |
 | `devices`             | `sensor_interval > 0`                                                             |
-| `polybag_types`       | `diameter > 0`, `height > 0`                                                      |
-| `polybags`            | `soil_volume_liter > 0`                                                           |
 
 Enum Postgres sengaja tidak dipakai untuk `type` dan `category_code`: `db push` dapat menganggap perubahan `varchar` ke enum berisiko kehilangan data dan menggagalkan deploy, dan tidak kompatibel mundur dengan kode lama selama jendela deploy.
 

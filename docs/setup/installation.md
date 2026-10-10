@@ -23,7 +23,7 @@ npm install
 cp .env.example .env    # isi nilainya, lihat setup/environment.md
 npx prisma generate
 npx prisma db push       # atau: npx prisma migrate dev, lihat database/migration.md
-npm run db:seed          # seed data plants + polybag types
+npm run db:seed          # seed data plants
 npm run dev              # nodemon, http://localhost:3000
 ```
 
