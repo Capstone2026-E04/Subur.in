@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Stack_Sans_Text } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import "./globals.css";
+
+const stackSans = Stack_Sans_Text({
+  subsets: ["latin"],
+  variable: "--font-stack-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Subur.in",
@@ -43,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id">
+    <html lang="id" className={stackSans.variable}>
       <body>
         <SessionProvider basePath="/api/nextauth">{children}</SessionProvider>
       </body>

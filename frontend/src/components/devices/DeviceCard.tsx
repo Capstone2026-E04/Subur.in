@@ -95,40 +95,12 @@ export default function DeviceCard({
               </span>
             </div>
           )}
-          {device.polybag && (
-            <div className="flex items-center gap-1.5 rounded-lg bg-sky-50 px-2.5 py-1.5">
-              <MdOutlineWaterDrop size={13} className="shrink-0 text-sky-600" />
-              <span className="max-w-[140px] truncate text-xs font-medium text-sky-700">
-                {(() => {
-                  const pb = device.polybag;
-                  const name = pb.polybagType?.name || pb.name;
-                  const volume = pb.soilVolumeLiter;
-                  const diameter = pb.polybagType?.diameter;
-                  const height = pb.polybagType?.height;
-
-                  const nameStr = name && name !== "undefined" ? name : "";
-
-                  let sizeStr = "";
-                  if (volume) {
-                    sizeStr = `${volume}L`;
-                  } else if (diameter && height) {
-                    sizeStr = `${diameter}x${height} cm`;
-                  } else if (pb.size && pb.size !== "undefined") {
-                    sizeStr = pb.size;
-                  }
-
-                  if (nameStr && sizeStr) {
-                    return `${nameStr} · ${sizeStr}`;
-                  } else if (nameStr) {
-                    return nameStr;
-                  } else if (sizeStr) {
-                    return sizeStr;
-                  }
-                  return "Polybag";
-                })()}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 rounded-lg bg-sky-50 px-2.5 py-1.5">
+            <MdOutlineWaterDrop size={13} className="shrink-0 text-sky-600" />
+            <span className="max-w-[140px] truncate text-xs font-medium text-sky-700">
+              Polybag · 2L
+            </span>
+          </div>
           {device.sensorInterval !== undefined && (
             <div className="flex items-center gap-1.5 rounded-lg border border-amber-200/40 bg-amber-50 px-2.5 py-1.5">
               <MdAccessTime size={13} className="shrink-0 text-amber-600" />

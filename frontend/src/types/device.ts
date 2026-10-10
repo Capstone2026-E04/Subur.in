@@ -12,18 +12,6 @@ export interface RegisteredDevice {
     id: string;
     name: string;
   } | null;
-  polybag?: {
-    id: string;
-    name?: string;
-    size?: string;
-    soilVolumeLiter?: number;
-    polybagType?: {
-      id: string;
-      name: string;
-      diameter: number;
-      height: number;
-    };
-  } | null;
 }
 
 export interface DiscoveredDevice {
@@ -46,30 +34,22 @@ export interface Plant {
   minPh: number;
   maxPh: number;
   phTarget: number;
+  nmiTrigger: number | null;
+  nmiTarget: number | null;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface PolybagOption {
-  id: string;
-  name: string;
-  diameter?: number;
-  height?: number;
-  soilVolumeLiter?: number;
 }
 
 export interface ClaimDevicePayload {
   deviceCode: string;
   label: string;
   plantId: string;
-  polybagId: string;
   sensorInterval?: number;
 }
 
 export interface UpdateDevicePayload {
   label?: string;
   plantId?: string;
-  polybagId?: string;
   status?: DeviceStatus;
   sensorInterval?: number;
 }
@@ -82,12 +62,25 @@ export interface SensorHistoryItem {
   moisture: number;
 }
 
+export type WaterAction = "STOP" | "NONE" | "IRRIGATE";
+export type PhAction = "NONE" | "LIME" | "SULFUR";
+export type PhCorrectionStatus =
+  "NONE" | "READY" | "DEFERRED" | "NEEDS_CONFIRMATION";
+
+export interface PhCorrection {
+  status: PhCorrectionStatus;
+  reasons: string[];
+}
+
 export interface DeviceRecommendation {
   phValue: number;
   moistureValue: number;
   fuzzyIndex: number;
   categoryCode: string;
   actionText: string;
+  waterAction: WaterAction;
+  phAction: PhAction;
+  phCorrection: PhCorrection;
   waterVolumeLiter: number;
   limeDosageGram: number;
   sulfurDosageGram: number;
@@ -129,4 +122,26 @@ export interface NotificationItem {
   device?: {
     label: string;
   } | null;
+}
+
+export type CorrectionType = "LIME" | "SULFUR";
+export type CorrectionMethod = "INCORPORATION" | "TOP_DRESSING";
+
+export interface CorrectionRecord {
+  id: string;
+  deviceId: string;
+  type: CorrectionType;
+  method: CorrectionMethod;
+  doseGram: number;
+  phBefore: number;
+  appliedAt: string;
+  createdAt: string;
+}
+
+export interface CorrectionPayload {
+  type: CorrectionType;
+  method: CorrectionMethod;
+  doseGram: number;
+  phBefore: number;
+  appliedAt?: string;
 }

@@ -29,10 +29,10 @@ export default function LoginPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-6">
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-8 px-4">
       <Link
         href="/"
-        className="hover:text-primary absolute top-6 left-6 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 transition-colors"
+        className="hover:text-primary focus-visible:ring-primary/40 absolute top-4 left-4 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-gray-600 transition-colors focus-visible:ring-2 focus-visible:outline-none"
       >
         <MdArrowBack size={14} />
         Kembali ke Beranda
@@ -42,7 +42,7 @@ export default function LoginPage() {
         <Image src="/logo/logo-suburin.svg" alt="" width={56} height={56} />
         <div className="space-y-1 text-center">
           <h1 className="text-xl font-bold text-gray-800">Masuk ke Subur.in</h1>
-          <p className="max-w-xs text-sm text-gray-500">
+          <p className="max-w-xs text-sm text-gray-600">
             Pantau tanaman dan dapatkan rekomendasi perawatan otomatis dari AI.
           </p>
         </div>
@@ -60,17 +60,17 @@ export default function LoginPage() {
             signIn("google", { callbackUrl: "/dashboard" });
           }}
           disabled={isSigningIn}
-          className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="focus-visible:ring-primary/40 flex min-h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-black/10 bg-white px-5 text-sm font-semibold text-gray-800 shadow-sm transition-all duration-200 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSigningIn ? (
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600 motion-reduce:animate-none" />
           ) : (
             <FcGoogle size={20} />
           )}
           {isSigningIn ? "Menghubungkan…" : "Lanjutkan dengan Google"}
         </button>
 
-        <p className="text-center text-[11px] leading-relaxed text-gray-400">
+        <p className="text-center text-xs leading-relaxed text-gray-600">
           Dengan masuk, Anda menyetujui bahwa data perangkat dan sensor Anda
           akan disimpan untuk keperluan pemantauan tanaman.
         </p>

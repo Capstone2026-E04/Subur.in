@@ -306,28 +306,28 @@ export default function AnalyticsPage() {
         <Card className="flex-row items-center justify-between gap-4 p-5">
           <div className="min-w-0 space-y-1.5">
             <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
-              Rata-rata Kelembapan
+              Rata-rata Kelembapan (NMI)
             </p>
             <p className="text-[10px] leading-none font-medium text-gray-400">
               Dihitung dari data {durationText}
             </p>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black text-gray-800">
-                {avgMoisture > 0 ? `${avgMoisture.toFixed(1)}%` : "--"}
+                {avgMoisture > 0 ? avgMoisture.toFixed(1) : "--"}
               </span>
             </div>
             <div className="flex items-center gap-3 text-[10px] font-semibold text-gray-400">
               <span>
                 Min:{" "}
                 <strong className="text-gray-600">
-                  {minMoisture > 0 ? `${minMoisture.toFixed(0)}%` : "--"}
+                  {minMoisture > 0 ? minMoisture.toFixed(0) : "--"}
                 </strong>
               </span>
               <span className="h-1 w-1 rounded-full bg-gray-300" />
               <span>
                 Max:{" "}
                 <strong className="text-gray-600">
-                  {maxMoisture > 0 ? `${maxMoisture.toFixed(0)}%` : "--"}
+                  {maxMoisture > 0 ? maxMoisture.toFixed(0) : "--"}
                 </strong>
               </span>
             </div>

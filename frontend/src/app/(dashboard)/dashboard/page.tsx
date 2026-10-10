@@ -17,6 +17,7 @@ import {
   MdWarningAmber,
 } from "react-icons/md";
 import { useDevices } from "@/hooks/useDevices";
+import { usePlants } from "@/hooks/usePlants";
 import { useSensorRealtime } from "@/hooks/useSensorRealtime";
 import { fetchDeviceRecommendation } from "@/services/deviceService";
 import StatCard from "@/components/dashboard/StatCard";
@@ -129,6 +130,7 @@ function UnselectedDeviceState({
 
 export default function DashboardPage() {
   const { devices, isLoading, token, loadDevices } = useDevices();
+  const { plants, loadPlants } = usePlants();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [recommendation, setRecommendation] =
     useState<DeviceRecommendation | null>(null);
@@ -138,8 +140,14 @@ export default function DashboardPage() {
     loadDevices();
   }, [loadDevices]);
 
+  useEffect(() => {
+    loadPlants();
+  }, [loadPlants]);
+
   const selectedDevice =
     devices.find((d) => d.id === selectedDeviceId) || devices[0] || null;
+
+  const devicePlant = plants.find((p) => p.id === selectedDevice?.plant?.id);
 
   const { ph, moisture, lastUpdated } = useSensorRealtime(
     selectedDevice?.id || "",
@@ -189,34 +197,6 @@ export default function DashboardPage() {
   }
 
   const plantName = selectedDevice.plant?.name ?? "Tanaman";
-  const polybag = selectedDevice.polybag;
-  let polybagInfo = "Belum diatur";
-  if (polybag) {
-    const name = polybag.polybagType?.name || polybag.name;
-    const volume = polybag.soilVolumeLiter;
-    const diameter = polybag.polybagType?.diameter;
-    const height = polybag.polybagType?.height;
-
-    const nameStr = name && name !== "undefined" ? name : "";
-
-    let sizeStr = "";
-    if (volume) {
-      sizeStr = `${volume}L`;
-    } else if (diameter && height) {
-      sizeStr = `${diameter}x${height} cm`;
-    } else if (polybag.size && polybag.size !== "undefined") {
-      sizeStr = polybag.size;
-    }
-
-    if (nameStr && sizeStr) {
-      polybagInfo = `${nameStr} (${sizeStr})`;
-    } else if (nameStr) {
-      polybagInfo = nameStr;
-    } else if (sizeStr) {
-      polybagInfo = sizeStr;
-    }
-  }
-
   const stats = [
     {
       label: "Tanaman Dipantau",
@@ -226,7 +206,7 @@ export default function DashboardPage() {
     },
     {
       label: "Ukuran Polybag",
-      value: polybagInfo,
+      value: "Standar (20x20 cm, 2L)",
       icon: MdWaterDrop,
       iconBg: "bg-sky-500",
     },
@@ -495,6 +475,12 @@ export default function DashboardPage() {
         deviceId={selectedDevice.id}
         deviceLabel={selectedDevice.label}
         token={token}
+        phRange={
+          devicePlant
+            ? { min: devicePlant.minPh, max: devicePlant.maxPh }
+            : undefined
+        }
+        nmiTrigger={devicePlant?.nmiTrigger ?? null}
       />
 
       <SensorHistoryChart

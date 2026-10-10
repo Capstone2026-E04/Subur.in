@@ -13,12 +13,6 @@ import {
 import { usePlants } from "@/hooks/usePlants";
 import { Card } from "@/components/ui/card";
 
-const MOISTURE_TARGET = {
-  min: 25,
-  max: 35,
-  target: 30,
-};
-
 function PlantSkeletonCard() {
   return (
     <Card className="animate-pulse flex-col items-start justify-between gap-4 p-5 md:flex-row md:items-center">
@@ -159,13 +153,15 @@ export default function PlantsPage() {
                   <div className="border-border flex shrink-0 items-center gap-3 border-t pt-3 md:border-t-0 md:pt-0">
                     <div className="flex min-w-[100px] flex-col items-center rounded-xl border border-sky-100 bg-sky-50 px-3 py-2">
                       <span className="text-[9px] font-bold tracking-wider text-sky-600 uppercase">
-                        Kelembapan
+                        Kelembapan (NMI)
                       </span>
                       <span className="mt-0.5 text-xs font-bold text-gray-700">
-                        {MOISTURE_TARGET.min}% - {MOISTURE_TARGET.max}%
+                        {plant.nmiTrigger !== null
+                          ? `Trigger ${plant.nmiTrigger}`
+                          : "-"}
                       </span>
                       <span className="mt-0.5 text-[9px] font-semibold text-sky-700/80">
-                        Tgt: {MOISTURE_TARGET.target}%
+                        Tgt: {plant.nmiTarget ?? "-"}
                       </span>
                     </div>
 

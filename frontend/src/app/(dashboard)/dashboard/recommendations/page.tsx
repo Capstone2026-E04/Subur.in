@@ -28,6 +28,8 @@ import type {
   RecommendationLogItem,
 } from "@/types/device";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import PhCorrectionStatus from "@/components/recommendations/PhCorrectionStatus";
+import CorrectionPanel from "@/components/recommendations/CorrectionPanel";
 
 function PageSkeleton() {
   return (
@@ -49,7 +51,7 @@ function EmptyState() {
   return (
     <Card className="mx-auto my-8 max-w-xl items-center justify-center rounded-3xl border-dashed p-8 py-20 text-center">
       <div className="bg-primary/8 text-primary mb-6 flex h-20 w-20 items-center justify-center rounded-2xl">
-        <MdAutoAwesome size={40} className="animate-pulse" />
+        <MdAutoAwesome size={40} className="motion-safe:animate-pulse" />
       </div>
       <h3 className="text-lg font-bold text-gray-800">
         Belum Ada Alat Terdaftar
@@ -217,7 +219,7 @@ export default function RecommendationsPage() {
           <button
             onClick={loadData}
             disabled={isRecLoading}
-            className="text-primary flex cursor-pointer items-center gap-1 text-xs font-bold hover:underline"
+            className="text-primary focus-visible:ring-primary/40 flex min-h-11 cursor-pointer items-center gap-1 rounded-lg px-2 text-xs font-bold hover:underline focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isRecLoading ? "Memproses..." : "Hitung Ulang"}
           </button>
@@ -271,10 +273,10 @@ export default function RecommendationsPage() {
                   </div>
                   <div>
                     <span className="block text-xs font-semibold text-gray-400">
-                      Kelembapan
+                      NMI Kelembapan
                     </span>
                     <span className="text-base font-extrabold text-sky-600">
-                      {recommendation.moistureValue.toFixed(1)}%
+                      {recommendation.moistureValue.toFixed(1)}
                     </span>
                   </div>
                 </div>
@@ -290,6 +292,11 @@ export default function RecommendationsPage() {
                 </div>
               </div>
 
+              <PhCorrectionStatus
+                phAction={recommendation.phAction}
+                correction={recommendation.phCorrection}
+              />
+
               <div className="space-y-3">
                 <span className="flex items-center gap-1.5 text-xs font-bold text-gray-600">
                   <MdScience className="text-violet-500" size={16} />
@@ -302,7 +309,7 @@ export default function RecommendationsPage() {
                 !recommendation.reduceWatering ? (
                   <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
                     <MdCheckCircleOutline
-                      className="mt-0.5 shrink-0 animate-pulse text-emerald-500"
+                      className="mt-0.5 shrink-0 text-emerald-500"
                       size={20}
                     />
                     <div>
@@ -325,7 +332,7 @@ export default function RecommendationsPage() {
                           <MdOpacity size={80} />
                         </div>
                         <MdOpacity
-                          className="mt-0.5 shrink-0 animate-bounce text-sky-500"
+                          className="mt-0.5 shrink-0 text-sky-500"
                           size={20}
                         />
                         <div className="z-10">
@@ -333,14 +340,14 @@ export default function RecommendationsPage() {
                             Dosis Pengairan
                           </p>
                           <p className="mt-1 text-2xl font-black text-sky-600">
-                            {recommendation.waterVolumeLiter.toFixed(2)}{" "}
+                            {Math.round(recommendation.waterVolumeLiter * 1000)}{" "}
                             <span className="text-xs font-bold text-sky-500">
-                              Liter
+                              mL
                             </span>
                           </p>
                           <p className="mt-1 max-w-[85%] text-[11px] leading-relaxed text-sky-600/70">
-                            Siram media tanah secara perlahan untuk
-                            mengembalikan kelembapan ideal.
+                            Estimasi berbasis NMI. Siram perlahan dan hentikan
+                            bila air sudah menetes keluar.
                           </p>
                         </div>
                       </div>
@@ -431,6 +438,16 @@ export default function RecommendationsPage() {
         </CardContent>
       </Card>
 
+      {token && (
+        <CorrectionPanel
+          key={selectedDevice.id}
+          token={token}
+          deviceId={selectedDevice.id}
+          recommendation={recommendation}
+          onSaved={loadData}
+        />
+      )}
+
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/60 flex-wrap gap-4 py-4">
           <div className="flex items-center gap-2">
@@ -454,7 +471,7 @@ export default function RecommendationsPage() {
                   );
                   setCurrentPage(1);
                 }}
-                className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-600 shadow-sm focus:ring-1 focus:outline-none"
+                className="focus:ring-primary min-h-10 cursor-pointer rounded-xl border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-600 shadow-sm focus:ring-1 focus:outline-none"
               >
                 <option value={10}>10 data</option>
                 <option value={20}>20 data</option>
@@ -490,10 +507,16 @@ export default function RecommendationsPage() {
                 <table className="w-full border-collapse text-left text-xs">
                   <thead>
                     <tr className="border-b border-black/6 bg-gray-50 font-bold tracking-wider text-gray-400 uppercase">
-                      <th className="px-5 py-3">Waktu</th>
-                      <th className="px-5 py-3">Sensor</th>
-                      <th className="px-5 py-3">Diagnosis AI</th>
-                      <th className="px-5 py-3 text-right">
+                      <th scope="col" className="px-5 py-3">
+                        Waktu
+                      </th>
+                      <th scope="col" className="px-5 py-3">
+                        Sensor
+                      </th>
+                      <th scope="col" className="px-5 py-3">
+                        Diagnosis AI
+                      </th>
+                      <th scope="col" className="px-5 py-3 text-right">
                         Rekomendasi Tindakan
                       </th>
                     </tr>
@@ -528,9 +551,9 @@ export default function RecommendationsPage() {
                                 </span>
                               </p>
                               <p className="font-medium text-gray-500">
-                                Lembap:{" "}
+                                NMI:{" "}
                                 <span className="font-bold text-sky-600">
-                                  {log.moistureValue.toFixed(0)}%
+                                  {log.moistureValue.toFixed(0)}
                                 </span>
                               </p>
                             </div>
@@ -605,7 +628,7 @@ export default function RecommendationsPage() {
                       onClick={() =>
                         setCurrentPage((prev) => Math.max(prev - 1, 1))
                       }
-                      className="cursor-pointer rounded-xl border border-black/8 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 shadow-sm transition hover:bg-gray-50 disabled:opacity-40"
+                      className="min-h-10 cursor-pointer rounded-xl border border-black/8 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 shadow-sm transition hover:bg-gray-50 disabled:opacity-40"
                     >
                       Sebelumnya
                     </button>
@@ -617,7 +640,7 @@ export default function RecommendationsPage() {
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold shadow-sm transition ${
+                          className={`min-h-10 min-w-10 cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold shadow-sm transition ${
                             isCurrent
                               ? "bg-primary border-primary border font-black text-white"
                               : "border border-black/8 bg-white text-gray-600 hover:bg-gray-50"
@@ -633,7 +656,7 @@ export default function RecommendationsPage() {
                       onClick={() =>
                         setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                       }
-                      className="cursor-pointer rounded-xl border border-black/8 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 shadow-sm transition hover:bg-gray-50 disabled:opacity-40"
+                      className="min-h-10 cursor-pointer rounded-xl border border-black/8 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 shadow-sm transition hover:bg-gray-50 disabled:opacity-40"
                     >
                       Selanjutnya
                     </button>

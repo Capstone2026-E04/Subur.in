@@ -34,77 +34,84 @@ function formatTimestamp(ts: string | null): string {
   }
 }
 
-function getPhColor(ph: number) {
-  if (ph < 6) {
-    return {
-      stroke: "#f97316",
-      glow: "#f97316",
-      text: "text-orange-500",
-      badge: "text-orange-700",
-      badgeBg: "bg-orange-100",
-    };
-  } else if (ph <= 7.5) {
-    return {
-      stroke: "#16a34a",
-      glow: "#16a34a",
-      text: "text-emerald-600",
-      badge: "text-emerald-700",
-      badgeBg: "bg-emerald-100",
-    };
-  } else {
-    return {
-      stroke: "#7c3aed",
-      glow: "#7c3aed",
-      text: "text-violet-600",
-      badge: "text-violet-700",
-      badgeBg: "bg-violet-100",
-    };
+const TONES = {
+  red: {
+    stroke: "#ef4444",
+    glow: "#ef4444",
+    text: "text-red-500",
+    badge: "text-red-700",
+    badgeBg: "bg-red-100",
+  },
+  orange: {
+    stroke: "#f97316",
+    glow: "#f97316",
+    text: "text-orange-500",
+    badge: "text-orange-700",
+    badgeBg: "bg-orange-100",
+  },
+  amber: {
+    stroke: "#d97706",
+    glow: "#d97706",
+    text: "text-amber-600",
+    badge: "text-amber-700",
+    badgeBg: "bg-amber-100",
+  },
+  green: {
+    stroke: "#16a34a",
+    glow: "#16a34a",
+    text: "text-emerald-600",
+    badge: "text-emerald-700",
+    badgeBg: "bg-emerald-100",
+  },
+  sky: {
+    stroke: "#0ea5e9",
+    glow: "#0ea5e9",
+    text: "text-sky-500",
+    badge: "text-sky-700",
+    badgeBg: "bg-sky-100",
+  },
+  violet: {
+    stroke: "#7c3aed",
+    glow: "#7c3aed",
+    text: "text-violet-600",
+    badge: "text-violet-700",
+    badgeBg: "bg-violet-100",
+  },
+} as const;
+
+type Tone = keyof typeof TONES;
+
+const PH_MARGIN = 0.5;
+const NMI_MARGIN = 5;
+const NMI_WET_START = 90;
+const NMI_WET_STOP = 95;
+
+const DEFAULT_PH_RANGE = { min: 6, max: 7 };
+
+function classifyPh(ph: number, range: { min: number; max: number }) {
+  if (ph < range.min - PH_MARGIN)
+    return { label: "Asam", tone: "orange" as Tone };
+  if (ph < range.min) return { label: "Mendekati asam", tone: "amber" as Tone };
+  if (ph <= range.max) return { label: "Optimal", tone: "green" as Tone };
+  if (ph <= range.max + PH_MARGIN) {
+    return { label: "Mendekati basa", tone: "amber" as Tone };
   }
+  return { label: "Basa", tone: "violet" as Tone };
 }
 
-function getPhClassification(ph: number): string {
-  if (ph < 4.5) return "Sangat Asam";
-  if (ph < 6) return "Asam";
-  if (ph <= 7) return "Netral / Ideal";
-  if (ph <= 7.5) return "Sedikit Basa";
-  if (ph <= 9) return "Basa";
-  return "Sangat Basa";
-}
-
-function getMoistureColor(m: number) {
-  if (m < 30) {
-    return {
-      stroke: "#ef4444",
-      glow: "#ef4444",
-      text: "text-red-500",
-      badge: "text-red-700",
-      badgeBg: "bg-red-100",
-    };
-  } else if (m <= 70) {
-    return {
-      stroke: "#0ea5e9",
-      glow: "#0ea5e9",
-      text: "text-sky-500",
-      badge: "text-sky-700",
-      badgeBg: "bg-sky-100",
-    };
-  } else {
-    return {
-      stroke: "#2563eb",
-      glow: "#2563eb",
-      text: "text-blue-600",
-      badge: "text-blue-700",
-      badgeBg: "bg-blue-100",
-    };
+function classifyNmi(nmi: number, trigger: number | null) {
+  if (trigger === null)
+    return { label: "Tanpa parameter", tone: "sky" as Tone };
+  if (nmi <= trigger - NMI_MARGIN)
+    return { label: "Kering", tone: "red" as Tone };
+  if (nmi < trigger + NMI_MARGIN) {
+    return { label: "Mendekati kering", tone: "amber" as Tone };
   }
-}
-
-function getMoistureClassification(m: number): string {
-  if (m < 20) return "Sangat Kering";
-  if (m < 30) return "Kering";
-  if (m <= 60) return "Optimal";
-  if (m <= 70) return "Lembap";
-  return "Terlalu Lembap";
+  if (nmi <= NMI_WET_START) return { label: "Optimal", tone: "sky" as Tone };
+  if (nmi < NMI_WET_STOP) {
+    return { label: "Mendekati basah", tone: "violet" as Tone };
+  }
+  return { label: "Basah", tone: "violet" as Tone };
 }
 
 const STATUS_CONFIG: Record<
@@ -172,12 +179,16 @@ interface SensorMonitorPanelProps {
   deviceId?: string;
   deviceLabel?: string;
   token?: string | null;
+  phRange?: { min: number; max: number };
+  nmiTrigger?: number | null;
 }
 
 export default function SensorMonitorPanel({
   deviceId = "node_1",
   deviceLabel,
   token,
+  phRange = DEFAULT_PH_RANGE,
+  nmiTrigger = null,
 }: SensorMonitorPanelProps) {
   const { ph, moisture, lastUpdated, connectionStatus } = useSensorRealtime(
     deviceId,
@@ -213,20 +224,20 @@ export default function SensorMonitorPanel({
           unit="pH (0–14)"
           min={0}
           max={14}
-          getColor={getPhColor}
-          getClassification={getPhClassification}
+          getColor={(v) => TONES[classifyPh(v, phRange).tone]}
+          getClassification={(v) => classifyPh(v, phRange).label}
           icon={<MdOutlineSpa size={18} />}
           decimals={1}
         />
 
         <SensorGaugeCard
-          label="Kelembapan Tanah"
+          label="Kelembapan (NMI)"
           value={moisture}
-          unit="% Moisture"
+          unit="NMI"
           min={0}
           max={100}
-          getColor={getMoistureColor}
-          getClassification={getMoistureClassification}
+          getColor={(v) => TONES[classifyNmi(v, nmiTrigger).tone]}
+          getClassification={(v) => classifyNmi(v, nmiTrigger).label}
           icon={<MdOutlineWaterDrop size={18} />}
           decimals={0}
         />

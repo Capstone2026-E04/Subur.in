@@ -6,7 +6,6 @@ import {
   MdOutlineEdit,
   MdClose,
   MdOutlineSpa,
-  MdOutlineWaterDrop,
   MdOutlineLabel,
   MdCircle,
   MdAccessTime,
@@ -14,11 +13,10 @@ import {
 import type {
   RegisteredDevice,
   PlantOption,
-  PolybagOption,
   UpdateDevicePayload,
   DeviceStatus,
 } from "@/types/device";
-import { fetchPlants, fetchPolybags } from "@/services/deviceService";
+import { fetchPlants } from "@/services/deviceService";
 
 interface EditDeviceModalProps {
   isOpen: boolean;
@@ -37,11 +35,9 @@ export default function EditDeviceModal({
 }: EditDeviceModalProps) {
   const [label, setLabel] = useState("");
   const [selectedPlantId, setSelectedPlantId] = useState("");
-  const [selectedPolybagId, setSelectedPolybagId] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<DeviceStatus>("ACTIVE");
   const [sensorInterval, setSensorInterval] = useState(15);
   const [plants, setPlants] = useState<PlantOption[]>([]);
-  const [polybags, setPolybags] = useState<PolybagOption[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +47,6 @@ export default function EditDeviceModal({
     setPrevDeviceId(device.id);
     setLabel(device.label);
     setSelectedPlantId(device.plant?.id ?? "");
-    setSelectedPolybagId(device.polybag?.id ?? "");
     setSelectedStatus(device.status);
     setSensorInterval(device.sensorInterval ?? 15);
     setError(null);
@@ -60,11 +55,8 @@ export default function EditDeviceModal({
   useEffect(() => {
     if (!isOpen || !token) return;
 
-    Promise.all([fetchPlants(token), fetchPolybags(token)])
-      .then(([p, pb]) => {
-        setPlants(p);
-        setPolybags(pb);
-      })
+    fetchPlants(token)
+      .then(setPlants)
       .catch(() => {});
   }, [isOpen, token]);
 
@@ -94,7 +86,6 @@ export default function EditDeviceModal({
       await onSave(device.id, {
         label: label.trim(),
         ...(selectedPlantId && { plantId: selectedPlantId }),
-        ...(selectedPolybagId && { polybagId: selectedPolybagId }),
         status: selectedStatus,
         sensorInterval: intervalNum,
       });
@@ -198,30 +189,6 @@ export default function EditDeviceModal({
                     {plants.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="edit-polybag-select"
-                    className="flex items-center gap-1.5 text-xs font-semibold text-gray-600"
-                  >
-                    <MdOutlineWaterDrop size={13} />
-                    Ukuran Polybag
-                  </label>
-                  <select
-                    id="edit-polybag-select"
-                    value={selectedPolybagId}
-                    onChange={(e) => setSelectedPolybagId(e.target.value)}
-                    className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
-                  >
-                    <option value="">— Tidak diubah —</option>
-                    {polybags.map((pb) => (
-                      <option key={pb.id} value={pb.id}>
-                        {pb.name} | Diameter {pb.diameter}cm | Tinggi{" "}
-                        {pb.height}cm | Volume Tanah {pb.soilVolumeLiter}L
                       </option>
                     ))}
                   </select>

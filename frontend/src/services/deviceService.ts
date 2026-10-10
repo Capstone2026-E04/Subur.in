@@ -2,12 +2,13 @@ import type {
   RegisteredDevice,
   DiscoveredDevice,
   Plant,
-  PolybagOption,
   ClaimDevicePayload,
   UpdateDevicePayload,
   SensorHistoryItem,
   DeviceRecommendation,
   RecommendationLogItem,
+  CorrectionRecord,
+  CorrectionPayload,
 } from "@/types/device";
 import { API_URL as API_BASE } from "@/services/api";
 
@@ -126,22 +127,6 @@ export async function fetchPlants(token: string): Promise<Plant[]> {
   return (data as { plants: Plant[] }).plants ?? [];
 }
 
-export async function fetchPolybags(token: string): Promise<PolybagOption[]> {
-  const res = await fetch(`${API_BASE}/api/polybags`, {
-    headers: headers(token),
-    cache: "no-store",
-  });
-  const json = await handleResponse<{
-    success: boolean;
-    data: PolybagOption[] | { polybags: PolybagOption[] };
-  }>(res);
-  const data = (
-    json as { data: PolybagOption[] | { polybags: PolybagOption[] } }
-  ).data;
-  if (Array.isArray(data)) return data;
-  return (data as { polybags: PolybagOption[] }).polybags ?? [];
-}
-
 export async function fetchSensorHistory(
   token: string,
   deviceId: string,
@@ -193,4 +178,36 @@ export async function fetchRecommendationHistory(
     data: { logs: RecommendationLogItem[] };
   }>(res);
   return json.data?.logs ?? [];
+}
+
+export async function fetchCorrections(
+  token: string,
+  deviceId: string,
+): Promise<CorrectionRecord[]> {
+  const res = await fetch(`${API_BASE}/api/devices/${deviceId}/corrections`, {
+    headers: headers(token),
+    cache: "no-store",
+  });
+  const json = await handleResponse<{
+    success: boolean;
+    data: { corrections: CorrectionRecord[] };
+  }>(res);
+  return json.data?.corrections ?? [];
+}
+
+export async function createCorrection(
+  token: string,
+  deviceId: string,
+  payload: CorrectionPayload,
+): Promise<CorrectionRecord> {
+  const res = await fetch(`${API_BASE}/api/devices/${deviceId}/corrections`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify(payload),
+  });
+  const json = await handleResponse<{
+    success: boolean;
+    data: { correction: CorrectionRecord };
+  }>(res);
+  return json.data.correction;
 }

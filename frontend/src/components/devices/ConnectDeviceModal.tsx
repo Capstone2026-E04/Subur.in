@@ -8,22 +8,13 @@ import {
   MdRefresh,
   MdOutlineDeviceHub,
   MdOutlineSpa,
-  MdOutlineWaterDrop,
   MdOutlineLabel,
   MdSignalWifiOff,
   MdLinkOff,
   MdAccessTime,
 } from "react-icons/md";
-import type {
-  DiscoveredDevice,
-  PlantOption,
-  PolybagOption,
-} from "@/types/device";
-import {
-  fetchDiscoveredDevices,
-  fetchPlants,
-  fetchPolybags,
-} from "@/services/deviceService";
+import type { DiscoveredDevice, PlantOption } from "@/types/device";
+import { fetchDiscoveredDevices, fetchPlants } from "@/services/deviceService";
 
 interface ConnectDeviceModalProps {
   isOpen: boolean;
@@ -34,7 +25,6 @@ interface ConnectDeviceModalProps {
     deviceCode: string;
     label: string;
     plantId: string;
-    polybagId: string;
     sensorInterval?: number;
   }) => Promise<unknown>;
 }
@@ -64,12 +54,10 @@ export default function ConnectDeviceModal({
   const [scanError, setScanError] = useState<string | null>(null);
 
   const [plants, setPlants] = useState<PlantOption[]>([]);
-  const [polybags, setPolybags] = useState<PolybagOption[]>([]);
 
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
   const [label, setLabel] = useState("");
   const [selectedPlantId, setSelectedPlantId] = useState("");
-  const [selectedPolybagId, setSelectedPolybagId] = useState("");
   const [sensorInterval, setSensorInterval] = useState(15);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,7 +69,6 @@ export default function ConnectDeviceModal({
     setSelectedDeviceId("");
     setLabel("");
     setSelectedPlantId("");
-    setSelectedPolybagId("");
     setSensorInterval(15);
     setFormError(null);
   } else if (!isOpen && prevIsOpen) {
@@ -109,11 +96,8 @@ export default function ConnectDeviceModal({
       scan();
     }, 0);
 
-    Promise.all([fetchPlants(token), fetchPolybags(token)])
-      .then(([p, pb]) => {
-        setPlants(p);
-        setPolybags(pb);
-      })
+    fetchPlants(token)
+      .then(setPlants)
       .catch(() => {});
 
     return () => clearTimeout(timer);
@@ -135,10 +119,6 @@ export default function ConnectDeviceModal({
       setFormError("Pilih tanaman untuk alat ini.");
       return;
     }
-    if (!selectedPolybagId) {
-      setFormError("Pilih tipe polybag untuk alat ini.");
-      return;
-    }
 
     setIsSubmitting(true);
     try {
@@ -146,7 +126,6 @@ export default function ConnectDeviceModal({
         deviceCode: selectedDeviceId,
         label: label.trim(),
         plantId: selectedPlantId,
-        polybagId: selectedPolybagId,
         sensorInterval: Number(sensorInterval),
       });
       onSuccess();
@@ -357,9 +336,9 @@ export default function ConnectDeviceModal({
                                 </span>
                                 <span className="text-xs text-gray-600">
                                   <span className="font-medium text-gray-800">
-                                    Kelembapan:
+                                    NMI:
                                   </span>{" "}
-                                  {selectedDeviceInfo.moisture}%
+                                  {selectedDeviceInfo.moisture}
                                 </span>
                                 <span className="text-xs text-gray-400">
                                   {formatDiscoveredAge(
@@ -429,30 +408,6 @@ export default function ConnectDeviceModal({
                             dahulu.
                           </p>
                         )}
-                      </div>
-
-                      <div className="flex flex-col gap-1.5">
-                        <label
-                          htmlFor="select-polybag"
-                          className="flex items-center gap-1.5 text-xs font-semibold text-gray-600"
-                        >
-                          <MdOutlineWaterDrop size={13} />
-                          Ukuran Polybag
-                        </label>
-                        <select
-                          id="select-polybag"
-                          value={selectedPolybagId}
-                          onChange={(e) => setSelectedPolybagId(e.target.value)}
-                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
-                        >
-                          <option value="">— Pilih polybag —</option>
-                          {polybags.map((pb) => (
-                            <option key={pb.id} value={pb.id}>
-                              {pb.name} | Diameter {pb.diameter}cm | Tinggi{" "}
-                              {pb.height}cm | Volume Tanah {pb.soilVolumeLiter}L
-                            </option>
-                          ))}
-                        </select>
                       </div>
 
                       <div className="flex flex-col gap-1.5">
