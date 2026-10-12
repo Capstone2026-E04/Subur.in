@@ -92,6 +92,21 @@ function ChoiceGroup<T extends string>({
   );
 }
 
+function getSuggestion(rec: DeviceRecommendation | null) {
+  const type: CorrectionType = rec?.phAction === "SULFUR" ? "SULFUR" : "LIME";
+  const gram =
+    rec?.phAction === "LIME"
+      ? rec.limeDosageGram
+      : rec?.phAction === "SULFUR"
+        ? rec.sulfurDosageGram
+        : 0;
+  return {
+    type,
+    dose: gram > 0 ? String(gram) : "",
+    ph: rec ? rec.phValue.toFixed(1) : "",
+  };
+}
+
 interface Props {
   token: string;
   deviceId: string;
@@ -110,10 +125,14 @@ export default function CorrectionPanel({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const [type, setType] = useState<CorrectionType>("LIME");
+  const suggestion = getSuggestion(recommendation);
+  const [typeInput, setTypeInput] = useState<CorrectionType | null>(null);
   const [method, setMethod] = useState<CorrectionMethod>("INCORPORATION");
-  const [dose, setDose] = useState("");
-  const [phBefore, setPhBefore] = useState("");
+  const [doseInput, setDoseInput] = useState<string | null>(null);
+  const [phInput, setPhInput] = useState<string | null>(null);
+  const type = typeInput ?? suggestion.type;
+  const dose = doseInput ?? suggestion.dose;
+  const phBefore = phInput ?? suggestion.ph;
   const [appliedAt, setAppliedAt] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -157,23 +176,6 @@ export default function CorrectionPanel({
   const isWaiting =
     waitEndsAt !== null && now !== null && waitEndsAt.getTime() > now;
 
-  function fillFromRecommendation() {
-    if (!recommendation) return;
-    const suggested =
-      recommendation.phAction === "LIME" || recommendation.phAction === "SULFUR"
-        ? recommendation.phAction
-        : null;
-    if (suggested) setType(suggested);
-    const suggestedDose =
-      suggested === "LIME"
-        ? recommendation.limeDosageGram
-        : suggested === "SULFUR"
-          ? recommendation.sulfurDosageGram
-          : 0;
-    if (suggestedDose > 0) setDose(String(suggestedDose));
-    setPhBefore(recommendation.phValue.toFixed(1));
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
@@ -199,8 +201,9 @@ export default function CorrectionPanel({
         phBefore: phValue,
         ...(appliedAt && { appliedAt: new Date(appliedAt).toISOString() }),
       });
-      setDose("");
-      setPhBefore("");
+      setTypeInput(null);
+      setDoseInput(null);
+      setPhInput(null);
       setAppliedAt("");
       setNotice(
         `Koreksi dicatat. Rekomendasi koreksi pH berikutnya ditunda ${WAIT_DAYS} hari.`,
@@ -225,15 +228,6 @@ export default function CorrectionPanel({
           <MdOutlineScience className="text-primary" size={20} />
           <h3 className="text-primary text-sm font-bold">Catat Koreksi pH</h3>
         </div>
-        {recommendation && (
-          <button
-            type="button"
-            onClick={fillFromRecommendation}
-            className="text-primary focus-visible:ring-primary/40 min-h-11 cursor-pointer rounded-lg px-2 text-xs font-bold hover:underline focus-visible:ring-2 focus-visible:outline-none"
-          >
-            Isi dari rekomendasi
-          </button>
-        )}
       </CardHeader>
 
       <CardContent className="space-y-6 p-6">
@@ -241,6 +235,13 @@ export default function CorrectionPanel({
           Catat dolomit atau sulfur yang benar-benar sudah Anda berikan. Setelah
           koreksi dicatat, sistem menunda rekomendasi koreksi pH berikutnya
           selama {WAIT_DAYS} hari agar tidak memberikan bahan berulang.
+          {recommendation && (
+            <>
+              {" "}
+              Bahan, dosis, dan pH awal diisi dari rekomendasi terbaru; ubah
+              sesuai yang benar-benar Anda berikan.
+            </>
+          )}
         </p>
 
         <div
@@ -272,7 +273,7 @@ export default function CorrectionPanel({
               name={`${uid}-type`}
               options={TYPE_OPTIONS}
               value={type}
-              onChange={setType}
+              onChange={setTypeInput}
             />
             <ChoiceGroup
               legend="Metode aplikasi"
@@ -296,7 +297,7 @@ export default function CorrectionPanel({
                 min="0.1"
                 step="0.1"
                 value={dose}
-                onChange={(e) => setDose(e.target.value)}
+                onChange={(e) => setDoseInput(e.target.value)}
                 aria-describedby={formError ? errorId : undefined}
                 className={inputClass}
               />
@@ -317,7 +318,7 @@ export default function CorrectionPanel({
                 max="14"
                 step="0.1"
                 value={phBefore}
-                onChange={(e) => setPhBefore(e.target.value)}
+                onChange={(e) => setPhInput(e.target.value)}
                 aria-describedby={formError ? errorId : undefined}
                 className={inputClass}
               />
