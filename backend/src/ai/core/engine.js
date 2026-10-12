@@ -21,7 +21,6 @@ function evaluateRules(membership) {
   })).filter((r) => r.alpha > 0);
 }
 
-// h(c) = max(alpha) per kategori (agregasi MAX).
 function aggregateCategories(activeRules) {
   const h = {};
   for (const { category, alpha } of activeRules) {
@@ -30,7 +29,6 @@ function aggregateCategories(activeRules) {
   return h;
 }
 
-// Pilih nilai agregasi terbesar per dimensi; seri -> urutan prioritas.
 function pickAction(h, key, priority) {
   const score = {};
   for (const [code, value] of Object.entries(h)) {
@@ -70,7 +68,6 @@ function runInference(ph, nmi, { minPh, maxPh, trigger }) {
     waterAction,
     phAction,
     categoryCode,
-    // Dukungan terlemah dari kedua keputusan final (0-1).
     strength: Math.min(water.score, phPick.score),
   };
 }

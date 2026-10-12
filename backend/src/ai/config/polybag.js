@@ -1,4 +1,3 @@
-// Satu-satunya preset prototipe C501: polybag 30x30 cm, volume media 2 L.
 const DIAMETER_CM = 30;
 
 module.exports = {

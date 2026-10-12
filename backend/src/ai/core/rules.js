@@ -1,4 +1,3 @@
-// Kategori treatment C1-C9 = kombinasi WaterAction x pHAction (C501 Step 5).
 const CATEGORIES = {
   C1: { waterAction: "NONE", phAction: "NONE" },
   C2: { waterAction: "IRRIGATE", phAction: "NONE" },
@@ -11,7 +10,6 @@ const CATEGORIES = {
   C9: { waterAction: "STOP", phAction: "SULFUR" },
 };
 
-// Rule base 3x3 (pH x kelembapan).
 const RULE_BASE = [
   { id: "R1", phSet: "asam", moistureSet: "kering", category: "C5" },
   { id: "R2", phSet: "asam", moistureSet: "optimal", category: "C4" },
@@ -24,7 +22,6 @@ const RULE_BASE = [
   { id: "R9", phSet: "basa", moistureSet: "basah", category: "C9" },
 ];
 
-// Urutan prioritas saat nilai agregasi seri (indeks kecil menang).
 const WATER_PRIORITY = ["STOP", "NONE", "IRRIGATE"];
 const PH_PRIORITY = ["NONE", "LIME", "SULFUR"];
 

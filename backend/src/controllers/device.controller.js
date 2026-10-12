@@ -10,7 +10,6 @@ const { getLatestSensorLog } = require("../repositories/sensor_repository");
 const { publishDeviceConfig } = require("../mqtt/publishers/config_publisher");
 const { sendSuccess, sendError } = require("../utils/response");
 
-// Batas 1-60 menit mengikuti validasi firmware ESP (mqttCallback).
 const isValidInterval = (v) =>
   Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 60;
 

@@ -3,7 +3,6 @@ const {
   M_S_MAX_PER_LITER,
 } = require("../config/treatment_constants");
 
-// mS,raw = KS * V * max(0, pH aktual - pHT); mS,sim = min(mS,raw, batas simulasi).
 function calculateSulfurDosage(phValue, volumeLiter, targetPh) {
   if (
     typeof phValue !== "number" ||

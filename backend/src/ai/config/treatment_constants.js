@@ -1,5 +1,3 @@
-// Sumber: dokumen C501 (Step 1-11). Semua nilai adalah parameter rekayasa
-// untuk prototipe polybag 2 L, bukan angka optimum biologis dari literatur.
 const TREATMENT_CONSTANTS = {
   MEDIA_REF_LITER: 2,
   NMI_WET_START: 90,

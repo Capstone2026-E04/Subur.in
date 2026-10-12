@@ -8,7 +8,6 @@ const {
 } = require("../controllers/sensor.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
-// EventSource tidak bisa mengirim header Authorization, jadi stream menerima ?access_token=.
 const tokenFromQuery = (req, res, next) => {
   if (
     !req.headers.authorization &&

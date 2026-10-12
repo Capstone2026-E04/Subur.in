@@ -8,9 +8,6 @@ const {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Safety gate koreksi pH (C501 Step 11). Tidak mengubah hasil inferensi; hanya
-// menentukan apakah koreksi boleh ditampilkan sebagai instruksi.
-// status: NONE | READY | DEFERRED | NEEDS_CONFIRMATION
 function checkPhCorrection({
   phAction,
   waterAction,

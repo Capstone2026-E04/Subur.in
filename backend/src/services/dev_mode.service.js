@@ -14,13 +14,11 @@ const rand = (min, max) =>
 
 const CRITICAL_CHANCE = 0.3;
 
-// Kondisi kritis yang memicu notifyDevice. Kering/basah butuh 2 pembacaan
-// berturut-turut, jadi dikirim dua kali.
 const CRITICAL_SCENARIOS = [
-  () => Array(2).fill({ ph: rand(6, 7), moisture: rand(0, 20) }), // kering
-  () => Array(2).fill({ ph: rand(6, 7), moisture: rand(90, 100) }), // basah
-  () => [{ ph: rand(0, 3.5), moisture: rand(25, 35) }], // pH asam
-  () => [{ ph: rand(10, 14), moisture: rand(25, 35) }], // pH basa
+  () => Array(2).fill({ ph: rand(6, 7), moisture: rand(0, 20) }),
+  () => Array(2).fill({ ph: rand(6, 7), moisture: rand(90, 100) }),
+  () => [{ ph: rand(0, 3.5), moisture: rand(25, 35) }],
+  () => [{ ph: rand(10, 14), moisture: rand(25, 35) }],
 ];
 
 function pickReadings() {

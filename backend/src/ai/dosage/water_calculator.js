@@ -4,9 +4,6 @@ const {
   ML_PER_NMI_REF,
 } = require("../config/treatment_constants");
 
-// Vneed = max(0, (target - NMI) * 4) mL, dibatasi Vmax = max(0, (95 - NMI) * 4) mL.
-// Faktor 4 mL/poin NMI berasal dari Vcal 400 mL pada media 2 L; diskalakan linear
-// untuk volume media lain.
 function calculateWaterVolume(nmi, targetNmi, volumeLiter) {
   if (
     typeof nmi !== "number" ||

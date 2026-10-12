@@ -3,7 +3,6 @@ const {
   M_L_MAX_PER_LITER,
 } = require("../config/treatment_constants");
 
-// mL,raw = KL * V * max(0, pHT - pH aktual); mL,sim = min(mL,raw, batas simulasi).
 function calculateLimeDosage(phValue, volumeLiter, targetPh) {
   if (
     typeof phValue !== "number" ||
