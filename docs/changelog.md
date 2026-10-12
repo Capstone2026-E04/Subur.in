@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-12
+
+- **perf(db)!:** Indeks `created_at` pada `recommendation_logs` dan `notifications` untuk cron pembersihan; FK `raw_sensor_logs.device_id -> devices.id` (ON DELETE CASCADE); `notifications.type` menjadi enum `notification_type` (`warning`, `success`, `info`). **Jalankan `backend/prisma/manual/006_indexes_fk_enum.sql` di Supabase SEBELUM deploy** (rollback tersedia), karena `prisma db push` tidak bisa mengubah varchar menjadi enum tanpa kehilangan data.
+- **chore(polybag):** Ukuran polybag prototipe menjadi 30x30 cm; volume media tetap 2 L.
+
 ## 2026-10-10
 
 - **refactor(fuzzy)!:** Mesin fuzzy disesuaikan dengan dokumen C501: rule base 3x3 (pH ASAM/OPTIMAL/BASA x NMI KERING/OPTIMAL/BASAH), inferensi MIN-MAX dengan tie-break berprioritas (menggantikan 20 rule + centroid), kelembapan kini berupa NMI dengan trigger/target per tanaman (`config/plant_moisture.js`; hanya Selada, Bayam, Pakcoy), kalkulator air/dolomit/sulfur mengikuti rumus C501, dan safety gate koreksi pH baru. `fuzzyIndex` kini 0-1 (kekuatan aturan). Response menambah `waterAction`, `phAction`, `phCorrection`. Lihat [backend/fuzzy-logic.md](backend/fuzzy-logic.md).

@@ -44,6 +44,7 @@ model Device {
   recommendations RecommendationLog[]
   notifications   Notification[]
   corrections     CorrectionLog[]
+  rawSensorLogs   RawSensorLog[]
 
   @@index([userId], map: "idx_devices_user_id")
   @@index([plantId], map: "idx_devices_plant_id")
@@ -73,6 +74,7 @@ model RecommendationLog {
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   @@index([deviceId, createdAt(sort: Desc)], map: "idx_recommendation_logs_device_created")
+  @@index([createdAt], map: "idx_recommendation_logs_created_at")
 
   @@map("recommendation_logs")
 }
@@ -101,6 +103,8 @@ model RawSensorLog {
   ph        Float    @db.DoublePrecision
   moisture  Float    @db.DoublePrecision
   isDev     Boolean  @default(false) @map("is_dev")
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   @@id([timestamp, id])
   @@index([deviceId, timestamp(sort: Desc)], map: "idx_raw_sensor_logs_device_timestamp")
@@ -138,6 +142,14 @@ enum CorrectionMethod {
   @@map("correction_method")
 }
 
+enum NotificationType {
+  warning
+  success
+  info
+
+  @@map("notification_type")
+}
+
 enum DeviceStatus {
   ACTIVE
   INACTIVE
@@ -151,13 +163,14 @@ model Notification {
   deviceId  String   @map("device_id") @db.Uuid
   title     String   @db.VarChar(100)
   message   String   @db.Text
-  type      String   @db.VarChar(20)
+  type      NotificationType
   isRead    Boolean  @default(false) @map("is_read")
   createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
 
   device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   @@index([deviceId, createdAt(sort: Desc)], map: "idx_notifications_device_created")
+  @@index([createdAt], map: "idx_notifications_created_at")
 
   @@map("notifications")
 }
