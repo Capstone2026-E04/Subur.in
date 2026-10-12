@@ -13,7 +13,7 @@ console.log("====================================================");
 console.log("Simulator ini mensimulasikan perhitungan Fuzzy Logic");
 console.log("Mamdani untuk menentukan dosis penyiraman air, kapur,");
 console.log("atau sulfur secara dinamis berdasarkan jenis tanaman");
-console.log("dan preset polybag prototipe (20x20 cm, media 2 L).\n");
+console.log("dan preset polybag prototipe (30x30 cm, media 2 L).\n");
 
 function askQuestion(query) {
   return new Promise((resolve) => rl.question(query, resolve));

@@ -207,7 +207,7 @@ export default function DashboardPage() {
     },
     {
       label: "Ukuran Polybag",
-      value: "Standar (20x20 cm, 2L)",
+      value: "Standar (30x30 cm, 2L)",
       icon: MdWaterDrop,
       iconBg: "bg-sky-500",
     },

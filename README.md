@@ -14,7 +14,7 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 ## Fitur utama
 
 - Monitoring real-time: pH & kelembapan tanah dari perangkat IoT, di-streaming ke dashboard lewat Server-Sent Events.
-- Rekomendasi berbasis fuzzy logic: mesin inferensi Mamdani menerjemahkan kondisi tanah menjadi aksi konkret (volume air, dosis kapur, atau dosis sulfur), dipersonalisasi per tanaman pada preset polybag prototipe (20x20 cm, media 2 L).
+- Rekomendasi berbasis fuzzy logic: mesin inferensi Mamdani menerjemahkan kondisi tanah menjadi aksi konkret (volume air, dosis kapur, atau dosis sulfur), dipersonalisasi per tanaman pada preset polybag prototipe (30x30 cm, media 2 L).
 - Login dengan Google: autentikasi OAuth2 tanpa kelola password, disinkronkan ke sesi JWT backend.
 - Riwayat & analitik: riwayat rekomendasi dan grafik histori sensor per perangkat.
 - Notifikasi otomatis: peringatan real-time saat data sensor tidak valid atau perangkat bermasalah, dikirim ke dashboard (SSE) sekaligus Telegram.

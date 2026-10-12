@@ -4,7 +4,7 @@ Mengekspos mesin rekomendasi fuzzy logic ([architecture/system-design.md](../arc
 
 ## `POST /api/recommendations/simulate`
 
-Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyentuh device sungguhan atau menyimpan log. Berguna untuk menguji kombinasi pH, NMI, dan tanaman pada preset polybag prototipe (20x20 cm, media 2 L).
+Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyentuh device sungguhan atau menyimpan log. Berguna untuk menguji kombinasi pH, NMI, dan tanaman pada preset polybag prototipe (30x30 cm, media 2 L).
 
 **Perlu autentikasi:** Tidak
 

@@ -91,7 +91,7 @@ Contoh (bayam, pH 5,75, NMI 70): `C1, C2, C4, C5` masing-masing 0,5, jadi air = 
 
 ## Kalkulator
 
-Semua kalkulator mengikuti rumus C501 untuk media **2 L** dan memakai preset polybag tunggal (20x20 cm, media 2 L; `src/ai/config/polybag.js`).
+Semua kalkulator mengikuti rumus C501 untuk media **2 L** dan memakai preset polybag tunggal (30x30 cm, media 2 L; `src/ai/config/polybag.js`).
 
 | Kalkulator | Rumus | Batas |
 |------------|-------|-------|

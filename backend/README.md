@@ -63,7 +63,7 @@ Daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
 
 ### 3. Simulasi fuzzy logic & rekomendasi
 * **Endpoint:** `POST /api/recommendations/simulate`
-* **Deskripsi:** Menyimulasikan kalkulasi logika fuzzy Mamdani dan menghitung dosis penyiraman air, kapur dolomit, dan sulfur elemental secara dinamis berdasarkan jenis tanaman pada preset polybag prototipe (20x20 cm, media 2 L).
+* **Deskripsi:** Menyimulasikan kalkulasi logika fuzzy Mamdani dan menghitung dosis penyiraman air, kapur dolomit, dan sulfur elemental secara dinamis berdasarkan jenis tanaman pada preset polybag prototipe (30x30 cm, media 2 L).
 * **Request Body:**
   ```json
   {

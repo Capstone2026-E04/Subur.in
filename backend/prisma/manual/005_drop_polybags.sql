@@ -1,4 +1,4 @@
--- Preset polybag kini konstanta kode (src/ai/config/polybag.js): 20x20 cm, media 2 L.
+-- Preset polybag kini konstanta kode (src/ai/config/polybag.js): 30x30 cm, media 2 L.
 BEGIN;
 
 ALTER TABLE "devices" DROP COLUMN IF EXISTS "polybag_id";
