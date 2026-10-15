@@ -58,7 +58,7 @@ function Logo() {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
 
   return (
@@ -68,7 +68,10 @@ export default function Sidebar() {
           <Logo />
 
           <nav className="mt-6 flex flex-col gap-0.5">
-            {NAV_ITEMS.filter((item) => !item.hidden).map((item) => {
+            {NAV_ITEMS.filter(
+              (item) =>
+                !item.hidden && (!item.superadminOnly || role === "SUPERADMIN"),
+            ).map((item) => {
               const Icon = item.icon;
               return (
                 <SidebarLink

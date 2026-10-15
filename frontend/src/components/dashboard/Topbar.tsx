@@ -30,6 +30,7 @@ const labelMap: Record<string, string> = {
   notifications: "Notifikasi",
   settings: "Pengaturan",
   profile: "Profil",
+  superadmin: "Superadmin",
 };
 
 export default function Topbar({ user }: TopbarProps) {

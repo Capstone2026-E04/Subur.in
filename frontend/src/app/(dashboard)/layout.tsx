@@ -4,21 +4,7 @@ import DashboardMotion from "@/components/dashboard/DashboardMotion";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
-import { API_URL } from "@/services/api";
-
-async function fetchUserProfile(backendToken: string) {
-  try {
-    const res = await fetch(`${API_URL}/api/users/me`, {
-      headers: { Authorization: `Bearer ${backendToken}` },
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data?.data?.user ?? null;
-  } catch {
-    return null;
-  }
-}
+import { fetchUserProfile } from "@/lib/backendProfile";
 
 export default async function DashboardLayout({
   children,
@@ -45,7 +31,7 @@ export default async function DashboardLayout({
   return (
     <SessionProvider session={session} basePath="/api/nextauth">
       <div className="flex h-dvh flex-col overflow-hidden bg-neutral-100 md:flex-row">
-        <Sidebar />
+        <Sidebar role={backendUser?.role} />
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <Topbar user={freshUser} />
           <DashboardMotion className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">

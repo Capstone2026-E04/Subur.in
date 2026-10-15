@@ -8,6 +8,7 @@ import {
   MdComputer,
   MdAutoAwesome,
   MdDeveloperMode,
+  MdAdminPanelSettings,
 } from "react-icons/md";
 import { IconType } from "react-icons";
 
@@ -16,6 +17,7 @@ export interface NavItem {
   href: string;
   icon: IconType;
   hidden?: boolean;
+  superadminOnly?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -58,6 +60,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Dev Mode",
     href: "/dashboard/dev-mode",
     icon: MdDeveloperMode,
+  },
+  {
+    label: "Superadmin",
+    href: "/dashboard/superadmin",
+    icon: MdAdminPanelSettings,
+    superadminOnly: true,
   },
   {
     label: "Profil",
