@@ -50,3 +50,15 @@ export async function disconnectTelegram(token: string): Promise<void> {
   });
   await handleResponse(res);
 }
+
+export async function createPassword(
+  token: string,
+  payload: { password: string; confirmPassword: string },
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/users/me/password`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify(payload),
+  });
+  await handleResponse(res);
+}

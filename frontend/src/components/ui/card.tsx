@@ -15,12 +15,12 @@ const CardContext = React.createContext<CardContextType>({
 const useCardContext = () => React.useContext(CardContext);
 
 const cardVariants = cva(
-  "flex flex-col items-stretch text-card-foreground rounded-2xl",
+  "flex flex-col items-stretch text-card-foreground rounded-3xl",
   {
     variants: {
       variant: {
         default:
-          "bg-card border border-border shadow-[0_1px_2px_rgba(28,45,27,0.04),0_4px_16px_-6px_rgba(28,45,27,0.08)]",
+          "bg-card border border-neutral-200 shadow-[0_1px_2px_rgba(28,45,27,0.04),0_4px_16px_-6px_rgba(28,45,27,0.08)]",
         accent: "bg-muted shadow-xs p-1",
       },
     },
@@ -35,7 +35,7 @@ const cardHeaderVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-b border-border",
+        default: "border-b border-neutral-200",
         accent: "",
       },
     },
@@ -60,7 +60,7 @@ const cardContentVariants = cva("grow p-5", {
 const cardFooterVariants = cva("flex items-center px-5 min-h-14", {
   variants: {
     variant: {
-      default: "border-t border-border",
+      default: "border-t border-neutral-200",
       accent: "bg-card rounded-b-xl mt-[2px]",
     },
   },

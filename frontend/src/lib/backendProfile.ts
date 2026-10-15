@@ -6,6 +6,8 @@ export interface BackendProfile {
   email: string;
   avatarUrl: string | null;
   role: "USER" | "SUPERADMIN";
+  hasPassword: boolean;
+  createdAt: string;
 }
 
 export async function fetchUserProfile(

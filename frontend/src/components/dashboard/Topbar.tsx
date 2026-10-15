@@ -140,7 +140,7 @@ export default function Topbar({ user }: TopbarProps) {
               id="topbar-device-selector"
               value={selectedDeviceId ?? ""}
               onChange={(e) => setSelectedDeviceId(e.target.value)}
-              className="focus:ring-primary/30 w-40 cursor-pointer appearance-none truncate rounded-full border border-black/5 bg-white py-2 pr-9 pl-4 text-sm font-medium text-neutral-900 shadow-sm focus:ring-2 focus:outline-none sm:w-56"
+              className="focus:ring-primary/30 min-h-11 w-40 cursor-pointer appearance-none truncate rounded-full border border-black/5 bg-white py-2 pr-9 pl-4 text-sm font-medium text-neutral-900 shadow-sm focus:ring-2 focus:outline-none sm:w-56"
             >
               {devices.map((device) => (
                 <option key={device.id} value={device.id}>
@@ -158,7 +158,7 @@ export default function Topbar({ user }: TopbarProps) {
         <Link
           href="/dashboard/notifications"
           aria-label="Notifikasi"
-          className="hover:text-primary relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center text-neutral-900 transition-colors"
+          className="hover:text-primary relative flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-900 transition-colors"
         >
           <MdNotifications size={26} />
           {unreadCount > 0 && (

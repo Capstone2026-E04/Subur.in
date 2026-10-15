@@ -1,4 +1,5 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { API_URL } from "@/services/api";
 
@@ -7,10 +8,69 @@ process.env.AUTH_URL =
     ? process.env.AUTH_URL_PROD
     : process.env.AUTH_URL_DEV;
 
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+
+class InvalidCredentialsError extends CredentialsSignin {
+  code = "invalid_credentials";
+}
+
+class TooManyAttemptsError extends CredentialsSignin {
+  code = "too_many_attempts";
+}
+
+class ServiceUnavailableError extends CredentialsSignin {
+  code = "service_unavailable";
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   basePath: "/api/nextauth",
+  session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
   providers: [
+    Credentials({
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const email =
+          typeof credentials?.email === "string" ? credentials.email : "";
+        const password =
+          typeof credentials?.password === "string" ? credentials.password : "";
+
+        if (!email || !password) throw new InvalidCredentialsError();
+
+        let response: Response;
+        try {
+          response = await fetch(`${API_URL}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+        } catch (error) {
+          console.error("Kesalahan koneksi ke backend saat login:", error);
+          throw new ServiceUnavailableError();
+        }
+
+        if (response.status === 429) throw new TooManyAttemptsError();
+        if (response.status >= 500) throw new ServiceUnavailableError();
+        if (!response.ok) throw new InvalidCredentialsError();
+
+        const resData = await response.json();
+        if (!resData?.success || !resData?.data?.token) {
+          throw new InvalidCredentialsError();
+        }
+
+        const { token, user } = resData.data;
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.avatarUrl ?? null,
+          backendToken: token,
+        };
+      },
+    }),
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,

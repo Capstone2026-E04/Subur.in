@@ -180,6 +180,8 @@ export const SidebarLink = ({
         active ? "bg-primary-light" : "hover:bg-white/10",
         className,
       )}
+      aria-label={link.label}
+      title={link.label}
       aria-current={active ? "page" : undefined}
       {...props}
     >

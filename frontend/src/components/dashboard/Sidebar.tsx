@@ -18,6 +18,8 @@ function LogoutButton() {
   return (
     <button
       onClick={() => signOut({ callbackUrl: "/login" })}
+      aria-label="Keluar"
+      title="Keluar"
       className="flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-[#8b3a3a] px-4 py-3 text-base font-medium text-white transition-colors hover:bg-[#9c4343]"
     >
       <MdOutlineLogout size={22} className="shrink-0" />
@@ -67,7 +69,7 @@ export default function Sidebar({ role }: { role?: string }) {
         <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
           <Logo />
 
-          <nav className="mt-6 flex flex-col gap-0.5">
+          <nav aria-label="Menu utama" className="mt-6 flex flex-col gap-0.5">
             {NAV_ITEMS.filter(
               (item) =>
                 !item.hidden && (!item.superadminOnly || role === "SUPERADMIN"),

@@ -1,32 +1,10 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { MdEmail, MdCalendarMonth } from "react-icons/md";
+import { MdEmail, MdCalendarMonth, MdLock } from "react-icons/md";
 import EditNameForm from "@/components/dashboard/EditNameForm";
-import { API_URL } from "@/services/api";
+import { fetchUserProfile } from "@/lib/backendProfile";
+import CreatePasswordForm from "@/components/dashboard/CreatePasswordForm";
 import { Card } from "@/components/ui/card";
-
-interface BackendUser {
-  name?: string;
-  email?: string;
-  avatarUrl?: string;
-  createdAt?: string;
-}
-
-async function fetchUserProfile(
-  backendToken: string,
-): Promise<BackendUser | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/users/me`, {
-      headers: { Authorization: `Bearer ${backendToken}` },
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data?.data?.user ?? null;
-  } catch {
-    return null;
-  }
-}
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -106,6 +84,21 @@ export default async function ProfilePage() {
             <span className="text-sm text-gray-500">{createdAt}</span>
           </div>
         </div>
+      </Card>
+
+      <Card className="space-y-5 p-5">
+        <h2 className="text-primary text-sm font-semibold">Password</h2>
+
+        {backendUser?.hasPassword ? (
+          <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-gray-50 px-4 py-2.5">
+            <MdLock size={16} className="text-primary/60 shrink-0" />
+            <span className="text-sm text-gray-500">
+              Password sudah diatur. Anda dapat masuk dengan email dan password.
+            </span>
+          </div>
+        ) : (
+          <CreatePasswordForm backendToken={backendToken} />
+        )}
       </Card>
     </div>
   );

@@ -15,11 +15,11 @@ export default function PageHeader({
       className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"
     >
       <div className="min-w-0">
-        <h1 className="text-primary text-2xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
           {title}
         </h1>
         {description && (
-          <p className="mt-1 max-w-prose text-sm text-gray-500">
+          <p className="mt-1 max-w-prose text-sm text-neutral-700">
             {description}
           </p>
         )}
