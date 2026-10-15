@@ -19,34 +19,36 @@ interface SensorTrendCardProps {
   color: string;
 }
 
-const DAYS = 7;
-const DAY_MS = 24 * 60 * 60 * 1000;
+const MINUTES = 10;
+const MINUTE_MS = 60 * 1000;
 const TIME_ZONE = "Asia/Jakarta";
 
-const dayKey = (d: Date) =>
-  d.toLocaleDateString("en-CA", { timeZone: TIME_ZONE });
-const dayLabel = (d: Date) =>
-  d.toLocaleDateString("id-ID", { weekday: "short", timeZone: TIME_ZONE });
+const minuteLabel = (ms: number) =>
+  new Date(ms).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: TIME_ZONE,
+  });
 
-function buildDailyAverages(
+function buildMinuteAverages(
   history: SensorHistoryItem[],
   metric: "ph" | "moisture",
 ) {
-  const sums = new Map<string, { total: number; count: number }>();
+  const sums = new Map<number, { total: number; count: number }>();
   for (const item of history) {
-    const key = dayKey(new Date(item.timestamp));
-    const entry = sums.get(key) ?? { total: 0, count: 0 };
+    const bucket = Math.floor(new Date(item.timestamp).getTime() / MINUTE_MS);
+    const entry = sums.get(bucket) ?? { total: 0, count: 0 };
     entry.total += item[metric];
     entry.count += 1;
-    sums.set(key, entry);
+    sums.set(bucket, entry);
   }
 
-  const now = Date.now();
-  return Array.from({ length: DAYS }, (_, i) => {
-    const date = new Date(now - (DAYS - 1 - i) * DAY_MS);
-    const entry = sums.get(dayKey(date));
+  const current = Math.floor(Date.now() / MINUTE_MS);
+  return Array.from({ length: MINUTES }, (_, i) => {
+    const bucket = current - (MINUTES - 1 - i);
+    const entry = sums.get(bucket);
     return {
-      label: dayLabel(date),
+      label: minuteLabel(bucket * MINUTE_MS),
       value: entry ? entry.total / entry.count : null,
     };
   });
@@ -59,7 +61,7 @@ export default function SensorTrendCard({
   currentValue,
   color,
 }: SensorTrendCardProps) {
-  const data = buildDailyAverages(history, metric);
+  const data = buildMinuteAverages(history, metric);
   const domain: [number, number] = metric === "ph" ? [0, 14] : [0, 100];
   const display =
     currentValue === null

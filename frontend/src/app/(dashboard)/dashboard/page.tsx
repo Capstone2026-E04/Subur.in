@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { MdOutlineDeviceHub, MdAdd } from "react-icons/md";
 import { useDevices } from "@/hooks/useDevices";
@@ -23,7 +23,7 @@ import type {
 } from "@/types/device";
 import { Card } from "@/components/ui/card";
 
-const HISTORY_LIMIT = 500;
+const HISTORY_LIMIT = 120;
 
 function DashboardSkeleton() {
   return (
@@ -188,6 +188,23 @@ export default function DashboardPage() {
     };
   }, [token, selectedDevice?.id]);
 
+  const trendHistory = useMemo(() => {
+    if (!selectedDevice || ph === null || moisture === null || !lastUpdated) {
+      return history;
+    }
+    if (history.some((item) => item.timestamp === lastUpdated)) return history;
+    return [
+      ...history,
+      {
+        id: -1,
+        deviceId: selectedDevice.id,
+        timestamp: lastUpdated,
+        ph,
+        moisture,
+      },
+    ];
+  }, [history, selectedDevice, ph, moisture, lastUpdated]);
+
   if (isLoading) {
     return <DashboardSkeleton />;
   }
@@ -230,14 +247,14 @@ export default function DashboardPage() {
         <SensorTrendCard
           title="Tingkat pH Tanah"
           metric="ph"
-          history={history}
+          history={trendHistory}
           currentValue={currentPh}
           color="#2f6f3a"
         />
         <SensorTrendCard
           title="Kelembapan Tanah"
           metric="moisture"
-          history={history}
+          history={trendHistory}
           currentValue={currentMoisture}
           color="#4cb84c"
         />
