@@ -18,9 +18,9 @@ function LogoutButton() {
   return (
     <button
       onClick={() => signOut({ callbackUrl: "/login" })}
-      className="flex w-full cursor-pointer items-center gap-3 rounded-lg bg-red-800 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
+      className="flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-[#8b3a3a] px-4 py-3 text-base font-medium text-white transition-colors hover:bg-[#9c4343]"
     >
-      <MdOutlineLogout size={18} className="shrink-0" />
+      <MdOutlineLogout size={22} className="shrink-0" />
       <motion.span
         animate={{
           opacity: open ? 1 : 0,
@@ -50,7 +50,7 @@ function Logo() {
           opacity: open ? 1 : 0,
           display: open ? "inline-block" : "none",
         }}
-        className="!m-0 !p-0 text-lg font-semibold tracking-tight whitespace-pre text-white"
+        className="!m-0 !p-0 text-2xl font-bold tracking-tight whitespace-pre text-[#f1e8a6]"
       >
         Subur.in
       </motion.span>
@@ -77,7 +77,9 @@ export default function Sidebar() {
                   link={{
                     label: item.label,
                     href: item.href,
-                    icon: <Icon size={18} className="shrink-0" />,
+                    icon: (
+                      <Icon size={24} className="shrink-0 text-[#f5eec3]" />
+                    ),
                   }}
                 />
               );

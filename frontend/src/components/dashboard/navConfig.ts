@@ -20,7 +20,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   {
-    label: "Dashboard",
+    label: "Ringkasan",
     href: "/dashboard",
     icon: MdDashboard,
   },
