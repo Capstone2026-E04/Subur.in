@@ -2,7 +2,7 @@
 
 ## Request REST terautentikasi
 
-Sebagian besar endpoint memerlukan JWT yang diterbitkan oleh `POST /api/auth/google`, dikirim sebagai `Authorization: Bearer <token>` dan diverifikasi oleh [`auth.middleware.js`](../../backend/src/middlewares/auth.middleware.js).
+Sebagian besar endpoint memerlukan JWT yang diterbitkan oleh `POST /api/auth/login`, `POST /api/auth/register`, atau `POST /api/auth/google`, dikirim sebagai `Authorization: Bearer <token>` dan diverifikasi oleh [`auth.middleware.js`](../../backend/src/middlewares/auth.middleware.js).
 
 ```mermaid
 sequenceDiagram
@@ -47,6 +47,54 @@ sequenceDiagram
     DB-->>Backend: user
     Backend-->>NextAuth: { token (JWT, 7d), user }
     NextAuth-->>Browser: session with backendToken
+```
+
+## Registrasi dan login email + password
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant NextAuth as Frontend NextAuth
+    participant Backend
+    participant DB
+
+    Browser->>Backend: POST /api/auth/register { name, email, password }
+    Backend->>DB: cari email, buat User (passwordHash scrypt, tanpa avatar)
+    Backend-->>Browser: 201 { token, user }
+    Browser->>NextAuth: signIn("credentials", { email, password })
+    NextAuth->>Backend: POST /api/auth/login
+    Backend->>DB: cari user, verifikasi hash
+    alt gagal
+        Backend-->>NextAuth: 401 atau 429
+        NextAuth-->>Browser: error code (invalid_credentials / too_many_attempts)
+    else berhasil
+        Backend-->>NextAuth: { token (JWT, 7d), user }
+        NextAuth-->>Browser: cookie sesi httpOnly berisi backendToken
+    end
+```
+
+Jika user yang mendaftar dengan email + password kemudian memakai Google dengan email yang sama, `POST /api/auth/google` menautkan `googleId` ke akun itu, mengisi avatar dari Google bila kosong, dan menghapus password lama ([ADR-009](../decisions/adr-009-email-password-auth.md)).
+
+## Request Superadmin
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant AuthMiddleware
+    participant SuperadminMiddleware
+    participant Controller
+    participant DB
+
+    Client->>AuthMiddleware: GET /api/superadmin/users (Bearer jwt)
+    AuthMiddleware->>SuperadminMiddleware: next() dengan req.user
+    SuperadminMiddleware->>DB: select role where id = req.user.id
+    alt bukan SUPERADMIN
+        SuperadminMiddleware-->>Client: 403
+    else SUPERADMIN
+        SuperadminMiddleware->>Controller: next()
+        Controller->>DB: findMany + count (where, orderBy dari daftar putih)
+        Controller-->>Client: 200 { data: { items }, meta }
+    end
 ```
 
 ## Telemetri perangkat (MQTT -> DB/Cache -> SSE)

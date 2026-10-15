@@ -2,6 +2,18 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-15
+
+- **feat(auth)!:** Registrasi dan login dengan email + password (`POST /api/auth/register`, `POST /api/auth/login`) berdampingan dengan Google Sign-In. Password di-hash scrypt (`utils/password.js`), pesan galat login seragam, dan percobaan gagal dibatasi 10 per email per 15 menit (dependensi baru `express-rate-limit`). `users.google_id` menjadi nullable dan `users.password_hash` ditambahkan. **Jalankan `backend/prisma/manual/008_email_password_auth.sql` di Supabase SEBELUM deploy** (rollback tersedia). Lihat [ADR-009](decisions/adr-009-email-password-auth.md).
+- **feat(auth):** Akun email + password yang masuk dengan Google ditautkan ke akun yang sama dan mengambil avatar Google bila kosong. Password lama dihapus pada penautan pertama untuk mencegah pra-pembajakan akun (email saat registrasi tidak diverifikasi); user membuat password lagi dari profil.
+- **feat(users):** `POST /api/users/me/password` membuat password untuk akun Google (sekali, form dua input di halaman Profil). `GET /api/users/me` menambah `role` dan `hasPassword`.
+- **feat(frontend):** Login memakai Credentials provider NextAuth dan halaman `/register`; sesi NextAuth diset 7 hari agar sama dengan JWT backend (sebelumnya 30 hari).
+- **feat(superadmin)!:** Kolom `users.role` (enum `user_role`: `USER`, `SUPERADMIN`, default `USER`) dan endpoint `/api/superadmin/*` untuk melihat seluruh data (ringkasan, daftar perangkat, riwayat sensor, tujuh tabel dengan paginasi, sort, pencarian, filter, rentang tanggal). Role dibaca dari database pada setiap request dan hanya diubah lewat Supabase Dashboard. Menu dan halaman `/dashboard/superadmin` hanya untuk `SUPERADMIN` (grafik pH dan kelembapan dengan pilihan perangkat, tabel semua data). **Jalankan `backend/prisma/manual/007_user_role.sql` di Supabase SEBELUM deploy** (rollback tersedia). Lihat [api/superadmin.md](api/superadmin.md) dan [ADR-010](decisions/adr-010-superadmin-role.md).
+- **feat(frontend):** Dashboard Ringkasan dan Perangkat disesuaikan dengan desain Figma: sidebar dan topbar baru (dropdown perangkat di topbar, state bersama lewat Zustand `useSelectedDeviceStore`), kartu rekomendasi treatment, bar pH, gauge kelembapan, dan grafik tren rata-rata per menit (10 menit terakhir) dengan pembacaan realtime. `SensorMonitorPanel` dan `StatCard` dihapus.
+- **feat(frontend):** Halaman login dan register didesain ulang (`AuthShell`, animasi GSAP); `Card` dashboard memakai `rounded-3xl`; aksesibilitas sidebar dan topbar (label ikon, target sentuh 44 px).
+- **test:** 57 test baru untuk password, auth, role superadmin, dan endpoint superadmin (backend 239 test).
+- **docs:** Dokumentasi autentikasi, users, skema, migrasi, routing, state, komponen, design system, alur API, dan troubleshooting diperbarui; ditambah [api/superadmin.md](api/superadmin.md), [ADR-009](decisions/adr-009-email-password-auth.md), dan [ADR-010](decisions/adr-010-superadmin-role.md).
+
 ## 2026-10-12
 
 - **perf(db)!:** Indeks `created_at` pada `recommendation_logs` dan `notifications` untuk cron pembersihan; FK `raw_sensor_logs.device_id -> devices.id` (ON DELETE CASCADE); `notifications.type` menjadi enum `notification_type` (`warning`, `success`, `info`). **Jalankan `backend/prisma/manual/006_indexes_fk_enum.sql` di Supabase SEBELUM deploy** (rollback tersedia), karena `prisma db push` tidak bisa mengubah varchar menjadi enum tanpa kehilangan data.

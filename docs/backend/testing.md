@@ -32,7 +32,9 @@ src/__tests__/
 │   │   └── recommendation.test.js   Step 8 dan 11: hasil end-to-end lewat service
 │   └── services/
 │       └── recommendation.service.test.js   riwayat koreksi, konfigurasi prototipe, validasi input
-├── controllers/                     correction, device, user
+├── controllers/                     auth, correction, device, superadmin, user
+├── middlewares/                     superadmin
+├── utils/                           password
 ├── cron/                            database_cleanup_cron
 ├── mqtt/subscribers/                sensor_subscriber
 ├── services/                        dev_mode.service

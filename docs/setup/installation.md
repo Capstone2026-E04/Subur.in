@@ -27,6 +27,14 @@ npm run db:seed          # seed data plants
 npm run dev              # nodemon, http://localhost:3000
 ```
 
+Sebelum menjalankan backend, terapkan SQL manual di [`backend/prisma/manual/`](../../backend/prisma/manual) (001 sampai 008) lewat Supabase SQL Editor; `prisma db push` tidak mencakup CHECK constraint, RLS, kolom `users.role`, dan `users.password_hash`. Urutan dan catatannya ada di [database/migration.md](../database/migration.md). Tanpa 007 dan 008, `GET /api/users/me` gagal.
+
+Untuk menjadikan satu user Superadmin (menu dan data seluruh database), jalankan di SQL Editor setelah user itu pernah login:
+
+```sql
+UPDATE public.users SET role = 'SUPERADMIN' WHERE email = 'budi@gmail.com';
+```
+
 ## 3. Frontend
 
 ```bash

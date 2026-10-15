@@ -41,3 +41,34 @@ Telusuri pipeline secara berurutan:
 ## `npx prisma migrate dev` / `db push` gagal secara lokal
 
 Prisma memerlukan `DIRECT_URL` (non-pooled) untuk perubahan schema; connection string berbasis pool (misalnya melalui PgBouncer/pooler Supabase) sering tidak mendukung session-level lock yang dibutuhkan migrasi. Pastikan `DATABASE_URL` dan `DIRECT_URL` sudah diset sesuai [environment.md](environment.md).
+
+## Login email + password ditolak (`Email atau password salah.`)
+
+- Akun yang awalnya mendaftar lewat Google belum punya password. Masuk dengan Google, lalu buat password di halaman Profil (kartu "Password").
+- Akun email + password yang kemudian masuk dengan Google kehilangan password lamanya pada penautan pertama ([ADR-009](../decisions/adr-009-email-password-auth.md)); buat password lagi dari Profil.
+- Pesan yang sama dipakai untuk email tidak terdaftar, sehingga tidak bisa membedakan penyebabnya dari respons.
+
+## Login mengembalikan `429`
+
+Lebih dari 10 percobaan gagal untuk email yang sama dalam 15 menit. Tunggu jendela waktu berakhir; penghitung berada di memori backend, jadi restart backend juga mengosongkannya.
+
+## `GET /api/users/me` error (`500`) setelah deploy
+
+Backend versi baru membaca `users.role` dan `users.password_hash`. Jalankan `007_user_role.sql` dan `008_email_password_auth.sql` di Supabase SQL Editor **sebelum** deploy ([database/migration.md](../database/migration.md)). Gejala di log: Prisma mengeluh kolom `role` atau `password_hash` tidak ada.
+
+## Menu Superadmin tidak muncul, atau `/dashboard/superadmin` mengarahkan ke `/dashboard`
+
+Role akun belum `SUPERADMIN`, atau backend gagal dimuat saat layout mengambil profil (gagal tertutup). Cek dan atur role lewat Supabase:
+
+```sql
+SELECT email, role FROM public.users;
+UPDATE public.users SET role = 'SUPERADMIN' WHERE email = 'budi@gmail.com';
+```
+
+Role dibaca dari database pada setiap request, jadi tidak perlu login ulang. Endpoint `/api/superadmin/*` yang mengembalikan `403` berarti akun bukan `SUPERADMIN`.
+
+## Dashboard tidak menampilkan data dan kartu rekomendasi berputar terus
+
+`GET /api/sensors/:id/latest` dan `GET /api/devices/:id/recommendation` memakai Redis. Bila Redis tidak terjangkau (misalnya `REDIS_HOST=host.docker.internal` dijalankan di luar Docker, atau Docker Desktop mati), request menggantung dan log backend dipenuhi `connect ETIMEDOUT` serta `Reached the max retries per request limit`. Endpoint yang tidak memakai Redis (`/api/devices`, `/api/plants`, `/api/sensors/:id/history`) tetap normal. Periksa `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, atau jalankan Redis lokal dan arahkan `.env` ke sana.
+
+Jika hanya kartu rekomendasi yang kosong dengan pesan "Belum Ada Rekomendasi", itu normal bila pembacaan terakhir lebih tua dari 2 x `sensorInterval` menit (sensor mati).

@@ -8,7 +8,7 @@ Primitive lokal bergaya shadcn/ui (bukan diinstal dari registry, dibuat manual d
 
 | Component | Tujuan |
 |---|---|
-| `card.tsx` | Primitive `Card` / `CardHeader` / `CardContent` / `CardFooter` / `CardTitle` dengan variant `default`/`accent`, digunakan sebagai basis untuk hampir semua panel dashboard |
+| `card.tsx` | Primitive `Card` / `CardHeader` / `CardContent` / `CardFooter` / `CardTitle` dengan variant `default`/`accent` (sudut `rounded-3xl`, border netral), digunakan sebagai basis untuk hampir semua panel dashboard |
 | `sidebar.tsx` | Primitive sidebar desktop yang dapat di-collapse + drawer mobile slide-in (`Sidebar`, `SidebarBody`, `SidebarLink`, `useSidebar`), digunakan oleh `components/dashboard/Sidebar.tsx` |
 
 ## `components/common/`
@@ -22,12 +22,16 @@ Widget khusus dashboard, sebagian besar digerakkan oleh [`navConfig.ts`](../../f
 | Component | Tujuan |
 |---|---|
 | `Sidebar.tsx` / `Topbar.tsx` | Chrome navigasi dashboard, dirender dari `NAV_ITEMS` di `navConfig.ts` |
-| `StatCard.tsx` | Tile stat/metrik yang dapat digunakan ulang (misalnya jumlah device, sensor aktif) |
-| `SensorGaugeCard.tsx` | Tampilan gaya gauge untuk satu nilai sensor live (pH atau kelembapan) |
+| `RecommendationSummaryCard.tsx` | Kartu "Rekomendasi Treatment Saat ini": teks aksi, tiga tile Air/Sulfur/Kapur (merah = kurangi air, biru = tambah air, hijau = tambah dosis, abu-abu = tidak perlu), dan waktu pembaruan terakhir; menangani status memuat dan belum ada data |
+| `PhLevelCard.tsx` | Bar gradasi pH 0-14 dengan penanda nilai dan lencana klasifikasi (`classifyPh`) |
+| `MoistureLevelCard.tsx` | Gauge setengah lingkaran kelembapan dengan jarum dan lencana klasifikasi (`classifyNmi`) |
+| `SensorTrendCard.tsx` | Grafik garis rata-rata per menit untuk 10 menit terakhir (pH atau kelembapan) dari riwayat sensor; pembacaan realtime ikut ditambahkan oleh halaman |
+| `sensorStatus.ts` | `classifyPh`, `classifyNmi`, `TONES`, `formatTimestamp`, dan rentang pH bawaan; dipakai kartu-kartu di atas |
+| `SensorGaugeCard.tsx` | Gauge melingkar untuk satu nilai sensor; saat ini hanya dipakai pratinjau landing page (`HeroPreview`) |
 | `SensorHistoryChart.tsx` | Time series berbasis Recharts untuk riwayat sensor (`GET /api/sensors/:id/history`) |
-| `SensorMonitorPanel.tsx` | Menggabungkan gauge + chart + status live untuk satu device; klasifikasi gauge pH dan NMI mengikuti rentang pH dan trigger NMI tanaman (props `phRange`, `nmiTrigger`) |
 | `LiveLocationTracker.tsx` | Indikator status yang diperbarui secara live, digerakkan oleh `useSensorRealtime`/`useDeviceStatus` |
 | `EditNameForm.tsx` | Form inline untuk mengedit nama tampilan pengguna (`PATCH /api/users/me`) |
+| `CreatePasswordForm.tsx` | Dua input (password baru dan konfirmasi) untuk membuat password pada akun yang belum punya (`POST /api/users/me/password`); hanya dirender di profil bila `hasPassword` false |
 
 ## `components/devices/`
 
@@ -35,10 +39,25 @@ UI manajemen device, semuanya didukung oleh [`useDevices`](../../frontend/src/ho
 
 | Component | Tujuan |
 |---|---|
-| `DeviceCard.tsx` | Kartu ringkasan untuk satu device terdaftar |
+| `DeviceCard.tsx` | Satu baris tabel "Daftar Perangkat": nama, status, tanaman, terakhir aktif, tombol Edit dan Hapus |
 | `ConnectDeviceModal.tsx` | Alur klaim untuk device yang baru ditemukan (`POST /api/devices`) |
 | `EditDeviceModal.tsx` | Edit label/plant/interval (`PATCH /api/devices/:id`) |
 | `DeleteConfirmDialog.tsx` | Dialog konfirmasi hapus generik, digunakan ulang untuk penghapusan device |
+
+## `components/auth/`
+
+| Component | Tujuan |
+|---|---|
+| `AuthShell.tsx` | Tata letak dua kolom untuk `/login` dan `/register`: panel merek hijau (pesan utama dan tiga manfaat) di kiri, form di kanan; panel kiri disembunyikan di bawah `lg` dan diganti logo ringkas. Animasi masuk GSAP (`useGSAP` + `matchMedia`, hormat reduced-motion) lewat atribut `data-auth-brand` dan anak langsung `data-auth-form` |
+| `AuthInput.tsx` | Input berlabel (label di atas, tinggi minimal 44 px, ring fokus) untuk form autentikasi dan form password |
+
+## `components/superadmin/`
+
+| Component | Tujuan |
+|---|---|
+| `SuperadminPanel.tsx` | Halaman Superadmin: tab per tabel dengan jumlah baris, pencarian (debounce 400 ms), filter per tab, filter perangkat, rentang tanggal, tombol Reset, header kolom yang dapat diurutkan (naik, turun, bawaan), dan paginasi. Sort, filter, dan pencarian dijalankan di server ([api/superadmin.md](../api/superadmin.md)) |
+| `SuperadminSensorCharts.tsx` | Pemilih perangkat (semua user) dan dua grafik pH dan kelembapan dari 100 pembacaan terakhir |
+| `superadminTabs.ts` | Konfigurasi tab: kolom, format sel, kolom yang dapat diurutkan, dan filter per resource |
 
 ### `src/components/recommendations/`
 
@@ -49,6 +68,6 @@ UI manajemen device, semuanya didukung oleh [`useDevices`](../../frontend/src/ho
 
 ## Konvensi
 
-- Tambahkan entri navigasi dengan mengedit `navConfig.ts`; Sidebar dan Topbar dirender dari array tersebut secara otomatis tanpa perlu wiring route per-komponen. Set `hidden: true` untuk route yang harus dapat diakses tetapi tidak ditampilkan di nav (misalnya `/dashboard/profile`).
+- Tambahkan entri navigasi dengan mengedit `navConfig.ts`; Sidebar dan Topbar dirender dari array tersebut secara otomatis tanpa perlu wiring route per-komponen. Set `hidden: true` untuk route yang harus dapat diakses tetapi tidak ditampilkan di nav (misalnya `/dashboard/profile`), dan `superadminOnly: true` untuk item yang hanya boleh muncul bagi `SUPERADMIN` (disaring di `Sidebar.tsx` berdasarkan `role` dari backend; ini hanya kenyamanan UI, penegakan ada di server dan API).
 - Komponen yang membutuhkan data backend live melakukan fetch melalui `src/services/*` (wrapper Axios/fetch), bukan pemanggilan `fetch()` inline, lihat [state-management.md](state-management.md).
 - Semua komponen dashboard mengasumsikan sesi NextAuth yang sudah terautentikasi; komponen tersebut dirender di bawah layout route group `(dashboard)`, yang merupakan titik penegakan (enforcement) untuk autentikasi (lihat [routing.md](routing.md)).

@@ -7,7 +7,8 @@ Subur.in/
 ├── backend/
 │   ├── prisma/
 │   │   ├── schema.prisma        # Model data (lihat database-schema.md)
-│   │   └── seed.js              # Mengisi data awal plants
+│   │   ├── seed.js              # Mengisi data awal plants
+│   │   └── manual/              # SQL manual 001-008 (CHECK, RLS, migrasi data, role, password) + rollback/
 │   └── src/
 │       ├── ai/                  # Mesin rekomendasi fuzzy logic (logika murni, tanpa I/O)
 │       │   ├── config/          # Parameter fuzzy set, preset fisik, konstanta treatment
@@ -20,7 +21,8 @@ Subur.in/
 │       ├── cron/                # Job node-cron (manajemen partisi, pembersihan log lama)
 │       ├── database/connections/# Singleton Prisma client, Redis client (ioredis)
 │       ├── errors/              # AppError.js (error terklasifikasi: statusCode, isOperational)
-│       ├── middlewares/         # auth.middleware.js (verifikasi JWT), error.middleware.js (handler error terpusat)
+│       ├── middlewares/         # auth.middleware.js (verifikasi JWT), superadmin.middleware.js (role dari DB),
+│       │                        # login_rate_limit.middleware.js, error.middleware.js (handler error terpusat)
 │       ├── mqtt/
 │       │   ├── connection.js        # Setup MQTT client (EMQX via TLS)
 │       │   ├── publishers/          # Mempublikasikan konfigurasi device (interval sensor) ke perangkat
@@ -39,10 +41,12 @@ Subur.in/
 │       │   ├── session/             # Sesi bot berbasis Redis (bot_session:{telegramUserId}, TTL 5 menit)
 │       │   ├── middlewares/         # require_linked_device.middleware.js (guard akun/device tertaut)
 │       │   └── utils/                # parse_callback_data, format_message, format_chart (quickchart.io)
-│       ├── utils/               # response.js (sendSuccess/sendError, envelope response bersama)
+│       ├── utils/               # response.js (sendSuccess/sendError), password.js (hash scrypt dan validasi password)
 │       ├── __tests__/           # Test Jest tersentralisasi, mencerminkan struktur src/ (lihat backend/testing.md)
 │       │   ├── ai/                  # c501/ (test berbasis dokumen C501), services/ - mencerminkan src/ai/
-│       │   ├── controllers/         # correction, device, user
+│       │   ├── controllers/         # auth, correction, device, superadmin, user
+│       │   ├── middlewares/         # superadmin.middleware
+│       │   ├── utils/               # password
 │       │   ├── cron/ · mqtt/subscribers/ · services/
 │       │   └── telegram/            # session/, commands/, router.test.js - mencerminkan src/telegram/
 │       └── server.js            # Bootstrap aplikasi: Express, CORS, MQTT, Redis, inisialisasi cron
@@ -50,20 +54,25 @@ Subur.in/
 ├── frontend/
 │   └── src/
 │       ├── app/
-│       │   ├── (auth)/login/        # Route group login publik
+│       │   ├── (auth)/              # Route group publik: login/ dan register/
 │       │   ├── (dashboard)/dashboard/ # Route group terproteksi: overview, devices, plants,
-│       │   │                          # recommendations, analytics, notifications, settings, profile
+│       │   │                          # recommendations, analytics, notifications, settings, dev-mode,
+│       │   │                          # profile, superadmin (khusus SUPERADMIN)
 │       │   ├── api/nextauth/[...nextauth]/route.ts  # Handler NextAuth v5
 │       │   ├── layout.tsx / page.tsx
 │       │   └── globals.css          # Token tema Tailwind v4 (warna, font)
 │       ├── components/
 │       │   ├── common/              # Stub lama (Header/Sidebar/LoadingSpinner), saat ini kosong dan tidak dipakai
 │       │   ├── ui/                  # Primitif bergaya shadcn (Card, Sidebar collapsible) dibangun di atas class-variance-authority
-│       │   ├── dashboard/           # Widget khusus dashboard (StatCard, SensorGaugeCard, chart, nav)
+│       │   ├── auth/                # AuthShell, AuthInput (halaman login dan register)
+│       │   ├── dashboard/           # Widget dashboard (kartu rekomendasi, pH, kelembapan, tren, sidebar, topbar, nav)
+│       │   ├── superadmin/          # SuperadminPanel, SuperadminSensorCharts, superadminTabs
 │       │   └── devices/             # Modal/card manajemen device
 │       ├── context/                 # AuthContext.tsx
 │       ├── hooks/                   # useDevices, useDeviceStatus, usePlants, useSensorRealtime (client SSE)
-│       ├── lib/auth.ts              # Konfigurasi NextAuth v5 (Google provider, pertukaran token backend)
+│       ├── lib/                     # auth.ts (NextAuth v5: Google + Credentials, sesi 7 hari), backendProfile.ts,
+│       │                            # requireSuperadmin.ts (guard server untuk halaman Superadmin)
+│       ├── stores/                  # selectedDeviceStore.ts (Zustand: perangkat terpilih)
 │       ├── services/                # Wrapper Axios/fetch per resource backend
 │       ├── types/                   # Tipe TypeScript bersama
 │       └── utils/helpers.ts

@@ -15,7 +15,8 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 
 - Monitoring real-time: pH & kelembapan tanah dari perangkat IoT, di-streaming ke dashboard lewat Server-Sent Events.
 - Rekomendasi berbasis fuzzy logic: mesin inferensi Mamdani menerjemahkan kondisi tanah menjadi aksi konkret (volume air, dosis kapur, atau dosis sulfur), dipersonalisasi per tanaman pada preset polybag prototipe (30x30 cm, media 2 L).
-- Login dengan Google: autentikasi OAuth2 tanpa kelola password, disinkronkan ke sesi JWT backend.
+- Autentikasi ganda: daftar dan masuk dengan email + password, atau dengan Google. Akun email + password yang masuk dengan Google ditautkan ke akun yang sama (avatar diambil dari Google), dan akun Google bisa membuat password dari halaman profil. Sesi disimpan di cookie httpOnly NextAuth (7 hari) dan disinkronkan ke JWT backend.
+- Role Superadmin: user dengan role `SUPERADMIN` (diatur hanya lewat Supabase) mendapat menu khusus untuk melihat seluruh data database, lengkap dengan grafik pH dan kelembapan per perangkat serta tabel yang dapat diurutkan dan difilter.
 - Riwayat & analitik: riwayat rekomendasi dan grafik histori sensor per perangkat.
 - Notifikasi otomatis: peringatan real-time saat data sensor tidak valid atau perangkat bermasalah, dikirim ke dashboard (SSE) sekaligus Telegram.
 - Manajemen perangkat: klaim perangkat baru yang terdeteksi, atur interval pengiriman data, dan kelola beberapa perangkat sekaligus.
@@ -25,7 +26,7 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 
 | Layer         | Teknologi                                                                   |
 | ------------- | --------------------------------------------------------------------------- |
-| Frontend      | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, NextAuth v5, Recharts |
+| Frontend      | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, NextAuth v5, Recharts, GSAP, Zustand |
 | Backend       | Node.js, Express.js, Prisma ORM                                             |
 | Database      | PostgreSQL (Supabase)                                                       |
 | Cache         | Redis (self-hosted)                                                         |
@@ -80,6 +81,8 @@ cp .env.example .env.local
 npm run dev              # http://localhost:3001
 ```
 
+Setelah `prisma db push`, jalankan juga SQL di [`backend/prisma/manual/`](backend/prisma/manual) (001 sampai 008) lewat Supabase SQL Editor. Urutan dan catatannya ada di [`docs/database/migration.md`](docs/database/migration.md). Migrasi 007 (role) dan 008 (password) wajib sebelum backend terbaru dijalankan. Role `SUPERADMIN` diberikan manual dengan `UPDATE public.users SET role = 'SUPERADMIN' WHERE email = '...'`.
+
 ## Dokumentasi
 
 Dokumentasi lengkap ada di [`docs/`](docs/), terbagi per topik:
@@ -87,7 +90,7 @@ Dokumentasi lengkap ada di [`docs/`](docs/), terbagi per topik:
 | Topik                                | Deskripsi                                                                                                         |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | [`architecture/`](docs/architecture) | Desain sistem, struktur folder, skema database, alur API                                                          |
-| [`api/`](docs/api)                   | Referensi endpoint per resource (auth, users, devices, plants, recommendations, sensors, notifications) |
+| [`api/`](docs/api)                   | Referensi endpoint per resource (auth, users, superadmin, devices, plants, recommendations, sensors, notifications, telegram) |
 | [`setup/`](docs/setup)               | Instalasi, environment variable, deployment, troubleshooting                                                      |
 | [`frontend/`](docs/frontend)         | Design system, komponen, routing, state management                                                                |
 | [`backend/`](docs/backend)           | Coding standards, validasi, autentikasi, logging, testing                                                                  |

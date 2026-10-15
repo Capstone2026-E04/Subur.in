@@ -6,10 +6,11 @@ PostgreSQL (dihosting di Supabase), diakses melalui Prisma. Sumber skema: [`back
 
 | Model               | Tujuan                                                                                       |
 | ------------------- | -------------------------------------------------------------------------------------------- |
-| `User`              | Akun yang dibuat/disinkronkan melalui Google Sign-In                                         |
+| `User`              | Akun pengguna, dibuat lewat email + password atau Google Sign-In; memiliki `role` (`USER`/`SUPERADMIN`) |
 | `Device`            | Unit sensor IoT terdaftar, dimiliki oleh seorang user, terhubung ke sebuah plant    |
 | `Plant`             | Data referensi spesies tanaman (rentang/target toleransi pH)                                 |
 | `RecommendationLog` | Satu hasil rekomendasi fuzzy logic, terkait dengan sebuah device                             |
+| `CorrectionLog`     | Catatan koreksi pH (kapur/sulfur) yang diterapkan user pada sebuah device                    |
 | `RawSensorLog`      | Telemetri pH/kelembaban mentah, dipartisi per bulan untuk retensi/pembersihan                |
 | `Notification`      | Peringatan yang ditujukan ke user, terikat pada device (misalnya data sensor tidak valid)    |
 
@@ -22,10 +23,12 @@ erDiagram
     DEVICE ||--o{ RECOMMENDATION_LOG : produces
     DEVICE ||--o{ RAW_SENSOR_LOG : produces
     DEVICE ||--o{ NOTIFICATION : triggers
+    DEVICE ||--o{ CORRECTION_LOG : records
 
     USER {
         uuid id PK
-        varchar google_id UK
+        varchar google_id UK "nullable"
+        varchar password_hash "nullable"
         varchar name
         varchar email UK
         text avatar_url
@@ -33,6 +36,7 @@ erDiagram
         varchar telegram_link_code UK
         timestamptz telegram_link_code_expires_at
         bool telegram_notify_enabled
+        enum role "USER | SUPERADMIN"
     }
     DEVICE {
         uuid id PK
@@ -64,6 +68,16 @@ erDiagram
         float lime_dosage_gram
         float sulfur_dosage_gram
         bool reduce_watering
+        bool is_dev
+    }
+    CORRECTION_LOG {
+        uuid id PK
+        uuid device_id FK
+        enum type
+        enum method
+        float dose_gram
+        float ph_before
+        timestamptz applied_at
     }
     RAW_SENSOR_LOG {
         int id PK
@@ -71,24 +85,28 @@ erDiagram
         uuid device_id FK
         float ph
         float moisture
+        bool is_dev
     }
     NOTIFICATION {
         uuid id PK
         uuid device_id FK
         varchar title
         text message
-        varchar type
+        enum type
         bool is_read
     }
 ```
 
 ## Catatan
 
-- `Device.id` adalah natural key (varchar), yang mencocokkan identifier fisik perangkat alih-alih UUID yang dihasilkan otomatis, karena topik MQTT dan provisioning hardware merujuk langsung padanya.
+- `Device.id` adalah UUID surrogate key; kode fisik perangkat (yang dipakai topik MQTT dan provisioning hardware) disimpan di `Device.deviceCode` (`device_code`, unik).
 - Relasi `Device` -> `Plant` menggunakan `onDelete: Restrict`: plant yang sedang digunakan oleh device tidak dapat dihapus, sehingga device tidak menjadi yatim (orphaned).
 - `Device` -> `User` menggunakan `onDelete: Cascade`: menghapus user akan menghapus device miliknya (dan secara transitif juga recommendation log serta notifikasi terkait).
 - `RawSensorLog` menggunakan kunci `(timestamp, id)` dan dipartisi berdasarkan rentang bulan di level database (dikelola oleh [`src/cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) agar penulisan telemetri berfrekuensi tinggi dan pembersihan retensi tetap murah.
-- Enum `DeviceStatus`: `ACTIVE`, `INACTIVE`, `OFFLINE`.
+- Enum `DeviceStatus`: `ACTIVE`, `INACTIVE`, `OFFLINE`. Enum `UserRole` (`user_role`): `USER`, `SUPERADMIN`. Enum `NotificationType` (`notification_type`): `warning`, `success`, `info`.
+- `User.googleId` nullable karena akun yang dibuat lewat email + password belum tertaut Google. `User.passwordHash` (hash scrypt, lihat [backend/authentication.md](../backend/authentication.md)) nullable karena akun Google belum tentu punya password. Keduanya tidak pernah dikirim ke client.
+- `User.role` default `USER`, `NOT NULL`, dan hanya diubah lewat Supabase Dashboard; tidak ada kode aplikasi yang menulisnya ([ADR-010](../decisions/adr-010-superadmin-role.md)).
+- `RecommendationLog.isDev` dan `RawSensorLog.isDev` bernilai `true` hanya untuk data yang dibangkitkan Dev Mode, dan `false` untuk data dari sensor; nilainya ditentukan di `handleSensorMessage` (`isDev` hanya diteruskan oleh simulator Dev Mode).
 - `User.telegramChatId` dan `User.telegramLinkCode` sama-sama bersifat nullable dan unik. `telegramLinkCode` adalah kode sekali pakai yang dihapus segera setelah webhook Telegram mengonsumsinya untuk mengisi `telegramChatId`. Lihat [api/telegram.md](../api/telegram.md).
 - `User.telegramNotifyEnabled` (default `true`) mengatur perintah bot `/notifikasi on|off`; dibaca oleh `notifyDevice` untuk memutuskan apakah channel Telegram ikut dikirimi, terlepas dari `telegramChatId` sudah tertaut atau belum.
 
@@ -112,13 +130,13 @@ Dikelola lewat SQL manual [`prisma/manual/001_check_constraints.sql`](../../back
 
 | Tabel                 | Aturan                                                                            |
 | --------------------- | --------------------------------------------------------------------------------- |
-| `notifications`       | `type` hanya `'warning'`, `'info'`, `'success'`                                   |
+| `notifications`       | `type` hanya 'warning', 'info', 'success' (selain dijaga enum `notification_type`) |
 | `recommendation_logs` | `category_code` cocok `^C[1-9]$`; `ph_value` 0-14; `moisture_value` 0-100; `water_volume_liter`, `lime_dosage_gram`, `sulfur_dosage_gram` >= 0; `fuzzy_index` 0-8 |
 | `raw_sensor_logs`     | `ph` 0-14; `moisture` 0-100 (berlaku di semua partisi)                            |
 | `plants`              | `min_ph`, `max_ph` 0-14; `min_ph < max_ph`; `ph_target` di antara keduanya        |
 | `devices`             | `sensor_interval > 0`                                                             |
 
-Enum Postgres sengaja tidak dipakai untuk `type` dan `category_code`: `db push` dapat menganggap perubahan `varchar` ke enum berisiko kehilangan data dan menggagalkan deploy, dan tidak kompatibel mundur dengan kode lama selama jendela deploy.
+`notifications.type` kini enum `notification_type` (dimigrasikan manual lewat `006_indexes_fk_enum.sql`, karena `db push` tidak bisa mengubah `varchar` ke enum tanpa risiko kehilangan data). `category_code` tetap `varchar` dengan CHECK.
 
 ## Row Level Security
 

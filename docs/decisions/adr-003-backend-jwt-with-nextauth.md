@@ -9,6 +9,9 @@ Frontend menggunakan NextAuth v5 murni untuk proses handshake Google OAuth (cons
 ## Keputusan
 Saat sign-in Google berhasil, callback `signIn` milik NextAuth ([`lib/auth.ts`](../../frontend/src/lib/auth.ts)) langsung menukar Google ID token dengan JWT terbitan backend dengan memanggil `POST /api/auth/google`. JWT backend tersebut disimpan di dalam session NextAuth (`session.user.backendToken`) dan adalah token yang benar-benar dikirim sebagai `Authorization: Bearer` pada setiap pemanggilan backend API. Google ID token itu sendiri tidak pernah digunakan ulang setelah pertukaran ini.
 
+## Pembaruan (ADR-009)
+Login email + password memakai jembatan yang sama: Credentials provider NextAuth memanggil `POST /api/auth/login` dan menyimpan JWT backend di sesi (`session.user.backendToken`). Masa berlaku sesi NextAuth diset 7 hari agar sama dengan JWT backend, sehingga ketidaksinkronan masa hidup yang dijelaskan di bawah berkurang. Lihat [ADR-009](adr-009-email-password-auth.md).
+
 ## Konsekuensi
 - Backend tetap menjadi otoritas autentikasi yang mandiri (`JWT_SECRET` sendiri, tabel user sendiri yang diindeks dengan `googleId`/`email`): backend tidak perlu mempercayai atau memvalidasi session cookie NextAuth, sehingga bisa melayani client non-Next.js tanpa perubahan.
 - Sign-in gagal secara fail-closed: jika pemanggilan pertukaran ke backend gagal (error jaringan, backend down, `GOOGLE_CLIENT_ID` tidak cocok), `signIn` mengembalikan `false` dan user tidak pernah diberikan session NextAuth, meskipun langkah OAuth Google sendiri berhasil.

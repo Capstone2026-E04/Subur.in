@@ -34,9 +34,23 @@ Ukuran font dasar sengaja dinaikkan sedikit di atas default Tailwind `1rem` demi
 - Ikon berasal dari `react-icons` (terutama set `md`, Material Design), bukan icon set kustom.
 - Simpan warna/font baru sebagai `@theme` token di `globals.css` alih-alih hardcode nilai hex di komponen, agar palet tetap dapat diedit secara terpusat.
 
-## Halaman publik (landing dan login)
+## Dashboard
 
-Halaman `/` dan `/login` mengikuti panduan taste-skill untuk landing page; dashboard sengaja tidak (di luar cakupan panduan tersebut).
+Mengikuti desain Figma untuk halaman Ringkasan dan Perangkat; halaman lain memakai bahasa visual yang sama lewat komponen bersama.
+
+- Latar `bg-neutral-100` (dipasang di `(dashboard)/layout.tsx`), kartu putih `rounded-3xl` dengan border `neutral-200`, judul `neutral-900`. Palet krem `--color-background` hanya untuk halaman publik.
+- Sidebar hijau `primary` selebar 256 px (menciut 72 px saat tidak di-hover) dengan item aktif `primary-light`; ikon berwarna krem `#f5eec3`, tombol keluar `#8b3a3a`.
+- Topbar `h-18` dengan breadcrumb, dropdown perangkat (state bersama lewat Zustand), lonceng, dan nama user.
+- Aksesibilitas: ikon sidebar punya `aria-label` dan `title` (nama tampil di tooltip saat menciut), nav berlabel "Menu utama", dropdown perangkat dan lonceng minimal 44 px, ring fokus global (`:focus-visible`), semua gerak mati pada `prefers-reduced-motion`.
+- Gerak: `DashboardMotion.tsx` (GSAP) memunculkan elemen `data-reveal` secara bertahap dan mengamati elemen yang ditambahkan belakangan; sidebar dan beberapa kartu memakai `framer-motion`.
+
+## Halaman autentikasi (`/login`, `/register`)
+
+Dibangun dengan `components/auth/AuthShell` (lihat [components.md](components.md#componentsauth)): panel merek hijau di kiri, form di kanan dengan latar `neutral-100`, tombol utama hijau `primary`, tombol Google putih berborder. Satu aksen, input dan tombol `rounded-xl`, label di atas input, galat inline dengan `role="alert"`. Animasi masuk GSAP bertahap, mati pada reduced motion. Tidak ada foto di panel merek; slot gambar belum diisi.
+
+## Halaman publik (landing)
+
+Halaman `/` mengikuti panduan taste-skill untuk landing page; dashboard sengaja tidak (di luar cakupan panduan tersebut).
 
 - Hero asimetris dengan visual berupa komponen asli (`SensorGaugeCard`, `PhCorrectionStatus`) berisi contoh data dari dokumen C501, bukan gambar tiruan.
 - Satu label CTA ("Mulai pantau") untuk satu maksud, tombol minimal 48 px, label tidak boleh membungkus.
@@ -46,6 +60,6 @@ Halaman `/` dan `/login` mengikuti panduan taste-skill untuk landing page; dashb
   - `data-steps` / `data-steps-line` / `data-step`: garis progres dan sorotan langkah pada "Cara kerja" mengikuti scroll (`scrub`).
   - `data-count`: angka dihitung naik sekali saat terlihat (konten server tetap berisi angka akhir untuk no-JS).
   - Seluruh animasi berada di `gsap.matchMedia("(prefers-reduced-motion: no-preference)")`; dengan reduced motion, konten statis dan langsung terlihat. Pembersihan otomatis lewat `useGSAP` (scope `<main>`).
-- Gunakan GSAP hanya di halaman publik. Dashboard memakai `framer-motion`; jangan mencampur keduanya dalam satu pohon komponen baru.
-- Skala radius: tombol `rounded-xl`, kartu `rounded-2xl`. Satu aksen (hijau brand), tanpa tanda pisah em-dash.
+- GSAP dipakai di landing, `AuthShell`, dan `DashboardMotion`. `framer-motion` dipakai di sidebar dan beberapa kartu dashboard. Jangan mencampur keduanya dalam satu komponen yang sama.
+- Skala radius landing: tombol `rounded-xl`, kartu `rounded-2xl`. Dashboard dan autentikasi: tombol dan input `rounded-xl`, kartu `rounded-3xl`. Satu aksen (hijau brand), tanpa tanda pisah em-dash.
 - Tema terang saja, mengikuti seluruh aplikasi. Dark mode butuh refaktor token di seluruh dashboard dan belum dikerjakan.

@@ -34,7 +34,13 @@ Urutan penerapan:
 
 3. `003_device_surrogate_key.sql`: mengubah `devices.id` menjadi UUID surrogate key dan memindahkan kode alat lama ke `devices.device_code`, termasuk semua FK `device_id`. **Wajib dijalankan sebelum deploy backend versi baru**, karena `db push` tidak dapat melakukannya tanpa menghapus data. Baris `raw_sensor_logs` yatim ikut dihapus (cek dulu dengan `npm run db:check-orphans`). Rollback: `rollback/003_device_surrogate_key.sql` bersama rollback deploy backend.
 
-File 001 dan 002 aman dijalankan ulang; 003 hanya dijalankan sekali.
+4. `004_correction_logs.sql`: RLS dan CHECK (`dose_gram > 0`, `ph_before` 0-14) untuk `correction_logs`. Jalankan setelah `prisma db push` membuat tabelnya.
+5. `005_drop_polybags.sql`: menghapus `devices.polybag_id` serta tabel `polybags` dan `polybag_types` (preset polybag kini konstanta kode).
+6. `006_indexes_fk_enum.sql`: indeks `created_at`, FK `raw_sensor_logs.device_id`, dan `notifications.type` menjadi enum `notification_type`. **Jalankan sebelum deploy backend versi baru.**
+7. `007_user_role.sql`: enum `user_role` dan kolom `users.role` (`NOT NULL`, default `USER`). **Jalankan sebelum deploy.** Role `SUPERADMIN` hanya diberikan manual lewat Supabase ([ADR-010](../decisions/adr-010-superadmin-role.md)). Rollback: `rollback/007_user_role.sql`.
+8. `008_email_password_auth.sql`: `users.google_id` menjadi nullable dan menambah `users.password_hash`. **Jalankan sebelum deploy.** Rollback: `rollback/008_email_password_auth.sql` (gagal bila masih ada user tanpa `google_id`, hapus atau lengkapi dulu).
+
+File 001, 002, 004, 007, dan 008 aman dijalankan ulang; 003, 005, dan 006 hanya dijalankan sekali. Backend versi baru yang membaca `role` atau `password_hash` akan gagal pada `GET /api/users/me` bila 007 atau 008 belum diterapkan.
 
 **Aturan index:** semua index wajib dideklarasikan dengan `@@index` (nama eksplisit lewat `map:`) di `schema.prisma`. Index yang hanya dibuat lewat SQL akan dihapus oleh `prisma db push` berikutnya. CHECK constraint dan RLS tidak disentuh `db push`.
 
