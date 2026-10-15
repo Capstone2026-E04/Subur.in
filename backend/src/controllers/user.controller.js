@@ -1,6 +1,7 @@
 const prisma = require("../database/connections/prisma_client");
 const telegramService = require("../telegram/telegram_api.service");
 const { sendSuccess, sendError } = require("../utils/response");
+const { validatePassword, hashPassword } = require("../utils/password");
 
 exports.getProfile = async (req, res, next) => {
   try {
@@ -15,6 +16,7 @@ exports.getProfile = async (req, res, next) => {
         avatarUrl: true,
         telegramChatId: true,
         role: true,
+        passwordHash: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -24,10 +26,14 @@ exports.getProfile = async (req, res, next) => {
       return sendError(res, 404, "Pengguna tidak ditemukan.");
     }
 
-    const { telegramChatId, ...userWithoutChatId } = user;
+    const { telegramChatId, passwordHash, ...safeUser } = user;
 
     return sendSuccess(res, 200, "Data profil berhasil diambil.", {
-      user: { ...userWithoutChatId, isTelegramLinked: Boolean(telegramChatId) },
+      user: {
+        ...safeUser,
+        isTelegramLinked: Boolean(telegramChatId),
+        hasPassword: Boolean(passwordHash),
+      },
     });
   } catch (error) {
     console.error("[UserController] Gagal mengambil data profil:", {
@@ -101,6 +107,47 @@ exports.updateProfile = async (req, res, next) => {
     });
   } catch (error) {
     console.error("[UserController] Gagal memperbarui profil:", {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
+    return next(error);
+  }
+};
+
+exports.createPassword = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { password, confirmPassword } = req.body;
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return sendError(res, 400, passwordError);
+    }
+
+    if (password !== confirmPassword) {
+      return sendError(res, 400, "Konfirmasi password tidak cocok.");
+    }
+
+    const result = await prisma.user.updateMany({
+      where: { id: userId, passwordHash: null },
+      data: { passwordHash: await hashPassword(password) },
+    });
+
+    if (result.count === 0) {
+      const exists = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      });
+      if (!exists) {
+        return sendError(res, 404, "Pengguna tidak ditemukan.");
+      }
+      return sendError(res, 409, "Password sudah dibuat sebelumnya.");
+    }
+
+    return sendSuccess(res, 200, "Password berhasil dibuat.");
+  } catch (error) {
+    console.error("[UserController] Gagal membuat password:", {
       message: error.message,
       stack: error.stack,
       userId: req.user?.id,

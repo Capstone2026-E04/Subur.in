@@ -63,11 +63,16 @@ router.get("/", (req, res) => {
   return sendSuccess(res, 200, "Subur.in API Router v1 aktif!", {
     endpoints: {
       health: "GET /api/health",
-      auth: "/api/auth/google",
+      auth: {
+        register: "POST /api/auth/register",
+        login: "POST /api/auth/login",
+        google: "POST /api/auth/google",
+      },
       users: {
         getProfile: "GET /api/users/me",
         updateProfile: "PATCH /api/users/me",
         deleteAccount: "DELETE /api/users/me",
+        createPassword: "POST /api/users/me/password",
       },
       devices: {
         register: "POST /api/devices",
