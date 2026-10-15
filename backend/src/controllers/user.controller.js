@@ -14,6 +14,7 @@ exports.getProfile = async (req, res, next) => {
         email: true,
         avatarUrl: true,
         telegramChatId: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
       },

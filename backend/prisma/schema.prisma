@@ -18,6 +18,7 @@ model User {
   telegramLinkCode String?  @unique @map("telegram_link_code") @db.VarChar(10)
   telegramLinkCodeExpiresAt DateTime? @db.Timestamptz(6) @map("telegram_link_code_expires_at")
   telegramNotifyEnabled Boolean @default(true) @map("telegram_notify_enabled")
+  role      UserRole @default(USER)
   createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
   updatedAt DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
 
@@ -148,6 +149,13 @@ enum NotificationType {
   info
 
   @@map("notification_type")
+}
+
+enum UserRole {
+  USER
+  SUPERADMIN
+
+  @@map("user_role")
 }
 
 enum DeviceStatus {

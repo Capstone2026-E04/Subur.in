@@ -11,6 +11,7 @@ const recommendationRoutes = require("./recommendation.routes");
 const notificationRoutes = require("./notification.routes");
 const telegramRoutes = require("./telegram.routes");
 const devModeRoutes = require("./dev_mode.routes");
+const superadminRoutes = require("./superadmin.routes");
 const { sendSuccess, sendError } = require("../utils/response");
 
 router.get("/version", (req, res) => {
@@ -90,6 +91,12 @@ router.get("/", (req, res) => {
         status: "GET /api/dev-mode",
         toggle: "PUT /api/dev-mode",
       },
+      superadmin: {
+        overview: "GET /api/superadmin/overview",
+        deviceOptions: "GET /api/superadmin/device-options",
+        sensorHistory: "GET /api/superadmin/sensor-history?deviceId=",
+        list: "GET /api/superadmin/:resource",
+      },
       telegram: {
         webhook: "POST /api/telegram/webhook",
         linkCode: "POST /api/users/me/telegram/link-code",
@@ -108,5 +115,6 @@ router.use("/recommendations", recommendationRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/telegram", telegramRoutes);
 router.use("/dev-mode", devModeRoutes);
+router.use("/superadmin", superadminRoutes);
 
 module.exports = router;
