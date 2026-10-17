@@ -113,7 +113,7 @@ export default function RecommendationSummaryCard({
                 title="Air"
                 subtitle="Tambahkan Air"
                 direction="up"
-                value={`${recommendation.waterVolumeLiter.toFixed(1)} L`}
+                value={`${(recommendation.waterVolumeLiter * 1000).toFixed(0)} mL`}
               />
             ) : (
               <TreatmentTile
