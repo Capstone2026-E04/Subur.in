@@ -11,6 +11,7 @@ jest.mock("../../../mqtt/publishers/ack_publisher", () => ({
 jest.mock("../../../repositories/sensor_redis_repository", () => ({
   setLatestSensorData: jest.fn(),
   shouldSaveToDatabase: jest.fn(),
+  pushSensorExport: jest.fn(),
 }));
 jest.mock("../../../sse/sse_manager", () => ({ broadcastToDevice: jest.fn() }));
 jest.mock("../../../database/connections/prisma_client", () => ({
@@ -36,6 +37,7 @@ const { publishRecordAck } = require("../../../mqtt/publishers/ack_publisher");
 const {
   setLatestSensorData,
   shouldSaveToDatabase,
+  pushSensorExport,
 } = require("../../../repositories/sensor_redis_repository");
 const { broadcastToDevice } = require("../../../sse/sse_manager");
 const prisma = require("../../../database/connections/prisma_client");
@@ -335,6 +337,60 @@ describe("handleSensorMessage", () => {
 
       expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
       expect(saveBufferedSensorLog).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("export buffer", () => {
+    it("buffers every legacy reading, even when the DB throttle blocks it", async () => {
+      shouldSaveToDatabase.mockResolvedValue(false);
+
+      await send({ ph: 6.5, moisture: 80 });
+
+      expect(pushSensorExport).toHaveBeenCalledWith(
+        DEVICE_CODE,
+        expect.objectContaining({ ph: 6.5, moisture: 80, synced: true }),
+      );
+    });
+
+    it("buffers a new numbered record with its measured_at", async () => {
+      saveBufferedSensorLog.mockResolvedValue(true);
+      const measuredAt = new Date(Date.now() - 60 * 1000).toISOString();
+
+      await send({
+        ph: 6.5,
+        moisture: 80,
+        record_id: 7,
+        measured_at: measuredAt,
+      });
+
+      expect(pushSensorExport).toHaveBeenCalledWith(DEVICE_CODE, {
+        t: measuredAt,
+        ph: 6.5,
+        moisture: 80,
+        synced: true,
+      });
+    });
+
+    it("does not buffer a duplicate numbered record", async () => {
+      saveBufferedSensorLog.mockResolvedValue(false);
+
+      await send({ ph: 6.5, moisture: 80, record_id: 7, measured_at: null });
+
+      expect(pushSensorExport).not.toHaveBeenCalled();
+    });
+
+    it("does not buffer dev-mode simulation", async () => {
+      await send({ ph: 6.5, moisture: 80 }, { isDev: true });
+
+      expect(pushSensorExport).not.toHaveBeenCalled();
+    });
+
+    it("keeps processing when the buffer write fails", async () => {
+      pushSensorExport.mockRejectedValue(new Error("redis down"));
+
+      await send({ ph: 6.5, moisture: 80 });
+
+      expect(saveRawSensorLog).toHaveBeenCalled();
     });
   });
 

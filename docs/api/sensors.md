@@ -60,3 +60,28 @@ Mengembalikan pembacaan historis terbaru dari Postgres, paling relevan untuk kep
 ```
 
 Melakukan retry query hingga 3 kali (dengan jeda 250ms) sebelum mengembalikan `500` jika terus gagal.
+
+## `GET /api/sensors/:deviceId/export.csv`
+
+Mengekspor pembacaan sensor (pH dan kelembapan) sebagai CSV, untuk dimuat langsung di Excel. Sumbernya **buffer pesan MQTT di Redis** (`sensor:export:<deviceCode>`, bukan database): setiap pesan telemetri yang diterima backend dicatat tanpa throttle 30 detik milik penyimpanan database. Buffer menyimpan maksimal 10.000 pesan terbaru per perangkat dan kedaluwarsa 30 hari setelah pesan terakhir. Data sebelum fitur ini aktif tidak ada di buffer, dan buffer hilang bila Redis dikosongkan. Data simulasi dev mode tidak dicatat.
+
+**Autentikasi:** salah satu dari (1) `EXPORT_API_KEY` lewat query `?api_key=` atau header `X-API-Key`, berlaku untuk semua perangkat dan tidak kedaluwarsa (nonaktif bila variabel kosong), atau (2) JWT pemilik perangkat lewat `Authorization: Bearer <token>` atau `?access_token=`. Excel `Data > From Web` tidak mengirim header kustom, jadi pakai query. Kunci di URL bisa tercatat di log; jangan dibagikan, dan ganti nilainya bila bocor.
+
+**Query params:**
+| Param | Tipe | Default | Deskripsi |
+|---|---|---|---|
+| `from` | tanggal | - | Batas awal (inklusif), mis. `2026-10-01` atau `2026-10-01T00:00:00Z` |
+| `to` | tanggal | - | Batas akhir (inklusif) |
+| `limit` | integer | `10000` | Jumlah baris terbaru (dibatasi 1-10000) |
+
+**Response sukses `200`** (`text/csv; charset=utf-8`, urut waktu menaik):
+```csv
+device_code,timestamp_utc,timestamp_wib,ph,moisture,time_synced
+ESP32-A1B2C3,2026-10-17T07:03:22.000Z,2026-10-17 14:03:22,6.4,71.2,true
+```
+
+`device_code` adalah kode perangkat. `time_synced=false` berarti jam ESP32 belum sinkron NTP; `timestamp_wib` pada baris itu adalah waktu terima server.
+
+**Response error:** `400` (`from`/`to` bukan tanggal valid), `401`, `404` (device bukan milik user), `500`.
+
+**Excel:** `Data > Get Data > From Web`, tempel `https://<backend-domain>/api/sensors/<deviceId>/export.csv?api_key=<EXPORT_API_KEY>`, lalu `Refresh` untuk memperbarui data.

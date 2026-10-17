@@ -23,6 +23,7 @@ Jangan pernah commit nilai asli: `.env` / `.env.local` sudah masuk gitignore. Sa
 | `METRICS_PASSWORD`                | Password bearer-token yang melindungi `GET /api/metrics` (lihat [backend/logging.md](../backend/logging.md#metrics)) | Pilihan Anda                                          |
 | `TELEGRAM_BOT_TOKEN`               | Token bot yang digunakan untuk mengirim/menerima pesan melalui Telegram Bot API   | [@BotFather](https://t.me/BotFather) di Telegram                    |
 | `TELEGRAM_WEBHOOK_SECRET`          | Secret yang dicocokkan dengan header `X-Telegram-Bot-Api-Secret-Token` pada webhook | Buat sendiri: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` (1-256 karakter `A-Za-z0-9_-`) |
+| `EXPORT_API_KEY`                   | Kunci untuk `GET /api/sensors/:deviceId/export.csv` (Excel) tanpa JWT; kosong = dinonaktifkan | Buat sendiri: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 
 ## Frontend (`frontend/.env.local`)
 

@@ -4,9 +4,11 @@ const {
   streamSensorData,
   getLatestSensor,
   getSensorHistory,
+  exportSensorCsv,
   requireOwnedDevice,
 } = require("../controllers/sensor.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
+const { hasValidExportKey } = require("../middlewares/export_key.middleware");
 
 const tokenFromQuery = (req, res, next) => {
   if (
@@ -36,6 +38,21 @@ router.get(
   authMiddleware,
   requireOwnedDevice,
   getSensorHistory,
+);
+
+// Untuk Excel (Data > From Web): EXPORT_API_KEY (?api_key= atau header X-API-Key) atau JWT pemilik.
+const exportKeyOrOwner = (req, res, next) =>
+  hasValidExportKey(req)
+    ? next()
+    : authMiddleware(req, res, (err) =>
+        err ? next(err) : requireOwnedDevice(req, res, next),
+      );
+
+router.get(
+  "/:deviceId/export.csv",
+  tokenFromQuery,
+  exportKeyOrOwner,
+  exportSensorCsv,
 );
 
 module.exports = router;

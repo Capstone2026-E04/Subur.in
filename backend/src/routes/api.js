@@ -91,6 +91,7 @@ router.get("/", (req, res) => {
       sensors: {
         stream: "GET /api/sensors/:deviceId/stream",
         latest: "GET /api/sensors/:deviceId/latest",
+        exportCsv: "GET /api/sensors/:deviceId/export.csv",
       },
       devMode: {
         status: "GET /api/dev-mode",

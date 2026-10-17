@@ -4,6 +4,7 @@ const prisma = require("../database/connections/prisma_client");
 const { addClient, removeClient } = require("../sse/sse_manager");
 const {
   getLatestSensorData,
+  getSensorExport,
 } = require("../repositories/sensor_redis_repository");
 const {
   getLatestSensorLog,
@@ -102,6 +103,67 @@ exports.getLatestSensor = async (req, res, next) => {
     return sendSuccess(res, 200, "Data sensor terbaru berhasil diambil.", data);
   } catch (err) {
     console.error("[SensorController] Gagal mengambil data sensor terbaru:", {
+      message: err.message,
+      stack: err.stack,
+      deviceId,
+    });
+    return next(err);
+  }
+};
+
+const EXPORT_MAX_ROWS = 10000;
+// "2026-10-17 14:03:22": format yang dikenali Excel sebagai tanggal-waktu.
+const toWib = (date) =>
+  date.toLocaleString("sv-SE", { timeZone: "Asia/Jakarta" });
+
+exports.exportSensorCsv = async (req, res, next) => {
+  const { deviceId } = req.params;
+  if (!UUID_RE.test(deviceId)) {
+    return sendError(res, 404, "Device tidak ditemukan.");
+  }
+  const from = req.query.from ? new Date(req.query.from) : null;
+  const to = req.query.to ? new Date(req.query.to) : null;
+  if ([from, to].some((d) => d && isNaN(d))) {
+    return sendError(
+      res,
+      400,
+      'Parameter "from"/"to" harus berupa tanggal valid (contoh: 2026-10-01 atau 2026-10-01T00:00:00Z).',
+    );
+  }
+  const limit = Math.min(
+    Math.max(parseInt(req.query.limit) || EXPORT_MAX_ROWS, 1),
+    EXPORT_MAX_ROWS,
+  );
+
+  try {
+    const device = await prisma.device.findUnique({
+      where: { id: deviceId },
+      select: { deviceCode: true },
+    });
+    if (!device) return sendError(res, 404, "Device tidak ditemukan.");
+    // Sumber: buffer pesan MQTT di Redis (bukan database); urut waktu menaik, `limit` terbaru.
+    const entries = (await getSensorExport(device.deviceCode))
+      .map((e) => ({ ...e, time: new Date(e.t) }))
+      .filter((e) => (!from || e.time >= from) && (!to || e.time <= to))
+      .sort((a, b) => a.time - b.time)
+      .slice(-limit);
+    const rows = entries.map(
+      (e) =>
+        `${device.deviceCode},${e.time.toISOString()},${toWib(e.time)},${e.ph},${e.moisture},${e.synced}`,
+    );
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="sensor-${deviceId}.csv"`,
+    );
+    return res.send(
+      [
+        "device_code,timestamp_utc,timestamp_wib,ph,moisture,time_synced",
+        ...rows,
+      ].join("\r\n") + "\r\n",
+    );
+  } catch (err) {
+    console.error("[SensorController] Gagal mengekspor data sensor:", {
       message: err.message,
       stack: err.stack,
       deviceId,

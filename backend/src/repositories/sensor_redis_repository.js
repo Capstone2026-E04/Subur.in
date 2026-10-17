@@ -5,6 +5,9 @@ const { getRedisClient } = require("../database/connections/redis");
 const SENSOR_TTL_SECONDS = 300;
 const THROTTLE_KEY_PREFIX = "sensor:throttle:";
 const LATEST_KEY_PREFIX = "sensor:latest:";
+const EXPORT_KEY_PREFIX = "sensor:export:";
+const EXPORT_MAX_ENTRIES = 10000;
+const EXPORT_TTL_SECONDS = 30 * 24 * 3600;
 
 async function setLatestSensorData(deviceCode, ph, moisture) {
   try {
@@ -73,7 +76,31 @@ async function shouldSaveToDatabase(deviceCode) {
   }
 }
 
+// Buffer setiap pesan MQTT yang diterima (tanpa throttle) untuk ekspor CSV.
+// Error sengaja dilempar: backend tidak boleh diam-diam kehilangan data ekspor.
+async function pushSensorExport(deviceCode, entry) {
+  const redis = getRedisClient();
+  const key = `${EXPORT_KEY_PREFIX}${deviceCode}`;
+  await redis
+    .multi()
+    .lpush(key, JSON.stringify(entry))
+    .ltrim(key, 0, EXPORT_MAX_ENTRIES - 1)
+    .expire(key, EXPORT_TTL_SECONDS)
+    .exec();
+}
+
+async function getSensorExport(deviceCode) {
+  const raw = await getRedisClient().lrange(
+    `${EXPORT_KEY_PREFIX}${deviceCode}`,
+    0,
+    -1,
+  );
+  return raw.map((r) => JSON.parse(r));
+}
+
 module.exports = {
+  pushSensorExport,
+  getSensorExport,
   setLatestSensorData,
   getLatestSensorData,
   shouldSaveToDatabase,

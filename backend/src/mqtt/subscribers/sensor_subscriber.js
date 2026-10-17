@@ -10,6 +10,7 @@ const { publishRecordAck } = require("../publishers/ack_publisher");
 const {
   setLatestSensorData,
   shouldSaveToDatabase,
+  pushSensorExport,
 } = require("../../repositories/sensor_redis_repository");
 
 const { broadcastToDevice } = require("../../sse/sse_manager");
@@ -115,6 +116,13 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     `[MQTT Subscriber]  Data diterima | Device: ${deviceCode} | pH: ${ph} | Moisture: ${moisture}%`,
   );
 
+  const measuredAt = parseMeasuredAt(data.measured_at);
+  // Telemetri lama (tanpa record_id) langsung masuk buffer ekspor; record bernomor
+  // masuk setelah tersimpan sebagai record baru, agar kirim ulang tidak menggandakan.
+  if (recordId === null) {
+    await bufferForExport(deviceCode, new Date(), true, ph, moisture, isDev);
+  }
+
   try {
     const device = await prisma.device.findUnique({
       where: { deviceCode },
@@ -127,9 +135,19 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         recordId,
         ph,
         moisture,
-        parseMeasuredAt(data.measured_at),
+        measuredAt,
         isDev,
       );
+      if (created) {
+        await bufferForExport(
+          deviceCode,
+          measuredAt ?? new Date(),
+          measuredAt !== null,
+          ph,
+          moisture,
+          isDev,
+        );
+      }
       await updateDeviceLastSeen(device.id);
       // ACK hanya setelah commit (juga untuk record duplikat yang sudah tersimpan).
       await publishRecordAck(deviceCode, recordId);
@@ -281,6 +299,25 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         deviceCode,
       },
     );
+  }
+}
+
+// Sumber ekspor CSV. Gagal buffer hanya dicatat; jalur database tetap berjalan.
+async function bufferForExport(deviceCode, time, synced, ph, moisture, isDev) {
+  if (isDev) return;
+  try {
+    await pushSensorExport(deviceCode, {
+      t: time.toISOString(),
+      ph,
+      moisture,
+      synced,
+    });
+  } catch (err) {
+    console.error("[SensorSubscriber] Gagal menyimpan buffer ekspor:", {
+      message: err.message,
+      stack: err.stack,
+      deviceCode,
+    });
   }
 }
 
