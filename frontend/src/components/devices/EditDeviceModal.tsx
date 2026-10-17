@@ -213,7 +213,10 @@ export default function EditDeviceModal({
                     <option value={10}>10 Menit</option>
                     <option value={15}>15 Menit</option>
                     <option value={30}>30 Menit</option>
-                    <option value={60}>1 jam</option>
+                    <option value={60}>1 Jam</option>
+                    <option value={240}>4 Jam</option>
+                    <option value={360}>6 Jam</option>
+                    <option value={720}>12 Jam</option>
                   </select>
                   <p className="text-[10px] leading-normal text-gray-400">
                     Tentukan seberapa sering alat membaca & mengirim data
