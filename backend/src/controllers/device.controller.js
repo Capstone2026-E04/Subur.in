@@ -11,7 +11,7 @@ const { publishDeviceConfig } = require("../mqtt/publishers/config_publisher");
 const { sendSuccess, sendError } = require("../utils/response");
 
 const isValidInterval = (v) =>
-  Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 60;
+  Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 720;
 
 exports.getDiscoveredDevices = async (req, res, next) => {
   try {
@@ -87,7 +87,7 @@ exports.registerDevice = async (req, res, next) => {
       return sendError(
         res,
         400,
-        '"sensorInterval" harus berupa bilangan bulat 1-60 menit.',
+        '"sensorInterval" harus berupa bilangan bulat 1-720 menit.',
       );
     }
 
@@ -119,7 +119,7 @@ exports.registerDevice = async (req, res, next) => {
     });
 
     const intervalMin =
-      sensorInterval !== undefined ? Number(sensorInterval) : 15;
+      sensorInterval !== undefined ? Number(sensorInterval) : 60;
     publishDeviceConfig(deviceCode, intervalMin).catch((err) => {
       console.error(
         `[MQTT Publish] Gagal mengirim config awal saat registrasi device:`,
@@ -182,7 +182,7 @@ exports.updateDevice = async (req, res, next) => {
       return sendError(
         res,
         400,
-        '"sensorInterval" harus berupa bilangan bulat 1-60 menit.',
+        '"sensorInterval" harus berupa bilangan bulat 1-720 menit.',
       );
     }
 

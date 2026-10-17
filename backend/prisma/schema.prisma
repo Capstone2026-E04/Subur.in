@@ -38,7 +38,7 @@ model Device {
   lastSeenAt DateTime?    @db.Timestamptz(6) @map("last_seen_at")
   createdAt  DateTime     @default(now()) @db.Timestamptz(6) @map("created_at")
   updatedAt      DateTime     @updatedAt @db.Timestamptz(6) @map("updated_at")
-  sensorInterval Int          @default(15) @map("sensor_interval")
+  sensorInterval Int          @default(60) @map("sensor_interval")
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   plant   Plant   @relation(fields: [plantId], references: [id], onDelete: Restrict)

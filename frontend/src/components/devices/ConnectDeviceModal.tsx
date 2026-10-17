@@ -58,7 +58,7 @@ export default function ConnectDeviceModal({
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
   const [label, setLabel] = useState("");
   const [selectedPlantId, setSelectedPlantId] = useState("");
-  const [sensorInterval, setSensorInterval] = useState(15);
+  const [sensorInterval, setSensorInterval] = useState(60);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,7 +69,7 @@ export default function ConnectDeviceModal({
     setSelectedDeviceId("");
     setLabel("");
     setSelectedPlantId("");
-    setSensorInterval(15);
+    setSensorInterval(60);
     setFormError(null);
   } else if (!isOpen && prevIsOpen) {
     setPrevIsOpen(false);
@@ -416,7 +416,7 @@ export default function ConnectDeviceModal({
                           className="flex items-center gap-1.5 text-xs font-semibold text-gray-600"
                         >
                           <MdAccessTime size={13} className="text-amber-500" />
-                          Interval Pengambilan Data (Menit)
+                          Interval Pengambilan Data
                         </label>
                         <select
                           id="select-interval"
@@ -429,9 +429,11 @@ export default function ConnectDeviceModal({
                           <option value={1}>1 Menit</option>
                           <option value={5}>5 Menit</option>
                           <option value={10}>10 Menit</option>
-                          <option value={15}>15 Menit</option>
                           <option value={30}>30 Menit</option>
-                          <option value={60}>1 jam</option>
+                          <option value={60}>1 Jam</option>
+                          <option value={240}>4 Jam</option>
+                          <option value={360}>6 Jam</option>
+                          <option value={720}>12 Jam</option>
                         </select>
                         <p className="text-[10px] leading-normal text-gray-400">
                           Tentukan seberapa sering alat membaca & mengirim data

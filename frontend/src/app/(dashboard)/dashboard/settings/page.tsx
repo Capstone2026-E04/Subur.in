@@ -29,7 +29,7 @@ export default function SettingsPage() {
 
   const { devices, isLoading, loadDevices, update } = useDevices();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
-  const [sensorInterval, setSensorInterval] = useState<number>(15);
+  const [sensorInterval, setSensorInterval] = useState<number>(60);
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export default function SettingsPage() {
     if (devices.length > 0 && !selectedDeviceId) {
       setTimeout(() => {
         setSelectedDeviceId(devices[0].id);
-        setSensorInterval(devices[0].sensorInterval ?? 15);
+        setSensorInterval(devices[0].sensorInterval ?? 60);
       }, 0);
     }
   }, [devices, selectedDeviceId]);
@@ -113,7 +113,7 @@ export default function SettingsPage() {
     setSelectedDeviceId(deviceId);
     const dev = devices.find((d) => d.id === deviceId);
     if (dev) {
-      setSensorInterval(dev.sensorInterval ?? 15);
+      setSensorInterval(dev.sensorInterval ?? 60);
     }
   };
 
@@ -219,17 +219,14 @@ export default function SettingsPage() {
                   onChange={(e) => setSensorInterval(Number(e.target.value))}
                   className="focus:border-primary w-full cursor-pointer rounded-lg border border-black/8 bg-white px-3 py-2 text-xs text-gray-700 transition-all outline-none sm:text-sm"
                 >
-                  <option value={1}>1 Menit (Real-time / Pengujian)</option>
-                  <option value={5}>5 Menit (Responsif Tinggi)</option>
-                  <option value={10}>10 Menit (Responsif)</option>
-                  <option value={15}>15 Menit (Rekomendasi / Default)</option>
-                  <option value={30}>30 Menit (Optimal Hemat Daya)</option>
-                  <option value={60}>60 Menit (1 Jam)</option>
-                  <option value={120}>120 Menit (2 Jam)</option>
-                  <option value={240}>240 Menit (4 Jam)</option>
-                  <option value={480}>480 Menit (8 Jam)</option>
-                  <option value={720}>720 Menit (12 Jam)</option>
-                  <option value={1440}>1440 Menit (24 Jam)</option>
+                  <option value={1}>1 Menit</option>
+                  <option value={5}>5 Menit</option>
+                  <option value={10}>10 Menit</option>
+                  <option value={30}>30 Menit</option>
+                  <option value={60}>1 Jam (Default)</option>
+                  <option value={240}>4 Jam</option>
+                  <option value={360}>6 Jam</option>
+                  <option value={720}>12 Jam</option>
                 </select>
               </div>
             </div>

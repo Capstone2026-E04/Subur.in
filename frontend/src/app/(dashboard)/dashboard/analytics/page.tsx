@@ -257,7 +257,7 @@ export default function AnalyticsPage() {
     ? Math.max(...validMoistureValues)
     : 0;
 
-  const intervalMinutes = selectedDevice.sensorInterval ?? 15;
+  const intervalMinutes = selectedDevice.sensorInterval ?? 60;
   const totalMinutes = displayData.length * intervalMinutes;
   let durationText = "";
   if (totalMinutes < 60) {

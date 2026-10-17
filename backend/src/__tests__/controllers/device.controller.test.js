@@ -61,7 +61,7 @@ const BASE_BODY = {
 };
 
 describe("sensorInterval validation", () => {
-  it.each([0, -5, 1.5, "abc", null, 61])(
+  it.each([0, -5, 1.5, "abc", null, 721])(
     "registerDevice rejects sensorInterval %p with 400",
     async (value) => {
       const res = makeRes();
@@ -102,10 +102,10 @@ describe("sensorInterval validation", () => {
     const { data } = prisma.device.create.mock.calls.at(-1)[0];
     expect(data.deviceCode).toBe("dev-1");
     expect(data).not.toHaveProperty("id");
-    expect(publishDeviceConfig).toHaveBeenCalledWith("dev-1", 15);
+    expect(publishDeviceConfig).toHaveBeenCalledWith("dev-1", 60);
   });
 
-  it.each([0, -1, 2.5, "x", 61])(
+  it.each([0, -1, 2.5, "x", 721])(
     "updateDevice rejects sensorInterval %p with 400",
     async (value) => {
       const res = makeRes();
