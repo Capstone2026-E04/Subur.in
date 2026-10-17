@@ -35,7 +35,7 @@ Mendaftarkan (mengklaim) sebuah device ke akun user yang sedang login.
 }
 ```
 
-`sensorInterval` (dalam menit) bersifat opsional, defaultnya `15`. Jika diisi harus bilangan bulat `1`-`60`, jika tidak `400`. Jika berhasil, backend juga mempublikasikan interval tersebut ke device melalui MQTT (lihat [backend authentication/config publisher](../architecture/api-flow.md)).
+`sensorInterval` (dalam menit) bersifat opsional (frontend mengirim `60` secara default). Jika diisi harus bilangan bulat `1`-`720`, jika tidak `400`. Jika berhasil, backend juga mempublikasikan interval tersebut ke device melalui MQTT (lihat [backend authentication/config publisher](../architecture/api-flow.md)).
 
 **Response sukses `201`:**
 ```json
@@ -67,7 +67,7 @@ Menampilkan semua device milik user yang sedang login, beserta `plant`.
 
 ## `PATCH /api/devices/:id`
 
-Memperbarui device milik pemanggil. Salah satu dari `label`, `plantId`, `status`, `sensorInterval` dapat diberikan; field yang tidak diset akan mempertahankan nilai saat ini. Jika `sensorInterval` berubah, backend akan mempublikasikan ulang interval baru ke device melalui MQTT.
+Memperbarui device milik pemanggil. Salah satu dari `label`, `plantId`, `status`, `sensorInterval` dapat diberikan; field yang tidak diset akan mempertahankan nilai saat ini. Jika diisi, `sensorInterval` harus bilangan bulat `1`-`720`, jika tidak `400`. Jika `sensorInterval` berubah, backend akan mempublikasikan ulang interval baru ke device melalui MQTT.
 
 **Request body (parsial):**
 ```json

@@ -115,6 +115,7 @@ sequenceDiagram
     alt invalid payload
         Subscriber->>Postgres: create Notification (throttled 1h via Redis lock)
     else valid payload
+        Subscriber->>Redis: pushSensorExport (buffer ekspor CSV, tanpa throttle)
         Subscriber->>Redis: setLatestSensorData(deviceId, {ph, moisture})
         Subscriber->>Postgres: saveRawSensorLog (throttled by SENSOR_THROTTLE_SECONDS)
         Subscriber->>Postgres: updateDeviceLastSeen
@@ -122,6 +123,38 @@ sequenceDiagram
         SSE-->>Dashboard: text/event-stream update
     end
 ```
+
+### Antrean offline ESP32 (record bernomor + ACK)
+
+Pesan yang membawa `record_id` (bilangan bulat) mengikuti jalur berbeda. Pesan tanpa `record_id` (firmware lama, Dev Mode) tetap memakai alur di atas.
+
+```mermaid
+sequenceDiagram
+    participant Device as ESP32 (antrean)
+    participant Broker as MQTT Broker
+    participant Subscriber as sensor_subscriber.js
+    participant Postgres
+    participant Redis
+
+    Device->>Broker: telemetry { record_id, measured_at, ph, moisture }
+    Broker->>Subscriber: message
+    Subscriber->>Postgres: createMany skipDuplicates UNIQUE(device_id, record_id, timestamp)
+    Subscriber->>Postgres: updateDeviceLastSeen
+    Subscriber->>Broker: publish suburin/devices/{id}/ack "record_id" (QoS 1, retain=false)
+    Broker->>Device: ack, record dihapus dari antrean
+    alt record baru dan lebih muda dari 2 x sensorInterval
+        Subscriber->>Redis: pushSensorExport + setLatestSensorData
+        Subscriber->>Subscriber: rekomendasi, notifikasi, SSE (seperti alur live)
+    else duplikat atau data lama
+        Subscriber-->>Subscriber: selesai (tidak ada pemrosesan live)
+    end
+```
+
+Tanpa ACK, ESP32 mengirim ulang record tertua tiap 30 detik. `measured_at = null` berarti jam belum sinkron NTP (`time_synced=false`). Detail keputusan: [ADR-011](../decisions/adr-011-offline-queue-ack-and-export-buffer.md).
+
+### Ekspor CSV
+
+`GET /api/sensors/:deviceId/export.csv` otorisasi lewat `EXPORT_API_KEY` atau JWT pemilik, memetakan `deviceId` ke `deviceCode` di Postgres, lalu membaca list Redis `sensor:export:<deviceCode>` (bukan tabel `raw_sensor_logs`), menyaring `from`/`to`, mengurutkan menurut waktu, dan membalas `text/csv`.
 
 ## Pembuatan rekomendasi
 

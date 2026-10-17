@@ -40,7 +40,9 @@ Urutan penerapan:
 7. `007_user_role.sql`: enum `user_role` dan kolom `users.role` (`NOT NULL`, default `USER`). **Jalankan sebelum deploy.** Role `SUPERADMIN` hanya diberikan manual lewat Supabase ([ADR-010](../decisions/adr-010-superadmin-role.md)). Rollback: `rollback/007_user_role.sql`.
 8. `008_email_password_auth.sql`: `users.google_id` menjadi nullable dan menambah `users.password_hash`. **Jalankan sebelum deploy.** Rollback: `rollback/008_email_password_auth.sql` (gagal bila masih ada user tanpa `google_id`, hapus atau lengkapi dulu).
 
-File 001, 002, 004, 007, dan 008 aman dijalankan ulang; 003, 005, dan 006 hanya dijalankan sekali. Backend versi baru yang membaca `role` atau `password_hash` akan gagal pada `GET /api/users/me` bila 007 atau 008 belum diterapkan.
+9. `009_sensor_buffered_records.sql`: kolom `raw_sensor_logs.record_id` dan `time_synced` serta unique index `uq_raw_sensor_logs_device_record (device_id, record_id, timestamp)` untuk antrean offline ESP32. `timestamp` wajib ikut di index karena tabel dipartisi (`UNIQUE(device_id, record_id)` saja ditolak Postgres). **Jalankan sebelum deploy.** Rollback: `rollback/009_sensor_buffered_records.sql`. Setelah itu jalankan `npx prisma generate` (hentikan server dev dulu agar file DLL Prisma tidak terkunci).
+
+File 001, 002, 004, 007, 008, dan 009 aman dijalankan ulang; 003, 005, dan 006 hanya dijalankan sekali. Backend versi baru yang membaca `role` atau `password_hash` akan gagal pada `GET /api/users/me` bila 007 atau 008 belum diterapkan; penyimpanan record dengan `record_id` gagal bila 009 belum diterapkan.
 
 **Aturan index:** semua index wajib dideklarasikan dengan `@@index` (nama eksplisit lewat `map:`) di `schema.prisma`. Index yang hanya dibuat lewat SQL akan dihapus oleh `prisma db push` berikutnya. CHECK constraint dan RLS tidak disentuh `db push`.
 

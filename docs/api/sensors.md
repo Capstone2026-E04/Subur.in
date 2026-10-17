@@ -1,8 +1,8 @@
 # API Sensors
 
-Akses baca (read) untuk telemetri mentah device. Proses ingest data terjadi secara out-of-band melalui MQTT (lihat [architecture/api-flow.md](../architecture/api-flow.md#device-telemetry-mqtt---dbcache---sse)), bukan melalui endpoint-endpoint ini.
+Akses baca (read) dan ekspor CSV untuk telemetri mentah device. Proses ingest data terjadi secara out-of-band melalui MQTT (lihat [architecture/api-flow.md](../architecture/api-flow.md#device-telemetry-mqtt---dbcache---sse)), bukan melalui endpoint-endpoint ini. Pesan telemetri yang membawa `record_id` berasal dari antrean offline ESP32 dan di-ACK oleh backend (lihat [ADR-011](../decisions/adr-011-offline-queue-ack-and-export-buffer.md)).
 
-**Perlu autentikasi:** Ya, untuk semua endpoint ini. Kirim `Authorization: Bearer <jwt>`. `deviceId` (UUID surrogate key, bukan kode alat) harus milik user pemanggil; jika bukan UUID valid, tidak ditemukan, atau milik user lain, response-nya `404` (`requireOwnedDevice` di [`sensor.controller.js`](../../backend/src/controllers/sensor.controller.js)). Tanpa token atau token tidak valid response-nya `401`.
+**Perlu autentikasi:** Ya, untuk semua endpoint ini. Kirim `Authorization: Bearer <jwt>` (endpoint ekspor CSV juga menerima `EXPORT_API_KEY`, lihat bagiannya). `deviceId` (UUID surrogate key, bukan kode alat) harus milik user pemanggil; jika bukan UUID valid, tidak ditemukan, atau milik user lain, response-nya `404` (`requireOwnedDevice` di [`sensor.controller.js`](../../backend/src/controllers/sensor.controller.js)). Tanpa token atau token tidak valid response-nya `401`.
 
 ## `GET /api/sensors/:deviceId/stream`
 

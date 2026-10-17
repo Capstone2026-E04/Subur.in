@@ -17,9 +17,11 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 - Rekomendasi berbasis fuzzy logic: mesin inferensi Mamdani menerjemahkan kondisi tanah menjadi aksi konkret (volume air, dosis kapur, atau dosis sulfur), dipersonalisasi per tanaman pada preset polybag prototipe (30x30 cm, media 2 L).
 - Autentikasi ganda: daftar dan masuk dengan email + password, atau dengan Google. Akun email + password yang masuk dengan Google ditautkan ke akun yang sama (avatar diambil dari Google), dan akun Google bisa membuat password dari halaman profil. Sesi disimpan di cookie httpOnly NextAuth (7 hari) dan disinkronkan ke JWT backend.
 - Role Superadmin: user dengan role `SUPERADMIN` (diatur hanya lewat Supabase) mendapat menu khusus untuk melihat seluruh data database, lengkap dengan grafik pH dan kelembapan per perangkat serta tabel yang dapat diurutkan dan difilter.
-- Riwayat & analitik: riwayat rekomendasi dan grafik histori sensor per perangkat.
+- Riwayat & analitik: riwayat rekomendasi dan grafik tren pH dan kelembapan per perangkat, dengan pilihan granularitas waktu (menit, 10 menit, jam, hari) dan jumlah data terakhir (5, 10, 20, 30).
 - Notifikasi otomatis: peringatan real-time saat data sensor tidak valid atau perangkat bermasalah, dikirim ke dashboard (SSE) sekaligus Telegram.
-- Manajemen perangkat: klaim perangkat baru yang terdeteksi, atur interval pengiriman data, dan kelola beberapa perangkat sekaligus.
+- Manajemen perangkat: klaim perangkat baru yang terdeteksi, atur interval pengiriman data (1 menit sampai 12 jam, saat tambah maupun edit perangkat), dan kelola beberapa perangkat sekaligus.
+- Antrean offline ESP32: saat WiFi putus, ESP32 menyimpan pembacaan lalu mengirimnya setelah tersambung kembali. Backend menyimpannya idempoten (`record_id`), memakai waktu pengukuran asli (`measured_at`), dan membalas ACK ke `suburin/devices/<id>/ack`.
+- Ekspor CSV untuk Excel: `GET /api/sensors/:deviceId/export.csv` (kunci `EXPORT_API_KEY` atau JWT) memuat data dari buffer pesan MQTT di Redis, dapat dipanggil langsung lewat Excel `Data > From Web`.
 - Bot Telegram interaktif: cek status sensor, riwayat, dan rekomendasi, pilih tanaman aktif, serta atur notifikasi langsung dari chat (`/status`, `/riwayat`, `/rekomendasi`, `/tanaman`, `/notifikasi`, dst).
 
 ## Tech Stack
@@ -29,7 +31,7 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 | Frontend      | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, NextAuth v5, Recharts, GSAP, Zustand |
 | Backend       | Node.js, Express.js, Prisma ORM                                             |
 | Database      | PostgreSQL (Supabase)                                                       |
-| Cache         | Redis (self-hosted)                                                         |
+| Cache         | Redis (self-hosted): pembacaan terbaru, throttling, buffer ekspor CSV       |
 | Pesan IoT     | MQTT (EMQX Cloud, TLS)                                                      |
 | Realtime Web  | Server-Sent Events (SSE)                                                    |
 | Deployment    | Docker, GitHub Actions, GHCR, VPS                                           |
@@ -41,6 +43,7 @@ flowchart LR
     Device["Perangkat IoT"] -- MQTT --> Broker["EMQX Broker"]
     Broker --> Backend["Express Backend"]
     Backend --> Redis[("Redis")]
+    Backend -- ACK --> Broker
     Backend --> Postgres[("PostgreSQL")]
     Backend -- SSE --> Frontend["Next.js Dashboard"]
     Frontend -- REST + JWT --> Backend
@@ -81,7 +84,7 @@ cp .env.example .env.local
 npm run dev              # http://localhost:3001
 ```
 
-Setelah `prisma db push`, jalankan juga SQL di [`backend/prisma/manual/`](backend/prisma/manual) (001 sampai 008) lewat Supabase SQL Editor. Urutan dan catatannya ada di [`docs/database/migration.md`](docs/database/migration.md). Migrasi 007 (role) dan 008 (password) wajib sebelum backend terbaru dijalankan. Role `SUPERADMIN` diberikan manual dengan `UPDATE public.users SET role = 'SUPERADMIN' WHERE email = '...'`.
+Setelah `prisma db push`, jalankan juga SQL di [`backend/prisma/manual/`](backend/prisma/manual) (001 sampai 009) lewat Supabase SQL Editor. Urutan dan catatannya ada di [`docs/database/migration.md`](docs/database/migration.md). Migrasi 007 (role), 008 (password), dan 009 (antrean sensor offline) wajib sebelum backend terbaru dijalankan. Role `SUPERADMIN` diberikan manual dengan `UPDATE public.users SET role = 'SUPERADMIN' WHERE email = '...'`.
 
 ## Dokumentasi
 

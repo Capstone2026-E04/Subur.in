@@ -107,6 +107,7 @@ erDiagram
 - `User.googleId` nullable karena akun yang dibuat lewat email + password belum tertaut Google. `User.passwordHash` (hash scrypt, lihat [backend/authentication.md](../backend/authentication.md)) nullable karena akun Google belum tentu punya password. Keduanya tidak pernah dikirim ke client.
 - `User.role` default `USER`, `NOT NULL`, dan hanya diubah lewat Supabase Dashboard; tidak ada kode aplikasi yang menulisnya ([ADR-010](../decisions/adr-010-superadmin-role.md)).
 - `RecommendationLog.isDev` dan `RawSensorLog.isDev` bernilai `true` hanya untuk data yang dibangkitkan Dev Mode, dan `false` untuk data dari sensor; nilainya ditentukan di `handleSensorMessage` (`isDev` hanya diteruskan oleh simulator Dev Mode).
+- `RawSensorLog.recordId` (`record_id`, nullable) adalah ID record dari antrean offline ESP32 dan `RawSensorLog.timeSynced` (`time_synced`, default `true`) bernilai `false` bila jam perangkat belum sinkron NTP (`timestamp` lalu berisi waktu terima). Unique index `uq_raw_sensor_logs_device_record (device_id, record_id, timestamp)` membuat penyimpanan ulang record yang sama idempoten; karena tabel dipartisi, kolom `timestamp` wajib ikut di index. Baris tanpa `record_id` (NULL) tidak saling bentrok. Lihat [ADR-011](../decisions/adr-011-offline-queue-ack-and-export-buffer.md).
 - `User.telegramChatId` dan `User.telegramLinkCode` sama-sama bersifat nullable dan unik. `telegramLinkCode` adalah kode sekali pakai yang dihapus segera setelah webhook Telegram mengonsumsinya untuk mengisi `telegramChatId`. Lihat [api/telegram.md](../api/telegram.md).
 - `User.telegramNotifyEnabled` (default `true`) mengatur perintah bot `/notifikasi on|off`; dibaca oleh `notifyDevice` untuk memutuskan apakah channel Telegram ikut dikirimi, terlepas dari `telegramChatId` sudah tertaut atau belum.
 
@@ -119,7 +120,7 @@ Semua index dideklarasikan dengan `@@index` di `schema.prisma` (wajib, karena `p
 
 | Tabel                | Index                                                 |
 | -------------------- | ----------------------------------------------------- |
-| `raw_sensor_logs`    | `idx_raw_sensor_logs_device_timestamp (device_id, timestamp DESC)` |
+| `raw_sensor_logs`    | `idx_raw_sensor_logs_device_timestamp (device_id, timestamp DESC)`, unik `uq_raw_sensor_logs_device_record (device_id, record_id, timestamp)` |
 | `devices`            | `idx_devices_user_id`, `idx_devices_plant_id` |
 | `notifications`      | `idx_notifications_device_created (device_id, created_at DESC)` |
 | `recommendation_logs`| `idx_recommendation_logs_device_created (device_id, created_at DESC)` |

@@ -12,7 +12,7 @@ Subur.in adalah platform pemantauan dan rekomendasi tanaman pintar berbasis IoT.
 | MQTT broker | EMQX Cloud (terkelola) | Transport antara perangkat dan backend |
 | Backend API | Node.js, Express, Prisma | Auth, CRUD device/plant, mesin rekomendasi fuzzy, SSE, cron job |
 | Database | PostgreSQL (Supabase) | Users, devices, plants, recommendation log, correction log, raw sensor log (dipartisi) |
-| Cache | Redis (self-hosted, client ioredis) | Pembacaan sensor terbaru per device, throttling, lock dedupe |
+| Cache | Redis (self-hosted, client ioredis) | Pembacaan sensor terbaru per device, throttling, lock dedupe, buffer pesan MQTT untuk ekspor CSV |
 | Notifikasi | Telegram Bot API | Kanal push untuk peringatan device, berdampingan dengan SSE in-app + riwayat notifikasi |
 | Frontend | Next.js 16 (App Router), NextAuth v5 | Dashboard untuk pemantauan, manajemen device, rekomendasi |
 | Deployment | Docker, GHCR, GitHub Actions, VPS | Container dibangun oleh CI dan ditarik ke VPS yang menjalankan docker-compose |
@@ -25,6 +25,9 @@ flowchart LR
     Broker -- suburin/devices/+/telemetry --> Backend["Express Backend"]
     Backend -- write --> Redis[("Redis - latest reading")]
     Backend -- write --> Postgres[("PostgreSQL - raw_sensor_logs")]
+    Backend -- buffer pesan --> Redis
+    Backend -- ack --> Broker
+    Broker -- suburin/devices/+/ack --> Device
     Backend -- SSE --> Frontend["Next.js Dashboard"]
     Frontend -- REST (JWT) --> Backend
     Backend -- fuzzy inference --> Engine["AI Recommendation Engine"]
@@ -36,7 +39,7 @@ flowchart LR
 ## Subsistem backend
 
 - **HTTP API** (`src/routes`, `src/controllers`): resource REST untuk auth, users, devices, plants, recommendations, notifications, dan pembacaan sensor. Lihat [api-flow.md](api-flow.md).
-- **Lapisan MQTT** (`src/mqtt`): berlangganan telemetri perangkat, memvalidasi payload, menulis ke Redis + Postgres, memicu notifikasi saat data tidak valid, dan mempublikasikan perubahan konfigurasi (interval sensor) kembali ke perangkat.
+- **Lapisan MQTT** (`src/mqtt`): berlangganan telemetri perangkat, memvalidasi payload, menulis ke Redis + Postgres, memicu notifikasi saat data tidak valid, mendukung antrean offline ESP32 (penyimpanan idempoten per `record_id`, lalu ACK ke `suburin/devices/<id>/ack`), mencatat setiap pesan ke buffer ekspor CSV di Redis, dan mempublikasikan perubahan konfigurasi (interval sensor) kembali ke perangkat.
 - **Mesin rekomendasi AI** (`src/ai`): sistem fuzzy logic Mamdani (pH x kelembaban -> 9 kategori aksi) ditambah kalkulator dosis deterministik untuk air irigasi, kapur dolomit, dan sulfur elemental. Fungsi murni, tanpa I/O, aman untuk diuji secara terisolasi ([`src/__tests__/ai`](../../backend/src/__tests__/ai)).
 - **SSE manager** (`src/sse`): menyimpan daftar client `EventSource` per device di memori dan menyiarkan event sensor langsung + notifikasi ke dashboard yang terhubung.
 - **Dispatch notifikasi** (`src/services/notification.service.js`, `src/telegram/telegram_api.service.js`): satu titik masuk (`notifyDevice`) yang digunakan setiap call site pembuat notifikasi, menyebarkan notifikasi ke Postgres, SSE, dan Telegram (jika pemilik device telah menautkan akunnya dan mengaktifkan `/notifikasi`) dalam satu panggilan. Lihat [api/telegram.md](../api/telegram.md).

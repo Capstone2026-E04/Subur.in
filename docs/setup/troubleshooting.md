@@ -30,6 +30,22 @@ Telusuri pipeline secara berurutan:
 4. `GET /api/sensors/:deviceId/latest`: jika mengembalikan 404, berarti belum ada data yang di-cache/disimpan untuk device ID tersebut secara persis (ID bersifat case-sensitive).
 5. Stream SSE (`GET /api/sensors/:deviceId/stream`) tidak update secara live tetapi `/latest` berfungsi: periksa apakah ada proxy yang melakukan buffering pada `text/event-stream` (memerlukan dukungan `X-Accel-Buffering: no`, yang sudah diset oleh backend) atau ekstensi browser yang memblokir `EventSource`.
 
+## Antrean offline ESP32: record terus dikirim ulang
+
+ESP32 mengirim ulang record tertua tiap 30 detik selama belum menerima ACK di `suburin/devices/<node_id>/ack`.
+1. Apakah migrasi `009_sensor_buffered_records.sql` sudah dijalankan? Tanpa kolom `record_id`, penyimpanan gagal dan ACK tidak pernah dikirim (cari `[SensorSubscriber] Gagal memproses data sensor` di log).
+2. Apakah perangkat sudah diklaim (terdaftar di tabel `devices` dengan `device_code` yang sama dengan `<node_id>`)? Perangkat belum terdaftar sengaja tidak di-ACK.
+3. Apakah broker mengizinkan node subscribe ke topic `ack` dan `config`, dan backend publish ke keduanya (EMQX Cloud: Access Control > Authorization; mode blacklist bawaan mengizinkan semuanya)?
+4. Apakah backend terhubung ke broker? Log `[MQTT Publisher] ACK tertunda, broker belum terhubung` berarti ACK tidak terkirim.
+5. Payload harus memuat `record_id` bilangan bulat; nama field lain dianggap telemetri lama (tanpa ACK).
+
+## Ekspor CSV kosong atau `401`
+
+- `401`: `EXPORT_API_KEY` di URL (`?api_key=`) tidak sama dengan nilai di server, atau variabel kosong (jalur kunci nonaktif; pakai JWT). JWT kedaluwarsa setelah 7 hari.
+- `404`: `deviceId` bukan UUID perangkat yang valid, atau perangkat tidak ada.
+- Hanya header yang muncul: buffer ekspor (`sensor:export:<deviceCode>` di Redis) masih kosong. Buffer hanya berisi pesan yang diterima backend setelah versi ini berjalan, dan hilang bila Redis dikosongkan. Cek juga rentang `from`/`to`.
+- `500`: Redis tidak terjangkau; ekspor tidak punya fallback ke database.
+
 ## Endpoint rekomendasi mengembalikan 500 dengan pesan error bergaya "not found" dari Prisma
 
 `generateRecommendation` melempar error ketika `plantIdOrName` tidak cocok dengan baris data mana pun (berdasarkan UUID atau nama case-insensitive); ini muncul sebagai `500` dari controller. Pastikan `plantId` device masih merujuk ke baris data yang ada (seharusnya tidak dapat dihapus karena `onDelete: Restrict`, tetapi data yang di-seed/migrasi di luar jalur normal tetap bisa menjadi tidak konsisten).

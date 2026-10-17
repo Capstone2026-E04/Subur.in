@@ -4,7 +4,7 @@ Menangani webhook Telegram Bot dan alur penautan akun. Bot sendiri (routing peri
 
 ## `POST /api/telegram/webhook`
 
-**Tidak ada header `Authorization`**: endpoint ini dipanggil oleh server Telegram, bukan oleh frontend. Menerima object [`Update`](https://core.telegram.org/bots/api#update) dari Telegram (`message` untuk perintah teks, `callback_query` untuk tap tombol inline keyboard). Controller ([`controllers/telegram.controller.js`](../../backend/src/controllers/telegram.controller.js)) hanyalah adapter tipis yang meneruskan body request ke `telegram/bot.js#processUpdate`, yang pada gilirannya memanggil `telegram/router.js#handleUpdate` — satu-satunya tempat yang membedakan `message` dari `callback_query` dan melakukan parsing routing.
+**Tidak ada header `Authorization`**: endpoint ini dipanggil oleh server Telegram, bukan oleh frontend. Menerima object [`Update`](https://core.telegram.org/bots/api#update) dari Telegram (`message` untuk perintah teks, `callback_query` untuk tap tombol inline keyboard). Controller ([`controllers/telegram.controller.js`](../../backend/src/controllers/telegram.controller.js)) hanyalah adapter tipis yang membalas `200` lebih dulu (agar Telegram tidak timeout/retry) lalu meneruskan body request ke `telegram/bot.js#processUpdate`, yang pada gilirannya memanggil `telegram/router.js#handleUpdate` — satu-satunya tempat yang membedakan `message` dari `callback_query` dan melakukan parsing routing.
 
 **Request body (dari Telegram, contoh perintah teks):**
 ```json

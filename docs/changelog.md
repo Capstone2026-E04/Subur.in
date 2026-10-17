@@ -2,6 +2,17 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-17
+
+- **feat(mqtt):** Antrean offline ESP32. Saat WiFi putus, ESP32 menyimpan pembacaan dan mengirimnya setelah tersambung kembali; backend menyimpannya idempoten lewat `UNIQUE(device_id, record_id, timestamp)`, memakai `measured_at` (UTC) sebagai waktu pengukuran, lalu mengirim ACK (`record_id` polos, QoS 1, `retain=false`) ke `suburin/devices/<node_id>/ack` setelah commit database (juga untuk record duplikat). `measured_at = null` (jam belum sinkron NTP) disimpan dengan `time_synced=false` dan waktu terima sebagai penanda posisi. Record duplikat dan data yang lebih tua dari 2 x `sensorInterval` hanya disimpan: tidak memicu rekomendasi, notifikasi, SSE, maupun cache terbaru. Nilai sensor tidak valid tetap di-ACK agar antrean tidak macet; perangkat belum terdaftar tidak di-ACK. Telemetri tanpa `record_id` (firmware lama, Dev Mode) tetap lewat jalur lama. **Jalankan `backend/prisma/manual/009_sensor_buffered_records.sql` di Supabase SEBELUM deploy** (rollback tersedia). Lihat [ADR-011](decisions/adr-011-offline-queue-ack-and-export-buffer.md).
+- **feat(sensor):** `GET /api/sensors/:deviceId/export.csv` mengekspor data sensor sebagai CSV untuk Excel (`Data > From Web`). Sumbernya buffer pesan MQTT di Redis (`sensor:export:<deviceCode>`, maks 10.000 pesan, kedaluwarsa 30 hari), dicatat tanpa throttle `SENSOR_THROTTLE_SECONDS`. Kolom: `device_code, timestamp_utc, timestamp_wib, ph, moisture, time_synced`. Parameter `from`, `to`, `limit`. Lihat [api/sensors.md](api/sensors.md).
+- **feat(security):** Variabel `EXPORT_API_KEY` (query `?api_key=` atau header `X-API-Key`, perbandingan timing-safe) mengotorisasi ekspor CSV tanpa JWT; kosong = dinonaktifkan. JWT pemilik perangkat tetap diterima.
+- **feat(dashboard):** Grafik tren pH dan kelembapan punya pilihan granularitas waktu (per menit, 10 menit, jam, hari) dengan tooltip, dan pilihan jumlah data terakhir (5, 10, 20, 30 titik; default 10).
+- **feat(device):** Modal edit perangkat memakai opsi interval yang sama dengan modal tambah (1 menit hingga 12 jam); sebelumnya maksimal 1 jam sehingga perangkat dengan interval 4/6/12 jam tampil kosong saat diedit. Default interval di frontend menjadi 1 jam.
+- **fix(dashboard):** Volume air rekomendasi ditampilkan dalam mL.
+- **fix(telegram):** Webhook membalas `200` sebelum memproses update; bot membalas pesan galat bila pemrosesan gagal dan mengarahkan pesan teks non-perintah (chat privat) ke `/help`.
+- **test:** Tes baru untuk jalur antrean offline, buffer ekspor, endpoint ekspor, dan middleware `EXPORT_API_KEY` (backend 260 test).
+
 ## 2026-10-15
 
 - **feat(auth)!:** Registrasi dan login dengan email + password (`POST /api/auth/register`, `POST /api/auth/login`) berdampingan dengan Google Sign-In. Password di-hash scrypt (`utils/password.js`), pesan galat login seragam, dan percobaan gagal dibatasi 10 per email per 15 menit (dependensi baru `express-rate-limit`). `users.google_id` menjadi nullable dan `users.password_hash` ditambahkan. **Jalankan `backend/prisma/manual/008_email_password_auth.sql` di Supabase SEBELUM deploy** (rollback tersedia). Lihat [ADR-009](decisions/adr-009-email-password-auth.md).

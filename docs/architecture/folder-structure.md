@@ -8,7 +8,7 @@ Subur.in/
 │   ├── prisma/
 │   │   ├── schema.prisma        # Model data (lihat database-schema.md)
 │   │   ├── seed.js              # Mengisi data awal plants
-│   │   └── manual/              # SQL manual 001-008 (CHECK, RLS, migrasi data, role, password) + rollback/
+│   │   └── manual/              # SQL manual 001-009 (CHECK, RLS, migrasi data, role, password, antrean sensor) + rollback/
 │   └── src/
 │       ├── ai/                  # Mesin rekomendasi fuzzy logic (logika murni, tanpa I/O)
 │       │   ├── config/          # Parameter fuzzy set, preset fisik, konstanta treatment
@@ -22,12 +22,13 @@ Subur.in/
 │       ├── database/connections/# Singleton Prisma client, Redis client (ioredis)
 │       ├── errors/              # AppError.js (error terklasifikasi: statusCode, isOperational)
 │       ├── middlewares/         # auth.middleware.js (verifikasi JWT), superadmin.middleware.js (role dari DB),
+│       │                        # export_key.middleware.js (EXPORT_API_KEY),
 │       │                        # login_rate_limit.middleware.js, error.middleware.js (handler error terpusat)
 │       ├── mqtt/
 │       │   ├── connection.js        # Setup MQTT client (EMQX via TLS)
-│       │   ├── publishers/          # Mempublikasikan konfigurasi device (interval sensor) ke perangkat
+│       │   ├── publishers/          # Mempublikasikan konfigurasi device (interval sensor) dan ACK record antrean offline ke perangkat
 │       │   └── subscribers/         # Berlangganan topik telemetri, memvalidasi + menyimpan pembacaan
-│       ├── repositories/        # Akses data: sensor_repository (Postgres), sensor_redis_repository (cache)
+│       ├── repositories/        # Akses data: sensor_repository (Postgres), sensor_redis_repository (cache + buffer ekspor)
 │       ├── routes/              # Router Express, dipasang di bawah /api pada routes/api.js
 │       ├── services/            # notification.service.js (fan-out notifyDevice)
 │       ├── sse/                 # Registry client Server-Sent Events in-memory + broadcaster

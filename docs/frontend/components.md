@@ -25,7 +25,7 @@ Widget khusus dashboard, sebagian besar digerakkan oleh [`navConfig.ts`](../../f
 | `RecommendationSummaryCard.tsx` | Kartu "Rekomendasi Treatment Saat ini": teks aksi, tiga tile Air/Sulfur/Kapur (merah = kurangi air, biru = tambah air, hijau = tambah dosis, abu-abu = tidak perlu), dan waktu pembaruan terakhir; menangani status memuat dan belum ada data |
 | `PhLevelCard.tsx` | Bar gradasi pH 0-14 dengan penanda nilai dan lencana klasifikasi (`classifyPh`) |
 | `MoistureLevelCard.tsx` | Gauge setengah lingkaran kelembapan dengan jarum dan lencana klasifikasi (`classifyNmi`) |
-| `SensorTrendCard.tsx` | Grafik garis rata-rata per menit untuk 10 menit terakhir (pH atau kelembapan) dari riwayat sensor; pembacaan realtime ikut ditambahkan oleh halaman |
+| `SensorTrendCard.tsx` | Grafik garis rata-rata (pH atau kelembapan) dari riwayat sensor dengan dua dropdown: granularitas (per menit, 10 menit, jam, hari) dan jumlah data terakhir (5, 10, 20, 30; default 10), serta tooltip nilai; pembacaan realtime ikut ditambahkan oleh halaman |
 | `sensorStatus.ts` | `classifyPh`, `classifyNmi`, `TONES`, `formatTimestamp`, dan rentang pH bawaan; dipakai kartu-kartu di atas |
 | `SensorGaugeCard.tsx` | Gauge melingkar untuk satu nilai sensor; saat ini hanya dipakai pratinjau landing page (`HeroPreview`) |
 | `SensorHistoryChart.tsx` | Time series berbasis Recharts untuk riwayat sensor (`GET /api/sensors/:id/history`) |
@@ -41,7 +41,7 @@ UI manajemen device, semuanya didukung oleh [`useDevices`](../../frontend/src/ho
 |---|---|
 | `DeviceCard.tsx` | Satu baris tabel "Daftar Perangkat": nama, status, tanaman, terakhir aktif, tombol Edit dan Hapus |
 | `ConnectDeviceModal.tsx` | Alur klaim untuk device yang baru ditemukan (`POST /api/devices`) |
-| `EditDeviceModal.tsx` | Edit label/plant/interval (`PATCH /api/devices/:id`) |
+| `EditDeviceModal.tsx` | Edit label/plant/interval (`PATCH /api/devices/:id`); opsi interval sama dengan modal tambah (1 menit-12 jam) |
 | `DeleteConfirmDialog.tsx` | Dialog konfirmasi hapus generik, digunakan ulang untuk penghapusan device |
 
 ## `components/auth/`
