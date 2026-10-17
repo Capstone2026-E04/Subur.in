@@ -67,6 +67,21 @@ describe("router handleUpdate", () => {
     expect(telegramApi.sendMessage).not.toHaveBeenCalled();
   });
 
+  it("sends a /help hint for plain text in a private chat", async () => {
+    await handleUpdate({
+      message: {
+        chat: { id: FAKE_CHAT_ID, type: "private" },
+        from: { id: FAKE_USER_ID },
+        text: "halo bot",
+      },
+    });
+
+    expect(telegramApi.sendMessage).toHaveBeenCalledWith(
+      FAKE_CHAT_ID,
+      expect.stringContaining("/help"),
+    );
+  });
+
   it("answers an unrecognized callback_query domain without replying", async () => {
     await handleUpdate({
       callback_query: {

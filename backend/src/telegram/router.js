@@ -6,6 +6,8 @@ const { commandMap } = require("./commands/index");
 const { callbackHandlers } = require("./callbacks/index");
 const { parseCallbackData } = require("./utils/parse_callback_data");
 
+const PLAIN_TEXT_MESSAGE =
+  "Saya hanya memahami perintah berawalan /. Kirim /help untuk melihat daftar perintah.";
 const UNKNOWN_COMMAND_MESSAGE =
   "Perintah tidak dikenali. Kirim /help untuk melihat daftar perintah.";
 
@@ -66,7 +68,13 @@ async function handleMessage(message) {
   const telegramUserId = message.from?.id;
   const text = (message.text || "").trim();
 
-  if (!chatId || !text || !text.startsWith("/")) return;
+  if (!chatId || !text) return;
+  if (!text.startsWith("/")) {
+    if (message.chat?.type === "private") {
+      await telegramApi.sendMessage(chatId, PLAIN_TEXT_MESSAGE);
+    }
+    return;
+  }
 
   const user = await findUserByChatId(chatId);
   const devices = await fetchDevicesForUser(user);
