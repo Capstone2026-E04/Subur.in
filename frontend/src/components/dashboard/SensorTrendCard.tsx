@@ -20,7 +20,7 @@ interface SensorTrendCardProps {
   color: string;
 }
 
-const POINTS = 10;
+const POINT_OPTIONS = [5, 10, 20, 30];
 const TIME_ZONE = "Asia/Jakarta";
 const TZ_OFFSET_MS = 7 * 3600 * 1000; // WIB tetap UTC+7, tanpa DST
 
@@ -49,6 +49,7 @@ function buildAverages(
   history: SensorHistoryItem[],
   metric: "ph" | "moisture",
   g: Granularity,
+  points: number,
 ) {
   const bucketOf = (t: number) => Math.floor((t + TZ_OFFSET_MS) / g.ms);
   const sums = new Map<number, { total: number; count: number }>();
@@ -61,8 +62,8 @@ function buildAverages(
   }
 
   const current = bucketOf(Date.now());
-  return Array.from({ length: POINTS }, (_, i) => {
-    const bucket = current - (POINTS - 1 - i);
+  return Array.from({ length: points }, (_, i) => {
+    const bucket = current - (points - 1 - i);
     const entry = sums.get(bucket);
     return {
       label: bucketLabel(bucket * g.ms - TZ_OFFSET_MS, g),
@@ -78,7 +79,8 @@ export default function SensorTrendCard({
   color,
 }: SensorTrendCardProps) {
   const [granularity, setGranularity] = useState<Granularity>(GRANULARITIES[0]);
-  const data = buildAverages(history, metric, granularity);
+  const [points, setPoints] = useState(POINT_OPTIONS[1]);
+  const data = buildAverages(history, metric, granularity, points);
   const domain: [number, number] = metric === "ph" ? [0, 14] : [0, 100];
   const formatValue = (v: number) =>
     metric === "ph" ? v.toFixed(1) : `${Math.round(v)}%`;
@@ -89,23 +91,37 @@ export default function SensorTrendCard({
         <h3 className="text-xl font-bold tracking-tight text-neutral-800">
           {title}
         </h3>
-        <select
-          aria-label="Granularitas waktu"
-          value={granularity.id}
-          onChange={(e) =>
-            setGranularity(
-              GRANULARITIES.find((g) => g.id === e.target.value) ??
-                GRANULARITIES[0],
-            )
-          }
-          className="cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 focus:outline-none"
-        >
-          {GRANULARITIES.map((g) => (
-            <option key={g.id} value={g.id}>
-              Per {g.label}
-            </option>
-          ))}
-        </select>
+        <div className="flex gap-2">
+          <select
+            aria-label="Jumlah data terakhir"
+            value={points}
+            onChange={(e) => setPoints(Number(e.target.value))}
+            className="cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 focus:outline-none"
+          >
+            {POINT_OPTIONS.map((n) => (
+              <option key={n} value={n}>
+                {n} data terakhir
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Granularitas waktu"
+            value={granularity.id}
+            onChange={(e) =>
+              setGranularity(
+                GRANULARITIES.find((g) => g.id === e.target.value) ??
+                  GRANULARITIES[0],
+              )
+            }
+            className="cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 focus:outline-none"
+          >
+            {GRANULARITIES.map((g) => (
+              <option key={g.id} value={g.id}>
+                Per {g.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="mt-4 h-[200px] w-full">
