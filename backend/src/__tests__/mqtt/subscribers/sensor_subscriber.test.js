@@ -2,7 +2,11 @@
 
 jest.mock("../../../repositories/sensor_repository", () => ({
   saveRawSensorLog: jest.fn(),
+  saveBufferedSensorLog: jest.fn(),
   updateDeviceLastSeen: jest.fn(),
+}));
+jest.mock("../../../mqtt/publishers/ack_publisher", () => ({
+  publishRecordAck: jest.fn(),
 }));
 jest.mock("../../../repositories/sensor_redis_repository", () => ({
   setLatestSensorData: jest.fn(),
@@ -25,8 +29,10 @@ jest.mock("../../../services/notification.service", () => ({
 
 const {
   saveRawSensorLog,
+  saveBufferedSensorLog,
   updateDeviceLastSeen,
 } = require("../../../repositories/sensor_repository");
+const { publishRecordAck } = require("../../../mqtt/publishers/ack_publisher");
 const {
   setLatestSensorData,
   shouldSaveToDatabase,
@@ -55,6 +61,7 @@ const deviceFixture = {
   id: "device-1",
   plantId: "plant-1",
   plant: { minPh: 6.0, maxPh: 7.0 },
+  sensorInterval: 15,
 };
 
 const idleRecommendation = {
@@ -233,6 +240,101 @@ describe("handleSensorMessage", () => {
           deviceId: "device-1",
         }),
       );
+    });
+  });
+
+  describe("buffered records from the ESP32 queue", () => {
+    const fresh = () => new Date(Date.now() - 60 * 1000).toISOString();
+    const old = () => new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+    const record = (extra) => ({
+      ph: 6.5,
+      moisture: 80,
+      record_id: 7,
+      measured_at: fresh(),
+      ...extra,
+    });
+
+    beforeEach(() => saveBufferedSensorLog.mockResolvedValue(true));
+
+    it("saves with measured_at, then ACKs the bare record id", async () => {
+      const measuredAt = fresh();
+
+      await send(record({ measured_at: measuredAt }));
+
+      expect(saveBufferedSensorLog).toHaveBeenCalledWith(
+        "device-1",
+        7,
+        6.5,
+        80,
+        new Date(measuredAt),
+        false,
+      );
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
+      expect(saveRawSensorLog).not.toHaveBeenCalled();
+    });
+
+    it("keeps measured_at null instead of substituting the current time", async () => {
+      await send(record({ measured_at: null }));
+
+      expect(saveBufferedSensorLog).toHaveBeenCalledWith(
+        "device-1",
+        7,
+        6.5,
+        80,
+        null,
+        false,
+      );
+    });
+
+    it("does not ACK when the save fails", async () => {
+      saveBufferedSensorLog.mockRejectedValue(new Error("db down"));
+
+      await send(record());
+
+      expect(publishRecordAck).not.toHaveBeenCalled();
+    });
+
+    it("does not ACK a record from an unregistered device", async () => {
+      prisma.device.findUnique.mockResolvedValue(null);
+
+      await send(record());
+
+      expect(saveBufferedSensorLog).not.toHaveBeenCalled();
+      expect(publishRecordAck).not.toHaveBeenCalled();
+    });
+
+    it("ACKs a duplicate but skips recommendation and broadcast", async () => {
+      saveBufferedSensorLog.mockResolvedValue(false);
+
+      await send(record());
+
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
+      expect(generateRecommendation).not.toHaveBeenCalled();
+      expect(broadcastToDevice).not.toHaveBeenCalled();
+    });
+
+    it("stores an old backlog record without live processing", async () => {
+      await send(record({ measured_at: old() }));
+
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
+      expect(updateDeviceLastSeen).toHaveBeenCalledWith("device-1");
+      expect(setLatestSensorData).not.toHaveBeenCalled();
+      expect(generateRecommendation).not.toHaveBeenCalled();
+    });
+
+    it("runs live processing for a fresh new record", async () => {
+      await send(record());
+
+      expect(setLatestSensorData).toHaveBeenCalledWith(DEVICE_CODE, 6.5, 80);
+      expect(generateRecommendation).toHaveBeenCalled();
+      expect(shouldSaveToDatabase).not.toHaveBeenCalled();
+    });
+
+    it("ACKs an invalid reading so it cannot block the queue", async () => {
+      await send(record({ ph: 15 }));
+
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
+      expect(saveBufferedSensorLog).not.toHaveBeenCalled();
     });
   });
 

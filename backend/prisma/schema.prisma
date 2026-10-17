@@ -105,10 +105,13 @@ model RawSensorLog {
   ph        Float    @db.DoublePrecision
   moisture  Float    @db.DoublePrecision
   isDev     Boolean  @default(false) @map("is_dev")
+  recordId   Int?     @map("record_id")
+  timeSynced Boolean  @default(true) @map("time_synced")
 
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   @@id([timestamp, id])
+  @@unique([deviceId, recordId], map: "uq_raw_sensor_logs_device_record")
   @@index([deviceId, timestamp(sort: Desc)], map: "idx_raw_sensor_logs_device_timestamp")
 
   @@map("raw_sensor_logs")

@@ -2,8 +2,10 @@
 
 const {
   saveRawSensorLog,
+  saveBufferedSensorLog,
   updateDeviceLastSeen,
 } = require("../../repositories/sensor_repository");
+const { publishRecordAck } = require("../publishers/ack_publisher");
 
 const {
   setLatestSensorData,
@@ -66,6 +68,8 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   const ph = data.ph;
   const moisture =
     data.moisture !== undefined ? data.moisture : data.soil_moisture;
+  // Record dari antrean ESP32 membawa record_id; tanpa itu = telemetri lama (tanpa ACK).
+  const recordId = Number.isInteger(data.record_id) ? data.record_id : null;
 
   if (
     !isValidSensorValue(ph, "ph") ||
@@ -102,6 +106,8 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         },
       );
     }
+    // Nilai tidak valid tidak akan membaik bila dikirim ulang; ACK agar antrean tidak macet.
+    if (recordId !== null) await publishRecordAck(deviceCode, recordId);
     return;
   }
 
@@ -110,12 +116,28 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   );
 
   try {
-    await setLatestSensorData(deviceCode, ph, moisture);
-
     const device = await prisma.device.findUnique({
       where: { deviceCode },
       include: { plant: true },
     });
+
+    if (device && recordId !== null) {
+      const created = await saveBufferedSensorLog(
+        device.id,
+        recordId,
+        ph,
+        moisture,
+        parseMeasuredAt(data.measured_at),
+        isDev,
+      );
+      await updateDeviceLastSeen(device.id);
+      // ACK hanya setelah commit (juga untuk record duplikat yang sudah tersimpan).
+      await publishRecordAck(deviceCode, recordId);
+      // Duplikat dan data lama dari antrean tidak boleh memicu rekomendasi/notifikasi.
+      if (!created || isStale(data.measured_at, device.sensorInterval)) return;
+    }
+
+    await setLatestSensorData(deviceCode, ph, moisture);
     if (!device) {
       console.warn(
         `[MQTT Subscriber] ️  Device "${deviceCode}" tidak ditemukan di database. Data Redis disimpan, Postgres diabaikan.`,
@@ -241,7 +263,8 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       );
     }
 
-    const allowWrite = await shouldSaveToDatabase(deviceCode);
+    const allowWrite =
+      recordId === null && (await shouldSaveToDatabase(deviceCode));
     if (allowWrite) {
       await saveRawSensorLog(device.id, ph, moisture, isDev);
       await updateDeviceLastSeen(device.id);
@@ -259,6 +282,20 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       },
     );
   }
+}
+
+// measured_at: ISO string atau epoch (detik/ms); null/tidak valid = belum sinkron NTP.
+function parseMeasuredAt(value) {
+  if (value === null || value === undefined) return null;
+  const date = new Date(
+    typeof value === "number" && value < 1e11 ? value * 1000 : value,
+  );
+  return isNaN(date) ? null : date;
+}
+
+function isStale(measuredAt, sensorIntervalMin) {
+  const date = parseMeasuredAt(measuredAt);
+  return date !== null && Date.now() - date > 2 * sensorIntervalMin * 60 * 1000;
 }
 
 function isSensorTopic(topic) {
