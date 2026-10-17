@@ -111,7 +111,7 @@ model RawSensorLog {
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   @@id([timestamp, id])
-  @@unique([deviceId, recordId], map: "uq_raw_sensor_logs_device_record")
+  @@unique([deviceId, recordId, timestamp], map: "uq_raw_sensor_logs_device_record")
   @@index([deviceId, timestamp(sort: Desc)], map: "idx_raw_sensor_logs_device_timestamp")
 
   @@map("raw_sensor_logs")
