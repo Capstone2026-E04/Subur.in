@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import {
   CartesianGrid,
   Line,
   LineChart,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -15,40 +17,55 @@ interface SensorTrendCardProps {
   title: string;
   metric: "ph" | "moisture";
   history: SensorHistoryItem[];
-  currentValue: number | null;
   color: string;
 }
 
-const MINUTES = 10;
-const MINUTE_MS = 60 * 1000;
+const POINTS = 10;
 const TIME_ZONE = "Asia/Jakarta";
+const TZ_OFFSET_MS = 7 * 3600 * 1000; // WIB tetap UTC+7, tanpa DST
 
-const minuteLabel = (ms: number) =>
-  new Date(ms).toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: TIME_ZONE,
-  });
+const GRANULARITIES = [
+  { id: "minute", label: "Menit", ms: 60 * 1000 },
+  { id: "10min", label: "10 Menit", ms: 10 * 60 * 1000 },
+  { id: "hour", label: "Jam", ms: 3600 * 1000 },
+  { id: "day", label: "Hari", ms: 24 * 3600 * 1000 },
+] as const;
+type Granularity = (typeof GRANULARITIES)[number];
 
-function buildMinuteAverages(
+const bucketLabel = (ms: number, g: Granularity) =>
+  g.id === "day"
+    ? new Date(ms).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        timeZone: TIME_ZONE,
+      })
+    : new Date(ms).toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: TIME_ZONE,
+      });
+
+function buildAverages(
   history: SensorHistoryItem[],
   metric: "ph" | "moisture",
+  g: Granularity,
 ) {
+  const bucketOf = (t: number) => Math.floor((t + TZ_OFFSET_MS) / g.ms);
   const sums = new Map<number, { total: number; count: number }>();
   for (const item of history) {
-    const bucket = Math.floor(new Date(item.timestamp).getTime() / MINUTE_MS);
+    const bucket = bucketOf(new Date(item.timestamp).getTime());
     const entry = sums.get(bucket) ?? { total: 0, count: 0 };
     entry.total += item[metric];
     entry.count += 1;
     sums.set(bucket, entry);
   }
 
-  const current = Math.floor(Date.now() / MINUTE_MS);
-  return Array.from({ length: MINUTES }, (_, i) => {
-    const bucket = current - (MINUTES - 1 - i);
+  const current = bucketOf(Date.now());
+  return Array.from({ length: POINTS }, (_, i) => {
+    const bucket = current - (POINTS - 1 - i);
     const entry = sums.get(bucket);
     return {
-      label: minuteLabel(bucket * MINUTE_MS),
+      label: bucketLabel(bucket * g.ms - TZ_OFFSET_MS, g),
       value: entry ? entry.total / entry.count : null,
     };
   });
@@ -58,27 +75,37 @@ export default function SensorTrendCard({
   title,
   metric,
   history,
-  currentValue,
   color,
 }: SensorTrendCardProps) {
-  const data = buildMinuteAverages(history, metric);
+  const [granularity, setGranularity] = useState<Granularity>(GRANULARITIES[0]);
+  const data = buildAverages(history, metric, granularity);
   const domain: [number, number] = metric === "ph" ? [0, 14] : [0, 100];
-  const display =
-    currentValue === null
-      ? "—"
-      : metric === "ph"
-        ? currentValue.toFixed(1)
-        : `${Math.round(currentValue)}%`;
+  const formatValue = (v: number) =>
+    metric === "ph" ? v.toFixed(1) : `${Math.round(v)}%`;
 
   return (
     <Card className="rounded-3xl p-6">
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-xl font-bold tracking-tight text-neutral-800">
           {title}
         </h3>
-        <span className="text-lg font-bold tabular-nums" style={{ color }}>
-          {display}
-        </span>
+        <select
+          aria-label="Granularitas waktu"
+          value={granularity.id}
+          onChange={(e) =>
+            setGranularity(
+              GRANULARITIES.find((g) => g.id === e.target.value) ??
+                GRANULARITIES[0],
+            )
+          }
+          className="cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 focus:outline-none"
+        >
+          {GRANULARITIES.map((g) => (
+            <option key={g.id} value={g.id}>
+              Per {g.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="mt-4 h-[200px] w-full">
@@ -98,13 +125,18 @@ export default function SensorTrendCard({
               dy={8}
             />
             <YAxis hide domain={domain} />
+            <Tooltip
+              formatter={(v) => [formatValue(Number(v)), title]}
+              labelStyle={{ fontWeight: 700 }}
+              contentStyle={{ borderRadius: 12, fontSize: 12 }}
+            />
             <Line
               type="monotone"
               dataKey="value"
               stroke={color}
               strokeWidth={3}
               dot={{ r: 4, fill: color, strokeWidth: 0 }}
-              activeDot={{ r: 5, strokeWidth: 0 }}
+              activeDot={{ r: 7, strokeWidth: 0 }}
               connectNulls
               isAnimationActive={false}
             />

@@ -23,7 +23,7 @@ import type {
 } from "@/types/device";
 import { Card } from "@/components/ui/card";
 
-const HISTORY_LIMIT = 120;
+const HISTORY_LIMIT = 500;
 
 function DashboardSkeleton() {
   return (
@@ -248,14 +248,12 @@ export default function DashboardPage() {
           title="Tingkat pH Tanah"
           metric="ph"
           history={trendHistory}
-          currentValue={currentPh}
           color="#2f6f3a"
         />
         <SensorTrendCard
           title="Kelembapan Tanah"
           metric="moisture"
           history={trendHistory}
-          currentValue={currentMoisture}
           color="#4cb84c"
         />
       </div>
