@@ -3,6 +3,7 @@
 jest.mock("../../../repositories/sensor_repository", () => ({
   saveRawSensorLog: jest.fn(),
   saveBufferedSensorLog: jest.fn(),
+  saveRejectedSensorRecord: jest.fn(),
   updateDeviceLastSeen: jest.fn(),
 }));
 jest.mock("../../../mqtt/publishers/ack_publisher", () => ({
@@ -31,6 +32,7 @@ jest.mock("../../../services/notification.service", () => ({
 const {
   saveRawSensorLog,
   saveBufferedSensorLog,
+  saveRejectedSensorRecord,
   updateDeviceLastSeen,
 } = require("../../../repositories/sensor_repository");
 const { publishRecordAck } = require("../../../mqtt/publishers/ack_publisher");
@@ -129,7 +131,12 @@ describe("handleSensorMessage", () => {
 
       await send({ ph: 6.5, moisture: 80 });
 
-      expect(setLatestSensorData).toHaveBeenCalledWith(DEVICE_CODE, 6.5, 80);
+      expect(setLatestSensorData).toHaveBeenCalledWith(
+        DEVICE_CODE,
+        6.5,
+        80,
+        "legacy_index",
+      );
       expect(generateRecommendation).not.toHaveBeenCalled();
     });
   });
@@ -177,7 +184,12 @@ describe("handleSensorMessage", () => {
     it("accepts soil_moisture as an alias of moisture", async () => {
       await send({ ph: 6.5, soil_moisture: 80 });
 
-      expect(setLatestSensorData).toHaveBeenCalledWith(DEVICE_CODE, 6.5, 80);
+      expect(setLatestSensorData).toHaveBeenCalledWith(
+        DEVICE_CODE,
+        6.5,
+        80,
+        "legacy_index",
+      );
     });
 
     it("saves the recommendation log with the computed result", async () => {
@@ -213,7 +225,13 @@ describe("handleSensorMessage", () => {
     it("saves the raw sensor log when the throttle allows it", async () => {
       await send({ ph: 6.5, moisture: 80 });
 
-      expect(saveRawSensorLog).toHaveBeenCalledWith("device-1", 6.5, 80, false);
+      expect(saveRawSensorLog).toHaveBeenCalledWith(
+        "device-1",
+        6.5,
+        80,
+        false,
+        "legacy_index",
+      );
       expect(updateDeviceLastSeen).toHaveBeenCalledWith("device-1");
     });
 
@@ -251,12 +269,16 @@ describe("handleSensorMessage", () => {
     const record = (extra) => ({
       ph: 6.5,
       moisture: 80,
-      record_id: 7,
+      record_id: "node_1-e815e781ea36d47c886b9148b3b57e46-7",
       measured_at: fresh(),
       ...extra,
     });
+    const RECORD_ID = "node_1-e815e781ea36d47c886b9148b3b57e46-7";
 
-    beforeEach(() => saveBufferedSensorLog.mockResolvedValue(true));
+    beforeEach(() => {
+      saveBufferedSensorLog.mockResolvedValue(true);
+      saveRejectedSensorRecord.mockResolvedValue();
+    });
 
     it("saves with measured_at, then ACKs the bare record id", async () => {
       const measuredAt = fresh();
@@ -265,14 +287,43 @@ describe("handleSensorMessage", () => {
 
       expect(saveBufferedSensorLog).toHaveBeenCalledWith(
         "device-1",
-        7,
+        RECORD_ID,
         6.5,
         80,
+        "legacy_index",
         new Date(measuredAt),
         false,
       );
-      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, RECORD_ID);
       expect(saveRawSensorLog).not.toHaveBeenCalled();
+    });
+
+    it("converts a legacy numeric record_id to text", async () => {
+      await send(record({ record_id: 7 }));
+
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, "7");
+    });
+
+    it("reads soil_vwc_pct as VWC and skips the legacy recommendation", async () => {
+      await send({
+        ph: 6.5,
+        soil_vwc: 0.1042,
+        soil_vwc_pct: 10.42,
+        record_id: RECORD_ID,
+        measured_at: fresh(),
+      });
+
+      expect(saveBufferedSensorLog).toHaveBeenCalledWith(
+        "device-1",
+        RECORD_ID,
+        6.5,
+        10.42,
+        "vwc_percent",
+        expect.any(Date),
+        false,
+      );
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, RECORD_ID);
+      expect(generateRecommendation).not.toHaveBeenCalled();
     });
 
     it("keeps measured_at null instead of substituting the current time", async () => {
@@ -280,9 +331,10 @@ describe("handleSensorMessage", () => {
 
       expect(saveBufferedSensorLog).toHaveBeenCalledWith(
         "device-1",
-        7,
+        RECORD_ID,
         6.5,
         80,
+        "legacy_index",
         null,
         false,
       );
@@ -310,7 +362,7 @@ describe("handleSensorMessage", () => {
 
       await send(record());
 
-      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, RECORD_ID);
       expect(generateRecommendation).not.toHaveBeenCalled();
       expect(broadcastToDevice).not.toHaveBeenCalled();
     });
@@ -318,7 +370,7 @@ describe("handleSensorMessage", () => {
     it("stores an old backlog record without live processing", async () => {
       await send(record({ measured_at: old() }));
 
-      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, RECORD_ID);
       expect(updateDeviceLastSeen).toHaveBeenCalledWith("device-1");
       expect(setLatestSensorData).not.toHaveBeenCalled();
       expect(generateRecommendation).not.toHaveBeenCalled();
@@ -327,16 +379,37 @@ describe("handleSensorMessage", () => {
     it("runs live processing for a fresh new record", async () => {
       await send(record());
 
-      expect(setLatestSensorData).toHaveBeenCalledWith(DEVICE_CODE, 6.5, 80);
+      expect(setLatestSensorData).toHaveBeenCalledWith(
+        DEVICE_CODE,
+        6.5,
+        80,
+        "legacy_index",
+      );
       expect(generateRecommendation).toHaveBeenCalled();
       expect(shouldSaveToDatabase).not.toHaveBeenCalled();
     });
 
-    it("ACKs an invalid reading so it cannot block the queue", async () => {
-      await send(record({ ph: 15 }));
+    it("stores an invalid record with its reason before ACKing it", async () => {
+      const payload = record({ ph: 15 });
 
-      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, 7);
+      await send(payload);
+
+      expect(saveRejectedSensorRecord).toHaveBeenCalledWith(
+        "device-1",
+        RECORD_ID,
+        payload,
+        "invalid: ph",
+      );
+      expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, RECORD_ID);
       expect(saveBufferedSensorLog).not.toHaveBeenCalled();
+    });
+
+    it("does not ACK an invalid record when storing it fails", async () => {
+      saveRejectedSensorRecord.mockRejectedValue(new Error("db down"));
+
+      await send(record({ moisture: null }));
+
+      expect(publishRecordAck).not.toHaveBeenCalled();
     });
   });
 
@@ -367,6 +440,7 @@ describe("handleSensorMessage", () => {
         t: measuredAt,
         ph: 6.5,
         moisture: 80,
+        moistureType: "legacy_index",
         synced: true,
       });
     });

@@ -88,6 +88,7 @@ exports.getLatestSensor = async (req, res, next) => {
           deviceId: dbLog.deviceId,
           ph: dbLog.ph,
           moisture: dbLog.moisture,
+          moistureType: dbLog.moistureType,
           timestamp: dbLog.timestamp,
         };
       }
@@ -149,7 +150,7 @@ exports.exportSensorCsv = async (req, res, next) => {
       .slice(-limit);
     const rows = entries.map(
       (e) =>
-        `${device.deviceCode},${e.time.toISOString()},${toWib(e.time)},${e.ph},${e.moisture},${e.synced}`,
+        `${device.deviceCode},${e.time.toISOString()},${toWib(e.time)},${e.ph},${e.moisture},${e.moistureType ?? "legacy_index"},${e.synced}`,
     );
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
@@ -158,7 +159,7 @@ exports.exportSensorCsv = async (req, res, next) => {
     );
     return res.send(
       [
-        "device_code,timestamp_utc,timestamp_wib,ph,moisture,time_synced",
+        "device_code,timestamp_utc,timestamp_wib,ph,moisture,moisture_type,time_synced",
         ...rows,
       ].join("\r\n") + "\r\n",
     );

@@ -8,42 +8,64 @@ async function findDeviceById(deviceId) {
   });
 }
 
-async function saveRawSensorLog(deviceId, ph, moisture, isDev = false) {
+async function saveRawSensorLog(
+  deviceId,
+  ph,
+  moisture,
+  isDev = false,
+  moistureType = "legacy_index",
+) {
   return await prisma.rawSensorLog.create({
     data: {
       deviceId: deviceId,
       ph: ph,
       moisture: moisture,
+      moistureType,
       isDev,
     },
   });
 }
 
-// Idempoten lewat UNIQUE(device_id, record_id); true bila record baru tersimpan.
+// Idempoten lewat UNIQUE(device_id, record_id); payload asli disimpan utuh bersama alasan penolakan.
+async function saveRejectedSensorRecord(deviceId, recordId, payload, reason) {
+  await prisma.rejectedSensorRecord.createMany({
+    data: [{ deviceId, recordId, payload, reason }],
+    skipDuplicates: true,
+  });
+}
+
+// Idempoten lewat sensor_record_receipts (PK device_id+record_id, tidak dipartisi sehingga tetap
+// unik walau measured_at null); receipt dan log satu transaksi. true bila record baru tersimpan.
 // measuredAt null = jam ESP32 belum sinkron NTP: waktu terima hanya penanda posisi, time_synced=false.
 async function saveBufferedSensorLog(
   deviceId,
   recordId,
   ph,
   moisture,
+  moistureType,
   measuredAt,
   isDev = false,
 ) {
-  const { count } = await prisma.rawSensorLog.createMany({
-    data: [
-      {
+  return await prisma.$transaction(async (tx) => {
+    const { count } = await tx.sensorRecordReceipt.createMany({
+      data: [{ deviceId, recordId }],
+      skipDuplicates: true,
+    });
+    if (count === 0) return false;
+    await tx.rawSensorLog.create({
+      data: {
         deviceId,
         recordId,
         ph,
         moisture,
+        moistureType,
         isDev,
         timestamp: measuredAt ?? undefined,
         timeSynced: measuredAt !== null,
       },
-    ],
-    skipDuplicates: true,
+    });
+    return true;
   });
-  return count === 1;
 }
 
 async function updateDeviceLastSeen(deviceId) {
@@ -83,6 +105,7 @@ module.exports = {
   findDeviceById,
   saveRawSensorLog,
   saveBufferedSensorLog,
+  saveRejectedSensorRecord,
   updateDeviceLastSeen,
   getLatestSensorLog,
   getSensorHistory,

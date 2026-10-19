@@ -9,7 +9,12 @@ const EXPORT_KEY_PREFIX = "sensor:export:";
 const EXPORT_MAX_ENTRIES = 10000;
 const EXPORT_TTL_SECONDS = 30 * 24 * 3600;
 
-async function setLatestSensorData(deviceCode, ph, moisture) {
+async function setLatestSensorData(
+  deviceCode,
+  ph,
+  moisture,
+  moistureType = "legacy_index",
+) {
   try {
     const redis = getRedisClient();
     const key = `${LATEST_KEY_PREFIX}${deviceCode}`;
@@ -17,6 +22,7 @@ async function setLatestSensorData(deviceCode, ph, moisture) {
       deviceCode,
       ph,
       moisture,
+      moistureType,
       timestamp: new Date().toISOString(),
     });
     await redis.set(key, payload, "EX", SENSOR_TTL_SECONDS);

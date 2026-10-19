@@ -46,8 +46,8 @@ describe("exportSensorCsv", () => {
       "text/csv; charset=utf-8",
     );
     expect(res.send).toHaveBeenCalledWith(
-      "device_code,timestamp_utc,timestamp_wib,ph,moisture,time_synced\r\n" +
-        "ESP32-A,2026-10-17T07:03:22.000Z,2026-10-17 14:03:22,6.4,71.2,true\r\n",
+      "device_code,timestamp_utc,timestamp_wib,ph,moisture,moisture_type,time_synced\r\n" +
+        "ESP32-A,2026-10-17T07:03:22.000Z,2026-10-17 14:03:22,6.4,71.2,legacy_index,true\r\n",
     );
   });
 
@@ -63,7 +63,7 @@ describe("exportSensorCsv", () => {
     await exportSensorCsv(req({ from: "2026-10-01", limit: "2" }), res);
 
     const lines = res.send.mock.calls[0][0].trim().split("\r\n").slice(1);
-    expect(lines.map((l) => l.split(",").at(-3))).toEqual(["2", "3"]);
+    expect(lines.map((l) => l.split(",").at(-4))).toEqual(["2", "3"]);
   });
 
   it("returns 404 for a malformed id or an unknown device", async () => {

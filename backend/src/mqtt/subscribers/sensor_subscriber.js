@@ -3,6 +3,7 @@
 const {
   saveRawSensorLog,
   saveBufferedSensorLog,
+  saveRejectedSensorRecord,
   updateDeviceLastSeen,
 } = require("../../repositories/sensor_repository");
 const { publishRecordAck } = require("../publishers/ack_publisher");
@@ -67,15 +68,20 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   }
 
   const ph = data.ph;
-  const moisture =
-    data.moisture !== undefined ? data.moisture : data.soil_moisture;
-  // Record dari antrean ESP32 membawa record_id; tanpa itu = telemetri lama (tanpa ACK).
-  const recordId = Number.isInteger(data.record_id) ? data.record_id : null;
+  const hasVwc = Object.prototype.hasOwnProperty.call(data, "soil_vwc_pct");
+  const moisture = hasVwc
+    ? data.soil_vwc_pct
+    : data.moisture !== undefined
+      ? data.moisture
+      : data.soil_moisture;
+  const moistureType = hasVwc ? "vwc_percent" : "legacy_index";
+  // Record dari antrean ESP32 membawa record_id teks (atau angka lama); tanpa itu = telemetri lama (tanpa ACK).
+  const recordId = parseRecordId(data.record_id);
 
-  if (
-    !isValidSensorValue(ph, "ph") ||
-    !isValidSensorValue(moisture, "moisture")
-  ) {
+  const phValid = isValidSensorValue(ph, "ph");
+  const moistureValid = isValidSensorValue(moisture, "moisture");
+
+  if (!phValid || !moistureValid) {
     console.warn(
       `[MQTT Subscriber] ️  Nilai sensor tidak valid dari device "${deviceCode}":`,
       data,
@@ -107,8 +113,31 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         },
       );
     }
-    // Nilai tidak valid tidak akan membaik bila dikirim ulang; ACK agar antrean tidak macet.
-    if (recordId !== null) await publishRecordAck(deviceCode, recordId);
+    // Nilai tidak valid tidak akan membaik bila dikirim ulang; payload asli disimpan
+    // permanen dulu, baru ACK agar antrean tidak macet dan ESP32 tidak kehilangan data.
+    if (recordId !== null) {
+      try {
+        const device = await prisma.device.findUnique({
+          where: { deviceCode },
+          select: { id: true },
+        });
+        if (device) {
+          const reason = `invalid: ${[!phValid && "ph", !moistureValid && "moisture"].filter(Boolean).join(",")}`;
+          await saveRejectedSensorRecord(device.id, recordId, data, reason);
+          await publishRecordAck(deviceCode, recordId);
+        }
+      } catch (err) {
+        console.error(
+          "[SensorSubscriber] Gagal menyimpan record yang ditolak, ACK dibatalkan:",
+          {
+            message: err.message,
+            stack: err.stack,
+            deviceCode,
+            recordId,
+          },
+        );
+      }
+    }
     return;
   }
 
@@ -120,7 +149,15 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   // Telemetri lama (tanpa record_id) langsung masuk buffer ekspor; record bernomor
   // masuk setelah tersimpan sebagai record baru, agar kirim ulang tidak menggandakan.
   if (recordId === null) {
-    await bufferForExport(deviceCode, new Date(), true, ph, moisture, isDev);
+    await bufferForExport(
+      deviceCode,
+      new Date(),
+      true,
+      ph,
+      moisture,
+      moistureType,
+      isDev,
+    );
   }
 
   try {
@@ -135,6 +172,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         recordId,
         ph,
         moisture,
+        moistureType,
         measuredAt,
         isDev,
       );
@@ -145,6 +183,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
           measuredAt !== null,
           ph,
           moisture,
+          moistureType,
           isDev,
         );
       }
@@ -155,7 +194,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       if (!created || isStale(data.measured_at, device.sensorInterval)) return;
     }
 
-    await setLatestSensorData(deviceCode, ph, moisture);
+    await setLatestSensorData(deviceCode, ph, moisture, moistureType);
     if (!device) {
       console.warn(
         `[MQTT Subscriber] ️  Device "${deviceCode}" tidak ditemukan di database. Data Redis disimpan, Postgres diabaikan.`,
@@ -167,11 +206,13 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       deviceId: device.id,
       ph,
       moisture,
+      moistureType,
       timestamp: new Date().toISOString(),
     };
     broadcastToDevice(device.id, sensorPayload);
 
-    try {
+    // Ambang rekomendasi saat ini kalibrasi indeks lama; belum berlaku untuk VWC.
+    if (moistureType === "legacy_index") try {
       const redis = getRedisClient();
       const phOutKey = `sensor:ph_out_of_range:${deviceCode}`;
       const phOutOfRange =
@@ -284,7 +325,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     const allowWrite =
       recordId === null && (await shouldSaveToDatabase(deviceCode));
     if (allowWrite) {
-      await saveRawSensorLog(device.id, ph, moisture, isDev);
+      await saveRawSensorLog(device.id, ph, moisture, isDev, moistureType);
       await updateDeviceLastSeen(device.id);
       console.log(
         `[MQTT Subscriber]  Data sensor disimpan ke Postgres | Device: ${deviceCode}`,
@@ -303,13 +344,22 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
 }
 
 // Sumber ekspor CSV. Gagal buffer hanya dicatat; jalur database tetap berjalan.
-async function bufferForExport(deviceCode, time, synced, ph, moisture, isDev) {
+async function bufferForExport(
+  deviceCode,
+  time,
+  synced,
+  ph,
+  moisture,
+  moistureType,
+  isDev,
+) {
   if (isDev) return;
   try {
     await pushSensorExport(deviceCode, {
       t: time.toISOString(),
       ph,
       moisture,
+      moistureType,
       synced,
     });
   } catch (err) {
@@ -319,6 +369,11 @@ async function bufferForExport(deviceCode, time, synced, ph, moisture, isDev) {
       deviceCode,
     });
   }
+}
+
+function parseRecordId(value) {
+  if (typeof value === "string" && value.trim().length > 0) return value;
+  return Number.isSafeInteger(value) ? String(value) : null;
 }
 
 // measured_at: ISO string atau epoch (detik/ms); null/tidak valid = belum sinkron NTP.
