@@ -212,115 +212,116 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     broadcastToDevice(device.id, sensorPayload);
 
     // Ambang rekomendasi saat ini kalibrasi indeks lama; belum berlaku untuk VWC.
-    if (moistureType === "legacy_index") try {
-      const redis = getRedisClient();
-      const phOutKey = `sensor:ph_out_of_range:${deviceCode}`;
-      const phOutOfRange =
-        ph <= device.plant.minPh - 0.5 || ph >= device.plant.maxPh + 0.5;
-      let consistentReadings = 0;
-      if (phOutOfRange) {
-        consistentReadings = await redis.incr(phOutKey);
-      } else {
-        await redis.del(phOutKey);
-      }
+    if (moistureType === "legacy_index")
+      try {
+        const redis = getRedisClient();
+        const phOutKey = `sensor:ph_out_of_range:${deviceCode}`;
+        const phOutOfRange =
+          ph <= device.plant.minPh - 0.5 || ph >= device.plant.maxPh + 0.5;
+        let consistentReadings = 0;
+        if (phOutOfRange) {
+          consistentReadings = await redis.incr(phOutKey);
+        } else {
+          await redis.del(phOutKey);
+        }
 
-      const recommendation = await generateRecommendation({
-        phValue: ph,
-        moistureValue: moisture,
-        plantIdOrName: device.plantId,
-        deviceId: device.id,
-        consistentReadings,
-      });
-
-      await prisma.recommendationLog.create({
-        data: {
-          deviceId: device.id,
+        const recommendation = await generateRecommendation({
           phValue: ph,
           moistureValue: moisture,
-          fuzzyIndex: recommendation.fuzzyIndex,
-          categoryCode: recommendation.categoryCode,
-          actionText: recommendation.actionText,
-          waterVolumeLiter: recommendation.waterVolumeLiter,
-          limeDosageGram: recommendation.limeDosageGram,
-          sulfurDosageGram: recommendation.sulfurDosageGram,
-          reduceWatering: recommendation.reduceWatering,
-          isDev,
-        },
-      });
-      console.log(
-        `[MQTT Subscriber]  Recommendation log disimpan ke Postgres | Device: ${deviceCode}`,
-      );
+          plantIdOrName: device.plantId,
+          deviceId: device.id,
+          consistentReadings,
+        });
 
-      const dryKey = `sensor:consecutive_dry:${deviceCode}`;
-      const wetKey = `sensor:consecutive_wet:${deviceCode}`;
-      const offlineNotifiedKey = `sensor:offline_notified:${deviceCode}`;
-      const invalidNotifiedKey = `sensor:invalid_notified:${deviceCode}`;
-      const phAcidNotifiedKey = `sensor:ph_acid_notified:${deviceCode}`;
-      const phAlkalineNotifiedKey = `sensor:ph_alkaline_notified:${deviceCode}`;
+        await prisma.recommendationLog.create({
+          data: {
+            deviceId: device.id,
+            phValue: ph,
+            moistureValue: moisture,
+            fuzzyIndex: recommendation.fuzzyIndex,
+            categoryCode: recommendation.categoryCode,
+            actionText: recommendation.actionText,
+            waterVolumeLiter: recommendation.waterVolumeLiter,
+            limeDosageGram: recommendation.limeDosageGram,
+            sulfurDosageGram: recommendation.sulfurDosageGram,
+            reduceWatering: recommendation.reduceWatering,
+            isDev,
+          },
+        });
+        console.log(
+          `[MQTT Subscriber]  Recommendation log disimpan ke Postgres | Device: ${deviceCode}`,
+        );
 
-      await redis.del(offlineNotifiedKey);
-      await redis.del(invalidNotifiedKey);
+        const dryKey = `sensor:consecutive_dry:${deviceCode}`;
+        const wetKey = `sensor:consecutive_wet:${deviceCode}`;
+        const offlineNotifiedKey = `sensor:offline_notified:${deviceCode}`;
+        const invalidNotifiedKey = `sensor:invalid_notified:${deviceCode}`;
+        const phAcidNotifiedKey = `sensor:ph_acid_notified:${deviceCode}`;
+        const phAlkalineNotifiedKey = `sensor:ph_alkaline_notified:${deviceCode}`;
 
-      if (recommendation.waterAction === "IRRIGATE") {
-        const dryCount = await redis.incr(dryKey);
-        await redis.del(wetKey);
-        if (dryCount === 2 && recommendation.waterVolumeLiter > 0) {
-          await notifyDevice(device.id, {
-            title: "Media Kering",
-            message: `Media kering. Siram sekitar ${Math.round(recommendation.waterVolumeLiter * 1000)} mL.`,
-            type: "warning",
-          });
+        await redis.del(offlineNotifiedKey);
+        await redis.del(invalidNotifiedKey);
+
+        if (recommendation.waterAction === "IRRIGATE") {
+          const dryCount = await redis.incr(dryKey);
+          await redis.del(wetKey);
+          if (dryCount === 2 && recommendation.waterVolumeLiter > 0) {
+            await notifyDevice(device.id, {
+              title: "Media Kering",
+              message: `Media kering. Siram sekitar ${Math.round(recommendation.waterVolumeLiter * 1000)} mL.`,
+              type: "warning",
+            });
+          }
+        } else if (recommendation.waterAction === "STOP") {
+          const wetCount = await redis.incr(wetKey);
+          await redis.del(dryKey);
+          if (wetCount === 2) {
+            await notifyDevice(device.id, {
+              title: "Media Terlalu Basah",
+              message:
+                "Media terlalu basah. Hentikan penyiraman sementara dan cek drainase.",
+              type: "warning",
+            });
+          }
+        } else {
+          await redis.del(dryKey);
+          await redis.del(wetKey);
         }
-      } else if (recommendation.waterAction === "STOP") {
-        const wetCount = await redis.incr(wetKey);
-        await redis.del(dryKey);
-        if (wetCount === 2) {
-          await notifyDevice(device.id, {
-            title: "Media Terlalu Basah",
-            message:
-              "Media terlalu basah. Hentikan penyiraman sementara dan cek drainase.",
-            type: "warning",
-          });
+
+        if (recommendation.limeDosageGram > 0) {
+          const alreadyNotified = await redis.get(phAcidNotifiedKey);
+          if (!alreadyNotified) {
+            await notifyDevice(device.id, {
+              title: "pH Terlalu Asam",
+              message: `pH terlalu asam. Pertimbangkan dolomit sekitar ${Math.round(recommendation.limeDosageGram * 10) / 10} gram (estimasi).`,
+              type: "warning",
+            });
+            await redis.setex(phAcidNotifiedKey, 3600, "1");
+          }
+        } else if (recommendation.sulfurDosageGram > 0) {
+          const alreadyNotified = await redis.get(phAlkalineNotifiedKey);
+          if (!alreadyNotified) {
+            await notifyDevice(device.id, {
+              title: "pH Terlalu Basa",
+              message: `pH terlalu basa. Pertimbangkan sulfur elemental sekitar ${Math.round(recommendation.sulfurDosageGram * 10) / 10} gram (estimasi).`,
+              type: "warning",
+            });
+            await redis.setex(phAlkalineNotifiedKey, 3600, "1");
+          }
+        } else {
+          await redis.del(phAcidNotifiedKey);
+          await redis.del(phAlkalineNotifiedKey);
         }
-      } else {
-        await redis.del(dryKey);
-        await redis.del(wetKey);
+      } catch (recErr) {
+        console.error(
+          "[SensorSubscriber] Gagal membuat/menyimpan rekomendasi otomatis:",
+          {
+            message: recErr.message,
+            stack: recErr.stack,
+            deviceCode,
+          },
+        );
       }
-
-      if (recommendation.limeDosageGram > 0) {
-        const alreadyNotified = await redis.get(phAcidNotifiedKey);
-        if (!alreadyNotified) {
-          await notifyDevice(device.id, {
-            title: "pH Terlalu Asam",
-            message: `pH terlalu asam. Pertimbangkan dolomit sekitar ${Math.round(recommendation.limeDosageGram * 10) / 10} gram (estimasi).`,
-            type: "warning",
-          });
-          await redis.setex(phAcidNotifiedKey, 3600, "1");
-        }
-      } else if (recommendation.sulfurDosageGram > 0) {
-        const alreadyNotified = await redis.get(phAlkalineNotifiedKey);
-        if (!alreadyNotified) {
-          await notifyDevice(device.id, {
-            title: "pH Terlalu Basa",
-            message: `pH terlalu basa. Pertimbangkan sulfur elemental sekitar ${Math.round(recommendation.sulfurDosageGram * 10) / 10} gram (estimasi).`,
-            type: "warning",
-          });
-          await redis.setex(phAlkalineNotifiedKey, 3600, "1");
-        }
-      } else {
-        await redis.del(phAcidNotifiedKey);
-        await redis.del(phAlkalineNotifiedKey);
-      }
-    } catch (recErr) {
-      console.error(
-        "[SensorSubscriber] Gagal membuat/menyimpan rekomendasi otomatis:",
-        {
-          message: recErr.message,
-          stack: recErr.stack,
-          deviceCode,
-        },
-      );
-    }
 
     const allowWrite =
       recordId === null && (await shouldSaveToDatabase(deviceCode));
