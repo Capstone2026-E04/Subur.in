@@ -76,11 +76,11 @@ Mengekspor pembacaan sensor (pH dan kelembapan) sebagai CSV, untuk dimuat langsu
 
 **Response sukses `200`** (`text/csv; charset=utf-8`, urut waktu menaik):
 ```csv
-device_code,timestamp_utc,timestamp_wib,ph,moisture,time_synced
-ESP32-A1B2C3,2026-10-17T07:03:22.000Z,2026-10-17 14:03:22,6.4,71.2,true
+device_code,timestamp_utc,timestamp_wib,ph,moisture,moisture_type,time_synced
+ESP32-A1B2C3,2026-10-17T07:03:22.000Z,2026-10-17 14:03:22,6.4,71.2,legacy_index,true
 ```
 
-`device_code` adalah kode perangkat. `time_synced=false` berarti jam ESP32 belum sinkron NTP; `timestamp_wib` pada baris itu adalah waktu terima server.
+`device_code` adalah kode perangkat. `moisture_type` bernilai `legacy_index` (indeks lama, 0-100) atau `vwc_percent` (VWC dalam persen dari `soil_vwc_pct`); entri lama di buffer tanpa penanda dianggap `legacy_index`. Endpoint `/latest` dan stream SSE juga membawa `moistureType`. `time_synced=false` berarti jam ESP32 belum sinkron NTP; `timestamp_wib` pada baris itu adalah waktu terima server.
 
 **Response error:** `400` (`from`/`to` bukan tanggal valid), `401`, `404` (device bukan milik user), `500`.
 

@@ -42,7 +42,10 @@ Urutan penerapan:
 
 9. `009_sensor_buffered_records.sql`: kolom `raw_sensor_logs.record_id` dan `time_synced` serta unique index `uq_raw_sensor_logs_device_record (device_id, record_id, timestamp)` untuk antrean offline ESP32. `timestamp` wajib ikut di index karena tabel dipartisi (`UNIQUE(device_id, record_id)` saja ditolak Postgres). **Jalankan sebelum deploy.** Rollback: `rollback/009_sensor_buffered_records.sql`. Setelah itu jalankan `npx prisma generate` (hentikan server dev dulu agar file DLL Prisma tidak terkunci).
 
-File 001, 002, 004, 007, 008, dan 009 aman dijalankan ulang; 003, 005, dan 006 hanya dijalankan sekali. Backend versi baru yang membaca `role` atau `password_hash` akan gagal pada `GET /api/users/me` bila 007 atau 008 belum diterapkan; penyimpanan record dengan `record_id` gagal bila 009 belum diterapkan.
+10. `010_record_id_text_and_rejected_records.sql`: `raw_sensor_logs.record_id` menjadi `text`, kolom `moisture_type` (default `legacy_index`), dan tabel `rejected_sensor_records` (payload asli record yang gagal validasi, unik `(device_id, record_id)`). **Jalankan sebelum deploy.** Rollback: `rollback/010_record_id_text_and_rejected_records.sql` (gagal bila ada `record_id` non-angka; hapus barisnya dulu).
+11. `011_sensor_record_receipts.sql`: tabel `sensor_record_receipts` (PK `(device_id, record_id)`, tidak dipartisi) untuk dedup record antrean ESP32 walau `measured_at` null. **Jalankan sebelum deploy.** Rollback: `rollback/011_sensor_record_receipts.sql`.
+
+File 001, 002, 004, 007, 008, 009, 010, dan 011 aman dijalankan ulang; 003, 005, dan 006 hanya dijalankan sekali. Backend versi baru yang membaca `role` atau `password_hash` akan gagal pada `GET /api/users/me` bila 007 atau 008 belum diterapkan; penyimpanan record dengan `record_id` gagal bila 009, 010, atau 011 belum diterapkan.
 
 **Aturan index:** semua index wajib dideklarasikan dengan `@@index` (nama eksplisit lewat `map:`) di `schema.prisma`. Index yang hanya dibuat lewat SQL akan dihapus oleh `prisma db push` berikutnya. CHECK constraint dan RLS tidak disentuh `db push`.
 

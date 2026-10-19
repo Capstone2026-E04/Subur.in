@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-19
+
+- **fix(mqtt):** ACK antrean offline ESP32 sebelumnya tidak pernah terkirim karena backend hanya menerima `record_id` angka, sedangkan ESP32 mengirim teks (`node_1-<hash>-1`). Kini `record_id` teks diterima (angka lama dikonversi ke teks) dan kolomnya menjadi `text`. Payload VWC (`soil_vwc_pct`) dibaca dan ditandai `moisture_type = vwc_percent`; rekomendasi lama hanya untuk `legacy_index`. Record tidak valid atau bernilai `null` disimpan dulu (payload asli + alasan) ke `rejected_sensor_records` sebelum ACK; gagal simpan berarti tidak ada ACK. Dedup memakai `sensor_record_receipts` dalam satu transaksi dengan log, sehingga record ber-`measured_at` null tidak menggandakan baris. CSV ekspor mendapat kolom `moisture_type`. **Jalankan `010_record_id_text_and_rejected_records.sql` dan `011_sensor_record_receipts.sql` SEBELUM deploy.**
+- **feat(dashboard):** Kartu kelembapan menampilkan label VWC dan "Status belum dikalibrasi" (tanpa badge kering/basah) untuk data `vwc_percent`.
+
 ## 2026-10-17
 
 - **feat(mqtt):** Antrean offline ESP32. Saat WiFi putus, ESP32 menyimpan pembacaan dan mengirimnya setelah tersambung kembali; backend menyimpannya idempoten lewat `UNIQUE(device_id, record_id, timestamp)`, memakai `measured_at` (UTC) sebagai waktu pengukuran, lalu mengirim ACK (`record_id` polos, QoS 1, `retain=false`) ke `suburin/devices/<node_id>/ack` setelah commit database (juga untuk record duplikat). `measured_at = null` (jam belum sinkron NTP) disimpan dengan `time_synced=false` dan waktu terima sebagai penanda posisi. Record duplikat dan data yang lebih tua dari 2 x `sensorInterval` hanya disimpan: tidak memicu rekomendasi, notifikasi, SSE, maupun cache terbaru. Nilai sensor tidak valid tetap di-ACK agar antrean tidak macet; perangkat belum terdaftar tidak di-ACK. Telemetri tanpa `record_id` (firmware lama, Dev Mode) tetap lewat jalur lama. **Jalankan `backend/prisma/manual/009_sensor_buffered_records.sql` di Supabase SEBELUM deploy** (rollback tersedia). Lihat [ADR-011](decisions/adr-011-offline-queue-ack-and-export-buffer.md).

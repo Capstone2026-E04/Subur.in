@@ -126,7 +126,7 @@ sequenceDiagram
 
 ### Antrean offline ESP32 (record bernomor + ACK)
 
-Pesan yang membawa `record_id` (bilangan bulat) mengikuti jalur berbeda. Pesan tanpa `record_id` (firmware lama, Dev Mode) tetap memakai alur di atas.
+Pesan yang membawa `record_id` (teks, mis. `node_1-<hash>-1`; angka lama dikonversi ke teks) mengikuti jalur berbeda. Pesan tanpa `record_id` (firmware lama, Dev Mode) tetap memakai alur di atas.
 
 ```mermaid
 sequenceDiagram
@@ -136,11 +136,15 @@ sequenceDiagram
     participant Postgres
     participant Redis
 
-    Device->>Broker: telemetry { record_id, measured_at, ph, moisture }
+    Device->>Broker: telemetry { record_id, measured_at, ph, soil_vwc_pct atau moisture }
     Broker->>Subscriber: message
-    Subscriber->>Postgres: createMany skipDuplicates UNIQUE(device_id, record_id, timestamp)
+    alt nilai valid
+        Subscriber->>Postgres: transaksi: receipt (PK device_id, record_id) + raw_sensor_logs
+    else nilai tidak valid atau null
+        Subscriber->>Postgres: simpan payload asli + alasan ke rejected_sensor_records
+    end
     Subscriber->>Postgres: updateDeviceLastSeen
-    Subscriber->>Broker: publish suburin/devices/{id}/ack "record_id" (QoS 1, retain=false)
+    Subscriber->>Broker: ACK "record_id" hanya setelah commit berhasil (QoS 1, retain=false)
     Broker->>Device: ack, record dihapus dari antrean
     alt record baru dan lebih muda dari 2 x sensorInterval
         Subscriber->>Redis: pushSensorExport + setLatestSensorData
@@ -150,7 +154,7 @@ sequenceDiagram
     end
 ```
 
-Tanpa ACK, ESP32 mengirim ulang record tertua tiap 30 detik. `measured_at = null` berarti jam belum sinkron NTP (`time_synced=false`). Detail keputusan: [ADR-011](../decisions/adr-011-offline-queue-ack-and-export-buffer.md).
+Tanpa ACK, ESP32 mengirim ulang record tertua tiap 30 detik. `measured_at = null` berarti jam belum sinkron NTP (`time_synced=false`). Bila penyimpanan gagal, ACK tidak dikirim. Rekomendasi hanya dihitung untuk `moisture_type = legacy_index`; data `vwc_percent` disimpan dan di-broadcast tanpa rekomendasi sampai ambang VWC dikalibrasi. Detail keputusan: [ADR-011](../decisions/adr-011-offline-queue-ack-and-export-buffer.md).
 
 ### Ekspor CSV
 

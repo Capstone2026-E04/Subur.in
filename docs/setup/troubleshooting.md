@@ -33,11 +33,13 @@ Telusuri pipeline secara berurutan:
 ## Antrean offline ESP32: record terus dikirim ulang
 
 ESP32 mengirim ulang record tertua tiap 30 detik selama belum menerima ACK di `suburin/devices/<node_id>/ack`.
-1. Apakah migrasi `009_sensor_buffered_records.sql` sudah dijalankan? Tanpa kolom `record_id`, penyimpanan gagal dan ACK tidak pernah dikirim (cari `[SensorSubscriber] Gagal memproses data sensor` di log).
+1. Apakah migrasi `009`, `010`, dan `011` sudah dijalankan? Tanpa kolom `record_id` bertipe `text`, tabel `sensor_record_receipts`, dan `rejected_sensor_records`, penyimpanan gagal dan ACK tidak pernah dikirim (cari `[SensorSubscriber] Gagal memproses data sensor` di log).
 2. Apakah perangkat sudah diklaim (terdaftar di tabel `devices` dengan `device_code` yang sama dengan `<node_id>`)? Perangkat belum terdaftar sengaja tidak di-ACK.
 3. Apakah broker mengizinkan node subscribe ke topic `ack` dan `config`, dan backend publish ke keduanya (EMQX Cloud: Access Control > Authorization; mode blacklist bawaan mengizinkan semuanya)?
 4. Apakah backend terhubung ke broker? Log `[MQTT Publisher] ACK tertunda, broker belum terhubung` berarti ACK tidak terkirim.
-5. Payload harus memuat `record_id` bilangan bulat; nama field lain dianggap telemetri lama (tanpa ACK).
+5. Payload harus memuat `record_id` (teks atau bilangan bulat); nama field lain dianggap telemetri lama (tanpa ACK).
+
+6. Record tidak valid (pH/kelembapan di luar rentang atau `null`) tidak hilang: payload asli tersimpan di `rejected_sensor_records` beserta `reason`, lalu di-ACK. Bila ACK tidak datang, periksa log `Gagal menyimpan record yang ditolak`.
 
 ## Ekspor CSV kosong atau `401`
 
