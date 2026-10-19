@@ -143,7 +143,7 @@ export default function DashboardPage() {
 
   const devicePlant = plants.find((p) => p.id === selectedDevice?.plant?.id);
 
-  const { ph, moisture, lastUpdated } = useSensorRealtime(
+  const { ph, moisture, moistureType, lastUpdated } = useSensorRealtime(
     selectedDevice?.id || "",
     token,
   );
@@ -239,6 +239,7 @@ export default function DashboardPage() {
         <PhLevelCard value={currentPh} range={phRange} />
         <MoistureLevelCard
           value={currentMoisture}
+          moistureType={moistureType}
           nmiTrigger={devicePlant?.nmiTrigger ?? null}
         />
       </div>

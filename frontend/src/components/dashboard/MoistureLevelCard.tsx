@@ -4,6 +4,7 @@ import { TONES, classifyNmi } from "./sensorStatus";
 interface MoistureLevelCardProps {
   value: number | null;
   nmiTrigger: number | null;
+  moistureType?: "legacy_index" | "vwc_percent";
 }
 
 const CX = 100;
@@ -14,6 +15,7 @@ const NEEDLE_OUTER = 100;
 export default function MoistureLevelCard({
   value,
   nmiTrigger,
+  moistureType = "legacy_index",
 }: MoistureLevelCardProps) {
   const pct = value === null ? 0 : Math.min(Math.max(value, 0), 100);
   const angle = Math.PI * (1 - pct / 100);
@@ -23,13 +25,15 @@ export default function MoistureLevelCard({
     x2: CX + NEEDLE_OUTER * Math.cos(angle),
     y2: CY - NEEDLE_OUTER * Math.sin(angle),
   };
-  const status = value === null ? null : classifyNmi(value, nmiTrigger);
+  const isVwc = moistureType === "vwc_percent";
+  const status =
+    value === null || isVwc ? null : classifyNmi(value, nmiTrigger);
   const tone = status ? TONES[status.tone] : null;
 
   return (
     <Card className="rounded-3xl p-6">
       <h3 className="text-xl font-bold tracking-tight text-neutral-800">
-        Kelembapan Tanah
+        {isVwc ? "Kelembapan Tanah (VWC)" : "Kelembapan Tanah"}
       </h3>
 
       <div className="relative mx-auto mt-3 w-full max-w-[240px]">
@@ -54,11 +58,20 @@ export default function MoistureLevelCard({
           )}
         </svg>
         <span className="absolute inset-x-0 bottom-0 text-center text-4xl leading-none font-bold text-neutral-800 tabular-nums">
-          {value === null ? "—" : `${Math.round(value)}%`}
+          {value === null
+            ? "—"
+            : isVwc
+              ? `${value.toFixed(1)}%`
+              : `${Math.round(value)}%`}
         </span>
       </div>
 
       <div className="mt-5 flex justify-center">
+        {isVwc && value !== null && (
+          <span className="rounded-full border border-neutral-200 px-5 py-1 text-sm font-semibold text-neutral-600">
+            Status belum dikalibrasi
+          </span>
+        )}
         {status && tone && (
           <span
             className={`rounded-full border px-5 py-1 text-lg font-bold ${tone.badgeBg} ${tone.badge} ${tone.border}`}

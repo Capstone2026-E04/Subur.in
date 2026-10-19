@@ -5,9 +5,12 @@ import { API_URL as API_BASE } from "@/services/api";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
+export type MoistureType = "legacy_index" | "vwc_percent";
+
 export interface SensorData {
   ph: number | null;
   moisture: number | null;
+  moistureType: MoistureType;
   lastUpdated: string | null;
   connectionStatus: ConnectionStatus;
 }
@@ -20,6 +23,8 @@ export function useSensorRealtime(
 ): SensorData {
   const [ph, setPh] = useState<number | null>(null);
   const [moisture, setMoisture] = useState<number | null>(null);
+  const [moistureType, setMoistureType] =
+    useState<MoistureType>("legacy_index");
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("connecting");
@@ -41,6 +46,7 @@ export function useSensorRealtime(
         const { ph: p, moisture: m, timestamp } = json.data;
         if (p !== undefined) setPh(p);
         if (m !== undefined) setMoisture(m);
+        if (json.data.moistureType) setMoistureType(json.data.moistureType);
         if (timestamp) setLastUpdated(timestamp);
       }
     } catch {}
@@ -77,6 +83,7 @@ export function useSensorRealtime(
 
         if (payload?.ph !== undefined) setPh(payload.ph);
         if (payload?.moisture !== undefined) setMoisture(payload.moisture);
+        if (payload?.moistureType) setMoistureType(payload.moistureType);
         if (payload?.timestamp) setLastUpdated(payload.timestamp);
         setConnectionStatus("connected");
       } catch {}
@@ -123,5 +130,5 @@ export function useSensorRealtime(
     };
   }, [fetchLatest, openStream]);
 
-  return { ph, moisture, lastUpdated, connectionStatus };
+  return { ph, moisture, moistureType, lastUpdated, connectionStatus };
 }
