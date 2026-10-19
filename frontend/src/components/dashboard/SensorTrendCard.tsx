@@ -124,7 +124,7 @@ export default function SensorTrendCard({
         </div>
       </div>
 
-      <div className="mt-4 h-[200px] w-full">
+      <div className="mt-4 h-50 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 10, right: 16, left: 16 }}>
             <CartesianGrid
