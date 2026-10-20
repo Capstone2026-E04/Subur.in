@@ -13,7 +13,7 @@ console.log("====================================================");
 console.log("Simulator ini mensimulasikan perhitungan Fuzzy Logic");
 console.log("Mamdani untuk menentukan dosis penyiraman air, kapur,");
 console.log("atau sulfur secara dinamis berdasarkan jenis tanaman");
-console.log("dan preset polybag prototipe (30x30 cm, media 2 L).\n");
+console.log("dan preset polybag prototipe (25x25 cm, media 2 L).\n");
 
 function askQuestion(query) {
   return new Promise((resolve) => rl.question(query, resolve));
@@ -41,7 +41,7 @@ async function startSimulation() {
     }
 
     const moistureInput = await askQuestion(
-      "Masukkan nilai NMI kelembapan (0 - 100): ",
+      "Masukkan nilai VWC kelembapan dalam persen (0 - 100): ",
     );
     const moisture = parseFloat(moistureInput);
     if (isNaN(moisture) || moisture < 0 || moisture > 100) {
@@ -83,11 +83,11 @@ async function startSimulation() {
     console.log("                HASIL REKOMENDASI                   ");
     console.log("====================================================");
     console.log(
-      `Input Sensor      : pH = ${result.phValue}, NMI = ${result.moistureValue}`,
+      `Input Sensor      : pH = ${result.phValue}, VWC = ${result.moistureValue}%`,
     );
     console.log(`Tanaman Terpilih  : ${result._debug.plantUsed}`);
     console.log(
-      `Target Parameter  : pH ideal = ${result._debug.phTarget.toFixed(2)}, NMI trigger = ${result._debug.nmiTrigger}, NMI target = ${result._debug.nmiTarget}`,
+      `Target Parameter  : pH ideal = ${result._debug.phTarget.toFixed(2)}, VWC trigger = ${result._debug.vwcTriggerPct}%, VWC target = ${result._debug.vwcTargetPct}%`,
     );
     console.log(`Preset Polybag    : ${result._debug.polybagPresetUsed}`);
     console.log(`Luas Permukaan    : ${result._debug.areaM2} m²`);

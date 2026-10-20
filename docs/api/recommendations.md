@@ -4,7 +4,7 @@ Mengekspos mesin rekomendasi fuzzy logic ([architecture/system-design.md](../arc
 
 ## `POST /api/recommendations/simulate`
 
-Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyentuh device sungguhan atau menyimpan log. Berguna untuk menguji kombinasi pH, NMI, dan tanaman pada preset polybag prototipe (30x30 cm, media 2 L).
+Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyentuh device sungguhan atau menyimpan log. Berguna untuk menguji kombinasi pH, VWC, dan tanaman pada preset polybag prototipe (25x25 cm, media 2 L).
 
 **Perlu autentikasi:** Tidak
 
@@ -51,18 +51,18 @@ Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyent
       "volumeLiterUsed": 5,
       "plantUsed": "Pakcoy (Brassica rapa subsp. chinensis)",
       "phTarget": 6.8,
-      "nmiTrigger": 60,
-      "nmiTarget": 80
+      "vwcTriggerPct": 22.07,
+      "vwcTargetPct": 27.48
     }
   }
 }
 ```
 
-`moistureValue` adalah NMI (0-100). `fuzzyIndex` adalah kekuatan aturan terlemah dari kedua keputusan final (0-1). `phCorrection.status` bernilai `NONE`, `READY`, `DEFERRED`, atau `NEEDS_CONFIRMATION`; dosis kapur/sulfur hanya terisi saat `READY`. Tanaman selain Selada/Bayam/Pakcoy ditolak `422`.
+`moistureValue` adalah VWC dalam persen (0-100). Response memuat `decisionSource` (`fuzzy` atau `safety_override`). `fuzzyIndex` adalah kekuatan aturan terlemah dari kedua keputusan final (0-1). `phCorrection.status` bernilai `NONE`, `READY`, `DEFERRED`, atau `NEEDS_CONFIRMATION`; dosis kapur/sulfur hanya terisi saat `READY`. Tanaman selain Selada/Bayam/Pakcoy ditolak `422`.
 
 `_debug` mengekspos state fuzzy inference antara (derajat keanggotaan, rule aktif, agregasi per kategori) dan dimaksudkan untuk pemeriksaan developer/QA, bukan untuk ditampilkan ke end user.
 
-**Response error:** `400` (input tidak ada/tidak valid), `404` (tanaman tidak ditemukan), `422` (tanaman tanpa parameter NMI), `500`.
+**Response error:** `400` (input tidak ada/tidak valid), `404` (tanaman tidak ditemukan), `422` (tanaman tanpa parameter kelembapan), `500`.
 
 ## `GET /api/recommendations`
 

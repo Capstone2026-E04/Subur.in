@@ -16,6 +16,7 @@ async function generateRecommendation({
   consistentReadings = Infinity,
   lastCorrectionAt = null,
   deviceId = null,
+  safetyOverride = null,
 }) {
   if (typeof phValue !== "number" || typeof moistureValue !== "number") {
     throw new AppError("phValue dan moistureValue harus berupa angka.", 400);
@@ -25,7 +26,7 @@ async function generateRecommendation({
   }
   if (moistureValue < 0 || moistureValue > 100) {
     throw new AppError(
-      "moistureValue harus berada dalam rentang 0 sampai 100.",
+      "moistureValue (VWC, persen) harus berada dalam rentang 0 sampai 100.",
       400,
     );
   }
@@ -73,7 +74,7 @@ async function generateRecommendation({
   const moistureParams = PLANT_MOISTURE[plant.name.trim().toLowerCase()];
   if (!moistureParams) {
     throw new AppError(
-      `Tanaman "${plant.name}" belum memiliki parameter NMI (didukung: ${Object.keys(PLANT_MOISTURE).join(", ")}).`,
+      `Tanaman "${plant.name}" belum memiliki parameter kelembapan (didukung: ${Object.keys(PLANT_MOISTURE).join(", ")}).`,
       422,
     );
   }
@@ -88,10 +89,11 @@ async function generateRecommendation({
   }
 
   const { minPh, maxPh, phTarget } = plant;
-  const inference = runInference(phValue, moistureValue, {
+  const theta = moistureValue / 100;
+  const inference = runInference(phValue, theta, {
     minPh,
     maxPh,
-    trigger: moistureParams.trigger,
+    override: Boolean(safetyOverride),
   });
   const interpretation = interpretCategory(inference.categoryCode);
   const { waterAction, phAction } = inference;
@@ -109,11 +111,7 @@ async function generateRecommendation({
 
   const waterDetail =
     waterAction === "IRRIGATE"
-      ? calculateWaterVolume(
-          moistureValue,
-          moistureParams.target,
-          POLYBAG.volumeLiter,
-        )
+      ? calculateWaterVolume(theta, POLYBAG.volumeLiter)
       : null;
   const limeDetail =
     phAction === "LIME"
@@ -139,18 +137,20 @@ async function generateRecommendation({
       ? (sulfurDetail?.sulfurDosageGram ?? 0)
       : 0,
     reduceWatering: waterAction === "STOP",
+    decisionSource: safetyOverride ? "safety_override" : "fuzzy",
+    overrideReason: safetyOverride,
 
     _debug: {
       membership: inference.membership,
       activeRules: inference.activeRules,
-      aggregation: inference.aggregation,
+      centroids: inference.centroids,
       polybagPresetUsed: POLYBAG.name,
       areaM2: POLYBAG.areaM2,
       volumeLiterUsed: POLYBAG.volumeLiter,
       plantUsed: `${plant.name} (${plant.scientificName || "n/a"})`,
       phTarget: parseFloat(phTarget.toFixed(3)),
-      nmiTrigger: moistureParams.trigger,
-      nmiTarget: moistureParams.target,
+      vwcTriggerPct: moistureParams.trigger,
+      vwcTargetPct: moistureParams.target,
       waterDetail,
       limeDetail,
       sulfurDetail,

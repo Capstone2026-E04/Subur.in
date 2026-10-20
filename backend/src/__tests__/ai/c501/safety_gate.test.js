@@ -8,8 +8,6 @@ const limeInput = {
   phAction: "LIME",
   waterAction: "IRRIGATE",
   ph: 5.4,
-  minPh: 6.0,
-  maxPh: 7.0,
   consistentReadings: 2,
   lastCorrectionAt: null,
 };
@@ -17,28 +15,9 @@ const limeInput = {
 const sulfurInput = { ...limeInput, phAction: "SULFUR", ph: 7.6 };
 
 describe("checkPhCorrection (C501 Step 11 section 4)", () => {
-  it("is ready for lime at pH 5.5, which equals the minimum pH minus 0.5", () => {
-    const result = checkPhCorrection({ ...limeInput, ph: 5.5 });
-
-    expect(result.status).toBe("READY");
-  });
-
-  it("defers lime at pH 5.6, which is above the minimum pH minus 0.5", () => {
-    const result = checkPhCorrection({ ...limeInput, ph: 5.6 });
-
-    expect(result.status).toBe("DEFERRED");
-  });
-
-  it("is ready for sulfur at pH 7.5, which equals the maximum pH plus 0.5", () => {
-    const result = checkPhCorrection({ ...sulfurInput, ph: 7.5 });
-
-    expect(result.status).toBe("READY");
-  });
-
-  it("defers sulfur at pH 7.4, which is below the maximum pH plus 0.5", () => {
-    const result = checkPhCorrection({ ...sulfurInput, ph: 7.4 });
-
-    expect(result.status).toBe("DEFERRED");
+  it("is ready for lime and sulfur once the fuzzy action fires", () => {
+    expect(checkPhCorrection(limeInput).status).toBe("READY");
+    expect(checkPhCorrection(sulfurInput).status).toBe("READY");
   });
 
   it("defers the correction while the media is wet", () => {
@@ -53,25 +32,25 @@ describe("checkPhCorrection (C501 Step 11 section 4)", () => {
     expect(result.status).toBe("DEFERRED");
   });
 
-  it("defers the correction 13 days after the previous one", () => {
+  it("defers the correction 6 days after the previous one", () => {
     const now = new Date("2026-10-20T00:00:00Z");
 
     const result = checkPhCorrection({
       ...limeInput,
       now,
-      lastCorrectionAt: new Date(now - 13 * DAY_MS),
+      lastCorrectionAt: new Date(now - 6 * DAY_MS),
     });
 
     expect(result.status).toBe("DEFERRED");
   });
 
-  it("is ready again 14 days after the previous correction", () => {
+  it("is ready again 7 days after the previous correction", () => {
     const now = new Date("2026-10-20T00:00:00Z");
 
     const result = checkPhCorrection({
       ...limeInput,
       now,
-      lastCorrectionAt: new Date(now - 14 * DAY_MS),
+      lastCorrectionAt: new Date(now - 7 * DAY_MS),
     });
 
     expect(result.status).toBe("READY");
@@ -87,7 +66,6 @@ describe("checkPhCorrection (C501 Step 11 section 4)", () => {
     const result = checkPhCorrection({
       ...sulfurInput,
       ph: 8.0,
-      maxPh: 7.5,
     });
 
     expect(result.status).toBe("NEEDS_CONFIRMATION");

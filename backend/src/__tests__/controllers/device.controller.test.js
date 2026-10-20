@@ -190,7 +190,12 @@ describe("getDeviceRecommendation", () => {
 
   it("returns the recommendation for fresh data without writing a log", async () => {
     const timestamp = new Date(Date.now() - 30 * 1000).toISOString();
-    getLatestSensorData.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
+    getLatestSensorData.mockResolvedValue({
+      ph: 6.5,
+      moisture: 25,
+      moistureType: "vwc_percent",
+      timestamp,
+    });
     const res = makeRes();
 
     await getDeviceRecommendation(req, res, jest.fn());
@@ -205,7 +210,12 @@ describe("getDeviceRecommendation", () => {
 
   it("returns null data for stale data without computing or writing", async () => {
     const timestamp = new Date(Date.now() - 3 * 60 * 1000).toISOString();
-    getLatestSensorData.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
+    getLatestSensorData.mockResolvedValue({
+      ph: 6.5,
+      moisture: 25,
+      moistureType: "vwc_percent",
+      timestamp,
+    });
     const res = makeRes();
 
     await getDeviceRecommendation(req, res, jest.fn());
@@ -223,7 +233,12 @@ describe("getDeviceRecommendation", () => {
   it("scales the stale threshold with sensorInterval", async () => {
     prisma.device.findFirst.mockResolvedValue({ ...device, sensorInterval: 5 });
     const timestamp = new Date(Date.now() - 3 * 60 * 1000).toISOString();
-    getLatestSensorData.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
+    getLatestSensorData.mockResolvedValue({
+      ph: 6.5,
+      moisture: 25,
+      moistureType: "vwc_percent",
+      timestamp,
+    });
     const res = makeRes();
 
     await getDeviceRecommendation(req, res, jest.fn());
@@ -254,7 +269,12 @@ describe("getDeviceRecommendation", () => {
 
   it("handles a Date timestamp from the DB fallback", async () => {
     const timestamp = new Date(Date.now() - 30 * 1000);
-    getLatestSensorLog.mockResolvedValue({ ph: 6.5, moisture: 50, timestamp });
+    getLatestSensorLog.mockResolvedValue({
+      ph: 6.5,
+      moisture: 25,
+      moistureType: "vwc_percent",
+      timestamp,
+    });
     const fresh = makeRes();
     await getDeviceRecommendation(req, fresh, jest.fn());
     expect(fresh.json.mock.calls[0][0].data).toEqual({
@@ -267,7 +287,8 @@ describe("getDeviceRecommendation", () => {
     getLatestSensorData.mockResolvedValue(null);
     getLatestSensorLog.mockResolvedValue({
       ph: 6.5,
-      moisture: 50,
+      moisture: 25,
+      moistureType: "vwc_percent",
       timestamp: new Date(Date.now() - 10 * 60 * 1000),
     });
     const stale = makeRes();

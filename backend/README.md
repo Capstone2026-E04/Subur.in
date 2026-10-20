@@ -96,8 +96,8 @@ Daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
         "volumeLiterUsed": 5,
         "plantUsed": "Pakcoy (Brassica rapa subsp. chinensis)",
         "phTarget": 6.8,
-        "nmiTrigger": 60,
-        "nmiTarget": 80
+        "nmiTrigger": 22.07,
+        "nmiTarget": 27.48
       }
     }
   }

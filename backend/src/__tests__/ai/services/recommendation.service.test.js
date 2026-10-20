@@ -24,13 +24,13 @@ const plantFixture = {
 
 const request = (overrides) => ({
   phValue: 6.5,
-  moistureValue: 80,
+  moistureValue: 30,
   plantIdOrName: PLANT_ID,
   ...overrides,
 });
 
 const acidicDryRequest = (overrides) =>
-  request({ phValue: 5.4, moistureValue: 50, ...overrides });
+  request({ phValue: 5.4, moistureValue: 10, ...overrides });
 
 describe("generateRecommendation", () => {
   beforeEach(() => {
@@ -118,7 +118,8 @@ describe("generateRecommendation", () => {
 
       await expect(generateRecommendation(input)).rejects.toMatchObject({
         statusCode: 400,
-        message: "moistureValue harus berada dalam rentang 0 sampai 100.",
+        message:
+          "moistureValue (VWC, persen) harus berada dalam rentang 0 sampai 100.",
       });
     });
 
@@ -130,7 +131,7 @@ describe("generateRecommendation", () => {
       });
     });
 
-    it("rejects a plant without NMI parameters", async () => {
+    it("rejects a plant without moisture parameters", async () => {
       prisma.plant.findUnique.mockResolvedValue({
         ...plantFixture,
         name: "Kangkung",

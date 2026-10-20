@@ -200,7 +200,7 @@ describe("handleSensorMessage", () => {
         waterVolumeLiter: 0.16,
       });
 
-      await send({ ph: 6.5, moisture: 50 });
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
 
       expect(prisma.recommendationLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -215,7 +215,7 @@ describe("handleSensorMessage", () => {
     });
 
     it("flags the recommendation log as dev data in dev mode", async () => {
-      await send({ ph: 6.5, moisture: 80 }, { isDev: true });
+      await send({ ph: 6.5, soil_vwc_pct: 80 }, { isDev: true });
 
       expect(prisma.recommendationLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({ isDev: true }),
@@ -252,7 +252,7 @@ describe("handleSensorMessage", () => {
     });
 
     it("passes the device id to the recommendation for correction history", async () => {
-      await send({ ph: 6.5, moisture: 80 });
+      await send({ ph: 6.5, soil_vwc_pct: 80 });
 
       expect(generateRecommendation).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -304,7 +304,7 @@ describe("handleSensorMessage", () => {
       expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, "7");
     });
 
-    it("reads soil_vwc_pct as VWC and skips the legacy recommendation", async () => {
+    it("reads soil_vwc_pct as VWC and runs the recommendation", async () => {
       await send({
         ph: 6.5,
         soil_vwc: 0.1042,
@@ -323,6 +323,14 @@ describe("handleSensorMessage", () => {
         false,
       );
       expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, RECORD_ID);
+      expect(generateRecommendation).toHaveBeenCalledWith(
+        expect.objectContaining({ moistureValue: 10.42 }),
+      );
+    });
+
+    it("skips the recommendation for a legacy index reading", async () => {
+      await send({ ph: 6.5, moisture: 50 });
+
       expect(generateRecommendation).not.toHaveBeenCalled();
     });
 
@@ -377,13 +385,13 @@ describe("handleSensorMessage", () => {
     });
 
     it("runs live processing for a fresh new record", async () => {
-      await send(record());
+      await send(record({ soil_vwc_pct: 25 }));
 
       expect(setLatestSensorData).toHaveBeenCalledWith(
         DEVICE_CODE,
         6.5,
-        80,
-        "legacy_index",
+        25,
+        "vwc_percent",
       );
       expect(generateRecommendation).toHaveBeenCalled();
       expect(shouldSaveToDatabase).not.toHaveBeenCalled();
@@ -469,16 +477,16 @@ describe("handleSensorMessage", () => {
   });
 
   describe("consistent pH readings for the safety gate", () => {
-    it("counts a reading at the lime threshold (minimum pH minus 0.5)", async () => {
-      await send({ ph: 5.5, moisture: 80 });
+    it("counts a reading at the lime threshold (minimum pH minus 0.25)", async () => {
+      await send({ ph: 5.75, soil_vwc_pct: 80 });
 
       expect(generateRecommendation).toHaveBeenCalledWith(
         expect.objectContaining({ consistentReadings: 1 }),
       );
     });
 
-    it("counts a reading at the sulfur threshold (maximum pH plus 0.5)", async () => {
-      await send({ ph: 7.5, moisture: 80 });
+    it("counts a reading at the sulfur threshold (maximum pH plus 0.25)", async () => {
+      await send({ ph: 7.25, soil_vwc_pct: 80 });
 
       expect(generateRecommendation).toHaveBeenCalledWith(
         expect.objectContaining({ consistentReadings: 1 }),
@@ -486,7 +494,7 @@ describe("handleSensorMessage", () => {
     });
 
     it("does not count a reading just inside the lime threshold", async () => {
-      await send({ ph: 5.6, moisture: 80 });
+      await send({ ph: 5.8, soil_vwc_pct: 80 });
 
       expect(generateRecommendation).toHaveBeenCalledWith(
         expect.objectContaining({ consistentReadings: 0 }),
@@ -494,7 +502,7 @@ describe("handleSensorMessage", () => {
     });
 
     it("does not count a reading just inside the sulfur threshold", async () => {
-      await send({ ph: 7.4, moisture: 80 });
+      await send({ ph: 7.2, soil_vwc_pct: 80 });
 
       expect(generateRecommendation).toHaveBeenCalledWith(
         expect.objectContaining({ consistentReadings: 0 }),
@@ -502,8 +510,8 @@ describe("handleSensorMessage", () => {
     });
 
     it("accumulates consecutive out-of-range readings", async () => {
-      await send({ ph: 5.4, moisture: 80 });
-      await send({ ph: 5.3, moisture: 80 });
+      await send({ ph: 5.4, soil_vwc_pct: 80 });
+      await send({ ph: 5.3, soil_vwc_pct: 80 });
 
       expect(generateRecommendation).toHaveBeenLastCalledWith(
         expect.objectContaining({ consistentReadings: 2 }),
@@ -511,7 +519,7 @@ describe("handleSensorMessage", () => {
     });
 
     it("resets the counter when the pH returns inside the threshold", async () => {
-      await send({ ph: 6.5, moisture: 80 });
+      await send({ ph: 6.5, soil_vwc_pct: 80 });
 
       expect(redis.del).toHaveBeenCalledWith(PH_KEY);
       expect(generateRecommendation).toHaveBeenCalledWith(
@@ -530,7 +538,7 @@ describe("handleSensorMessage", () => {
     it("does not notify on the first dry reading", async () => {
       generateRecommendation.mockResolvedValue(dryRecommendation);
 
-      await send({ ph: 6.5, moisture: 50 });
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
 
       expect(notifyDevice).not.toHaveBeenCalled();
     });
@@ -538,8 +546,8 @@ describe("handleSensorMessage", () => {
     it("notifies the watering volume on the second consecutive dry reading", async () => {
       generateRecommendation.mockResolvedValue(dryRecommendation);
 
-      await send({ ph: 6.5, moisture: 50 });
-      await send({ ph: 6.5, moisture: 50 });
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
 
       expect(notifyDevice).toHaveBeenCalledWith(
         "device-1",
@@ -556,8 +564,8 @@ describe("handleSensorMessage", () => {
         waterVolumeLiter: 0,
       });
 
-      await send({ ph: 6.5, moisture: 99 });
-      await send({ ph: 6.5, moisture: 99 });
+      await send({ ph: 6.5, soil_vwc_pct: 99 });
+      await send({ ph: 6.5, soil_vwc_pct: 99 });
 
       expect(notifyDevice).not.toHaveBeenCalled();
     });
@@ -569,8 +577,8 @@ describe("handleSensorMessage", () => {
         reduceWatering: true,
       });
 
-      await send({ ph: 6.5, moisture: 95 });
-      await send({ ph: 6.5, moisture: 95 });
+      await send({ ph: 6.5, soil_vwc_pct: 95 });
+      await send({ ph: 6.5, soil_vwc_pct: 95 });
 
       expect(notifyDevice).toHaveBeenCalledWith(
         "device-1",
@@ -579,7 +587,7 @@ describe("handleSensorMessage", () => {
     });
 
     it("clears both watering counters when no water action applies", async () => {
-      await send({ ph: 6.5, moisture: 80 });
+      await send({ ph: 6.5, soil_vwc_pct: 80 });
 
       expect(redis.del).toHaveBeenCalledWith(DRY_KEY);
       expect(redis.del).toHaveBeenCalledWith(WET_KEY);
@@ -594,7 +602,7 @@ describe("handleSensorMessage", () => {
         limeDosageGram: 2.86,
       });
 
-      await send({ ph: 5.4, moisture: 80 });
+      await send({ ph: 5.4, soil_vwc_pct: 80 });
 
       expect(notifyDevice).toHaveBeenCalledWith(
         "device-1",
@@ -616,7 +624,7 @@ describe("handleSensorMessage", () => {
         key === ACID_KEY ? "1" : null,
       );
 
-      await send({ ph: 5.4, moisture: 80 });
+      await send({ ph: 5.4, soil_vwc_pct: 80 });
 
       expect(notifyDevice).not.toHaveBeenCalled();
     });
@@ -628,7 +636,7 @@ describe("handleSensorMessage", () => {
         sulfurDosageGram: 1.2,
       });
 
-      await send({ ph: 7.6, moisture: 80 });
+      await send({ ph: 7.6, soil_vwc_pct: 80 });
 
       expect(notifyDevice).toHaveBeenCalledWith(
         "device-1",
@@ -644,13 +652,13 @@ describe("handleSensorMessage", () => {
         limeDosageGram: 0,
       });
 
-      await send({ ph: 5.3, moisture: 92.5 });
+      await send({ ph: 5.3, soil_vwc_pct: 92.5 });
 
       expect(notifyDevice).not.toHaveBeenCalled();
     });
 
     it("clears the remembered pH notifications once no correction applies", async () => {
-      await send({ ph: 6.5, moisture: 80 });
+      await send({ ph: 6.5, soil_vwc_pct: 80 });
 
       expect(redis.del).toHaveBeenCalledWith(ACID_KEY);
       expect(redis.del).toHaveBeenCalledWith(ALKALINE_KEY);

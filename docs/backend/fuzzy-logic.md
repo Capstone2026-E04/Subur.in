@@ -1,128 +1,127 @@
 # Fuzzy logic
 
-Dokumen ini menjelaskan mesin fuzzy di `backend/src/ai` setelah disesuaikan dengan dokumen perancangan **C501** ("FIX Fuzzy dan Dose Setelah Kalibrasi"). Alasan memilih metode ini ada di [ADR-004](../decisions/adr-004-fuzzy-logic-engine.md).
+Dokumen ini menjelaskan mesin fuzzy di `backend/src/ai` setelah disesuaikan dengan dokumen perancangan **C501** ("Rancangan Fuzzy Mamdani dan Kalkulator Dosis Air Subur.in", Draf Final13). Alasan memilih metode ini ada di [ADR-004](../decisions/adr-004-fuzzy-logic-engine.md).
 
 ## Alur
 
 ```
-Sensor -> validasi input -> fuzzifikasi (pH, NMI) -> rule base 3x3 -> MIN-MAX
-       -> WaterAction + pHAction -> kategori C1-C9 -> safety gate -> kalkulator dosis
+Sensor (VWC) -> fuzzifikasi (pH, theta) -> rule base 3x3 -> Mamdani MIN-MAX
+             -> centroid per sumbu (air, pH) -> kategori C1-C9 -> safety gate -> kalkulator dosis
 ```
 
 Fuzzy hanya menentukan **jenis** tindakan. Besaran air/dolomit/sulfur dihitung kalkulator deterministik, dan safety gate menentukan apakah koreksi pH boleh ditampilkan sebagai instruksi.
 
 | File | Peran |
 |------|-------|
-| `core/membership.js` | Fungsi keanggotaan pH dan NMI |
-| `core/rules.js` | Rule base 3x3, definisi kategori C1-C9, urutan prioritas tie |
-| `core/engine.js` | Firing strength (MIN), agregasi (MAX), pemilihan aksi |
+| `core/membership.js` | Fungsi keanggotaan pH dan kelembapan (VWC) |
+| `core/rules.js` | Rule base 3x3, kategori C1-C9, pusat himpunan konsekuen |
+| `core/engine.js` | MIN-MAX, centroid dua sumbu, ambang aksi, override |
 | `core/safety_gate.js` | Pemeriksaan koreksi pH |
 | `dosage/*` | Kalkulator air, dolomit, sulfur |
-| `config/plant_moisture.js` | Trigger dan target NMI per tanaman |
-| `config/treatment_constants.js` | Konstanta kalibrasi/dosis |
+| `config/plant_moisture.js` | Pemicu/target kelembapan (persen VWC) untuk tampilan |
+| `config/treatment_constants.js` | Semua konstanta desain |
 | `services/recommendation.service.js` | Orkestrasi + akses database |
 
 ## Input
 
-- **pH** (`0-14`): pH media hasil kalibrasi sensor.
-- **NMI** (`0-100`): *Normalized Moisture Index*, indeks operasional hasil karakterisasi wet-up sensor M01 (`NMI = V_applied / 400 mL x 100`). NMI **bukan** VWC, persen field capacity, atau tingkat kejenuhan. Nilai `moistureValue` dari sensor diperlakukan sebagai NMI.
+- **pH** (`0-14`).
+- **VWC** (`moistureValue`, persen `0-100`, sama dengan `soil_vwc_pct`): kadar air volumetrik. Service membaginya 100 menjadi theta (m3/m3). Pembacaan indeks lama (`legacy_index`) tidak dipetakan ke VWC dan tidak menghasilkan rekomendasi.
+- `safetyOverride` (opsional, string alasan, mis. `sensor_out_of_range`): memaksa air STOP tanpa mengubah nilai VWC (lihat Override pengaman).
 
-## Parameter tanaman
+## Parameter
 
-| Tanaman | pH min (L) | pH max (U) | pH target | NMI trigger (T) | NMI target |
-|---------|-----------:|-----------:|----------:|----------------:|-----------:|
-| Selada  | 6,0 | 6,7 | 6,5 | 65 | 90 |
-| Bayam (*Amaranthus*) | 6,0 | 7,0 | 6,5 | 70 | 80 |
-| Pakcoy  | 6,0 | 7,5 | 6,8 | 60 | 80 |
+Acuan kelembapan adalah container capacity polybag 2 L: `theta_CC = 0,3298` m3/m3 (659,6 mL / 2.000 mL). Semua tanaman memakai fraksi `theta_CC` yang sama; yang berbeda per tanaman hanya rentang pH (tabel `plants`).
 
-pH disimpan di tabel `plants`; trigger/target NMI di `config/plant_moisture.js` (kunci = nama tanaman huruf kecil). Tanaman lain ditolak `422`. Angka NMI adalah setpoint rekayasa, bukan angka optimum biologis dari literatur.
+| Tanaman | pH min | pH max | pH target |
+|---------|-------:|-------:|----------:|
+| Selada | 6,0 | 6,7 | 6,5 |
+| Bayam (*Amaranthus*) | 6,0 | 7,0 | 6,5 |
+| Pakcoy | 6,0 | 7,5 | 6,8 |
+
+Tanaman lain ditolak `422`. Angka kelembapan adalah parameter desain, bukan optimum agronomi teruji.
 
 ## Fungsi keanggotaan
 
-**pH** (`ASAM`, `OPTIMAL`, `BASA`; transisi 0,5 satuan di luar [L, U]):
+**pH** (`ASAM`, `OPTIMAL`, `BASA`; transisi 0,5 satuan di luar [min, max]) tidak berubah.
 
-- `ASAM`: 1 untuk p <= L-0,5, turun linear ke 0 di L.
-- `OPTIMAL`: naik dari L-0,5 ke L, 1 pada [L, U], turun ke 0 di U+0,5.
-- `BASA`: 0 untuk p <= U, naik linear ke 1 di U+0,5.
+**Kelembapan** (`KERING`, `LEMBAP`, `JENUH`) dengan titik `a = 1/2`, `b = 5/6`, `d = 7/6`, `e = 4/3` kali `theta_CC` (0,1649; 0,2748; 0,3848; 0,4397):
 
-**NMI** (`KERING`, `OPTIMAL`, `BASAH`; n = NMI):
+- `KERING`: 1 untuk theta <= a, turun linear ke 0 di b.
+- `LEMBAP`: naik a..b, 1 pada b..d, turun d..e.
+- `JENUH`: 0 untuk theta <= d, naik linear ke 1 di e.
 
-- `KERING`: 1 untuk n <= T-5, turun linear ke 0 di T+5.
-- `OPTIMAL`: naik T-5..T+5, 1 pada T+5..90, turun 90..95.
-- `BASAH`: 0 untuk n <= 90, naik linear ke 1 di 95.
-
-Ketiga himpunan selalu berjumlah 1 pada seluruh domain (diuji di `__tests__/ai/core/engine.test.js`).
+Ketiganya selalu berjumlah 1. JENUH baru aktif di atas 0,3848, di luar daerah kalibrasi sensor, sehingga pada data normal ia tidak tercapai; kondisi basah ditangani override.
 
 ## Rule base 3x3
 
-| pH \ NMI | KERING | OPTIMAL | BASAH |
-|----------|--------|---------|-------|
+| pH \ Kelembapan | KERING | LEMBAP | JENUH |
+|----------|--------|--------|-------|
 | ASAM | C5 | C4 | C6 |
 | OPTIMAL | C2 | C1 | C3 |
 | BASA | C8 | C7 | C9 |
 
 Setiap kategori = `WaterAction` x `pHAction`:
 
-| Kategori | WaterAction | pHAction | Makna |
-|----------|-------------|----------|-------|
-| C1 | NONE | NONE | Monitoring |
-| C2 | IRRIGATE | NONE | Penyiraman |
-| C3 | STOP | NONE | Stop siram, cek drainase |
-| C4 | NONE | LIME | Kebutuhan dolomit |
-| C5 | IRRIGATE | LIME | Dolomit + air |
-| C6 | STOP | LIME | Stop air, dolomit ditunda |
-| C7 | NONE | SULFUR | Kebutuhan sulfur |
-| C8 | IRRIGATE | SULFUR | Sulfur + air |
-| C9 | STOP | SULFUR | Stop air, sulfur ditunda |
+| Kategori | WaterAction | pHAction |
+|----------|-------------|----------|
+| C1 | NONE | NONE |
+| C2 | IRRIGATE | NONE |
+| C3 | STOP | NONE |
+| C4 | NONE | LIME |
+| C5 | IRRIGATE | LIME |
+| C6 | STOP | LIME |
+| C7 | NONE | SULFUR |
+| C8 | IRRIGATE | SULFUR |
+| C9 | STOP | SULFUR |
 
-Kode 1-9 hanyalah label, bukan skala numerik.
+## Inferensi (Mamdani, centroid per sumbu)
 
-## Inferensi (MIN-MAX, tanpa centroid)
+1. `alpha = min(mu_pH, mu_kelembapan)` per aturan.
+2. Dua sumbu terpisah agar kode C1-C9 tidak diperlakukan sebagai jarak: air (`STOP -1`, `NONE 0`, `IRRIGATE +1`) dan pH (`SULFUR -1`, `NONE 0`, `LIME +1`).
+3. Konsekuen berupa segitiga `max(0, 1 - |y - c|)` pada domain [-1, 1], dipotong `alpha` (MIN), diagregasi dengan MAX.
+4. Centroid pada grid `dy = 0,02`: `y* = sum(y mu) / sum(mu)`.
+5. `y* >= 0,12` menjadi aksi positif, `y* <= -0,12` aksi negatif, selain itu `NONE` (ambang desain; pembandingan memakai toleransi 1e-9).
+6. `fuzzyIndex` pada response = kekuatan aturan tertinggi yang mendukung aksi terpilih, diambil yang terlemah dari kedua sumbu (0-1).
 
-1. Firing strength tiap rule: `alpha = min(mu_pH, mu_NMI)`.
-2. Agregasi per kategori: `h(c) = max(alpha)` untuk rule yang menghasilkan `c`.
-3. Aksi dipilih **per dimensi** (air dan pH) dari nilai agregasi terbesar. Seri (toleransi 1e-9) diselesaikan dengan prioritas:
-   - WaterAction: `STOP > NONE > IRRIGATE`
-   - pHAction: `NONE > LIME / SULFUR`
-4. Kategori final = pasangan `(WaterAction, pHAction)`.
-5. `fuzzyIndex` pada response = dukungan terlemah dari kedua keputusan (0-1), bukan lagi indeks centroid.
+Akibatnya pemicu siram jatuh di theta ~0,2207 (66,9% `theta_CC`) dan sumbu pH menyala LIME pada pH <= 5,75 dan SULFUR pada pH >= 7,25 (bayam).
 
-Contoh (bayam, pH 5,75, NMI 70): `C1, C2, C4, C5` masing-masing 0,5, jadi air = NONE, pH = NONE, kategori **C1**.
+## Override pengaman
+
+Dengan `safetyOverride`, kelembapan diperlakukan JENUH penuh: air STOP, volume 0 mL, pH tetap dihitung sebagai indikasi dan ditunda oleh safety gate. Response memuat `decisionSource: "safety_override"` dan `overrideReason`; tanpa override `decisionSource` bernilai `fuzzy`. Status ini bukan bukti kejenuhan fisik. Pemicunya (ADC di luar rentang kalibrasi, theta < 0, sensor tidak sehat) belum ada di backend; pemanggil yang menentukan.
 
 ## Kalkulator
 
-Semua kalkulator mengikuti rumus C501 untuk media **2 L** dan memakai preset polybag tunggal (30x30 cm, media 2 L; `src/ai/config/polybag.js`).
+Rumus mengikuti Bagian 4.8-4.9 dokumen C501 untuk media **2 L** (preset polybag 25x25 cm, `src/ai/config/polybag.js`).
 
 | Kalkulator | Rumus | Batas |
 |------------|-------|-------|
-| Air | `Vneed = max(0, (NMI target - NMI) x 4)` mL; `Vmax = max(0, (95 - NMI) x 4)` mL; `Vest = min(Vneed, Vmax)` | Hanya bila `WaterAction = IRRIGATE`, selain itu 0 |
-| Dolomit | `1,3 x V x max(0, pH target - pH)` g | 4,7 g per 2 L |
-| Sulfur | `0,6 x V x max(0, pH - pH target)` g | 1,2 g per 2 L |
+| Air | `Vneed = max(0, (0,2748 - theta) x 2.000)` mL | `min(Vneed, 0,10 x 2.000)` = maks. 200 mL per siram; hanya bila `WaterAction = IRRIGATE`, selain itu 0 |
+| Dolomit | `1,3 x V x max(0, pH target - pH)` g | 1,4 g/L = 2,8 g per 2 L |
+| Sulfur | `0,6 x V x max(0, pH - pH target)` g | 1,2 g/L = 2,4 g per 2 L |
 
-Koefisien 1,3 dan 0,6 serta batas gram adalah parameter simulasi, bukan hasil kalibrasi dosis-respons pada media Subur.in.
+Koefisien dan batas adalah estimasi berbasis literatur, belum diuji pada media Subur.in.
 
 ## Safety gate koreksi pH
 
-Koreksi (dolomit/sulfur) hanya `READY` bila semua terpenuhi; jika tidak status `DEFERRED` dengan daftar alasan. Gate tidak mengubah kategori fuzzy.
+Koreksi hanya `READY` bila semua terpenuhi; jika tidak `DEFERRED` dengan daftar alasan. Gate tidak mengubah kategori fuzzy. Ambang pH mengikuti sumbu fuzzy (tidak ada ambang tambahan).
 
-- pH melewati ambang: dolomit `pH <= L - 0,5`, sulfur `pH >= U + 0,5`.
 - `WaterAction` bukan `STOP`.
-- Minimal 2 pembacaan konsisten (`consistentReadings`; subscriber MQTT menghitungnya via Redis `sensor:ph_out_of_range:<deviceCode>`; default `Infinity` untuk simulasi).
-- Tidak dalam periode tunggu 14 hari setelah koreksi (diambil dari koreksi terakhir di tabel `correction_logs` bila `deviceId` diberikan; dicatat lewat `POST /api/devices/:id/corrections`).
-- pH di batas ukur probe (<= 3,5 atau >= 8,0): status `NEEDS_CONFIRMATION`.
+- Minimal 2 pembacaan konsisten (`consistentReadings`; subscriber MQTT menghitungnya via Redis `sensor:ph_out_of_range:<deviceCode>` untuk pH di luar batas +/- 0,25; default `Infinity` untuk simulasi).
+- Tidak dalam masa tunggu 7 hari setelah koreksi (dari `correction_logs` bila `deviceId` diberikan; dicatat lewat `POST /api/devices/:id/corrections`).
+- pH di batas ukur probe (<= 3,5 atau >= 8,0): `NEEDS_CONFIRMATION`.
 
 Bila koreksi tidak `READY`, `limeDosageGram`/`sulfurDosageGram` bernilai 0; estimasi mentahnya tetap ada di `_debug.limeDetail` / `_debug.sulfurDetail`.
 
 ## Batasan
 
-- NMI bukan kadar air absolut; estimasi air adalah estimasi berbasis indeks (R^2 regresi kalibrasi 0,7969, LOOCV RMSE 44,65 poin NMI).
-- Model konversi sensor ke NMI belum difinalkan; backend menerima nilai moisture apa adanya sebagai NMI.
+- Kalibrasi ADC -> VWC (kubik) belum tervalidasi pada polybag (ADC saat CC = 950 belum konsisten dengan theta_CC = 0,3298). Rekomendasi air dari VWC sensor belum boleh dianggap operasional sebelum ADC saat CC diukur ulang.
+- Alur masa pantau pH (median harian, dua hari berurutan, status PANTAU/REKOMENDASI/MASA REAKSI/EVALUASI/ESKALASI) belum diimplementasikan di backend; yang ada baru masa tunggu 7 hari dan syarat dua pembacaan konsisten.
 - Dosis gram belum tervalidasi secara agronomis.
 
 ## Cara mencoba
 
 ```bash
 cd backend
-npx jest src/__tests__/ai        # tes mesin, kalkulator, dan service
+npx jest src/__tests__/ai        # oracle Bagian 4.11, safety gate, dan service
 node src/ai/simulate.js          # simulator interaktif (butuh database terseed)
 ```

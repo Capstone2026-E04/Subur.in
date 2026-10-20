@@ -19,6 +19,7 @@ const prisma = require("../../database/connections/prisma_client");
 const {
   generateRecommendation,
 } = require("../../ai/services/recommendation.service");
+const { PH_ACTION_MARGIN } = require("../../ai/config/treatment_constants");
 const { getRedisClient } = require("../../database/connections/redis");
 const { notifyDevice } = require("../../services/notification.service");
 
@@ -211,13 +212,14 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     };
     broadcastToDevice(device.id, sensorPayload);
 
-    // Ambang rekomendasi saat ini kalibrasi indeks lama; belum berlaku untuk VWC.
-    if (moistureType === "legacy_index")
+    // Fuzzy C501 bekerja pada VWC; indeks lama tidak bisa dipetakan ke VWC.
+    if (moistureType === "vwc_percent")
       try {
         const redis = getRedisClient();
         const phOutKey = `sensor:ph_out_of_range:${deviceCode}`;
         const phOutOfRange =
-          ph <= device.plant.minPh - 0.5 || ph >= device.plant.maxPh + 0.5;
+          ph <= device.plant.minPh - PH_ACTION_MARGIN ||
+          ph >= device.plant.maxPh + PH_ACTION_MARGIN;
         let consistentReadings = 0;
         if (phOutOfRange) {
           consistentReadings = await redis.incr(phOutKey);

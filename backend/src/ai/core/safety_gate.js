@@ -1,5 +1,4 @@
 const {
-  PH_MARGIN,
   PH_SENSOR_MIN,
   PH_SENSOR_MAX,
   MIN_CONSISTENT_READINGS,
@@ -12,8 +11,6 @@ function checkPhCorrection({
   phAction,
   waterAction,
   ph,
-  minPh,
-  maxPh,
   consistentReadings,
   lastCorrectionAt,
   now = new Date(),
@@ -26,11 +23,6 @@ function checkPhCorrection({
       status: "NEEDS_CONFIRMATION",
       reasons: ["pH berada di batas ukur sensor; konfirmasi pengukuran."],
     };
-  }
-  const beyondThreshold =
-    phAction === "LIME" ? ph <= minPh - PH_MARGIN : ph >= maxPh + PH_MARGIN;
-  if (!beyondThreshold) {
-    reasons.push("pH belum melewati ambang indikasi koreksi.");
   }
   if (waterAction === "STOP") {
     reasons.push("Media basah; koreksi ditunda sampai penyiraman dihentikan.");

@@ -1,8 +1,9 @@
 const {
-  NMI_WET_START,
-  NMI_WET_STOP,
-  NMI_MARGIN,
   PH_MARGIN,
+  MOISTURE_A,
+  MOISTURE_B,
+  MOISTURE_D,
+  MOISTURE_E,
 } = require("../config/treatment_constants");
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
@@ -20,16 +21,17 @@ function fuzzifyPh(p, minPh, maxPh) {
   };
 }
 
-function fuzzifyMoisture(n, trigger) {
+// theta: VWC dalam m3/m3.
+function fuzzifyMoisture(theta) {
   return {
-    kering: clamp01((trigger + NMI_MARGIN - n) / (2 * NMI_MARGIN)),
-    optimal: clamp01(
+    kering: clamp01((MOISTURE_B - theta) / (MOISTURE_B - MOISTURE_A)),
+    lembap: clamp01(
       Math.min(
-        (n - trigger + NMI_MARGIN) / (2 * NMI_MARGIN),
-        (NMI_WET_STOP - n) / (NMI_WET_STOP - NMI_WET_START),
+        (theta - MOISTURE_A) / (MOISTURE_B - MOISTURE_A),
+        (MOISTURE_E - theta) / (MOISTURE_E - MOISTURE_D),
       ),
     ),
-    basah: clamp01((n - NMI_WET_START) / (NMI_WET_STOP - NMI_WET_START)),
+    jenuh: clamp01((theta - MOISTURE_D) / (MOISTURE_E - MOISTURE_D)),
   };
 }
 

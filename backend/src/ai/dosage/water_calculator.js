@@ -1,23 +1,20 @@
 const {
-  NMI_WET_STOP,
   MEDIA_REF_LITER,
-  ML_PER_NMI_REF,
+  THETA_FILL,
+  F_V,
 } = require("../config/treatment_constants");
 
-function calculateWaterVolume(nmi, targetNmi, volumeLiter) {
-  if (
-    typeof nmi !== "number" ||
-    typeof targetNmi !== "number" ||
-    typeof volumeLiter !== "number"
-  ) {
+// theta: VWC m3/m3. Neraca volumetrik C251 Pers. 4.55-4.56 dengan target isi ulang THETA_FILL.
+function calculateWaterVolume(theta, volumeLiter = MEDIA_REF_LITER) {
+  if (typeof theta !== "number" || typeof volumeLiter !== "number") {
     throw new TypeError(
       "Semua parameter input kalkulator air harus berupa angka.",
     );
   }
 
-  const mlPerNmi = ML_PER_NMI_REF * (volumeLiter / MEDIA_REF_LITER);
-  const vNeed = Math.max(0, (targetNmi - nmi) * mlPerNmi);
-  const vMax = Math.max(0, (NMI_WET_STOP - nmi) * mlPerNmi);
+  const volumeMl = volumeLiter * 1000;
+  const vNeed = Math.max(0, (THETA_FILL - theta) * volumeMl);
+  const vMax = F_V * volumeMl;
   const finalMl = Math.min(vNeed, vMax);
 
   return {
@@ -25,7 +22,7 @@ function calculateWaterVolume(nmi, targetNmi, volumeLiter) {
     waterVolumeLiter: parseFloat((finalMl / 1000).toFixed(4)),
     vNeedMl: parseFloat(vNeed.toFixed(1)),
     vMaxMl: parseFloat(vMax.toFixed(1)),
-    targetNmi,
+    thetaTarget: parseFloat(THETA_FILL.toFixed(4)),
   };
 }
 

@@ -12,17 +12,23 @@ const CATEGORIES = {
 
 const RULE_BASE = [
   { id: "R1", phSet: "asam", moistureSet: "kering", category: "C5" },
-  { id: "R2", phSet: "asam", moistureSet: "optimal", category: "C4" },
-  { id: "R3", phSet: "asam", moistureSet: "basah", category: "C6" },
+  { id: "R2", phSet: "asam", moistureSet: "lembap", category: "C4" },
+  { id: "R3", phSet: "asam", moistureSet: "jenuh", category: "C6" },
   { id: "R4", phSet: "optimal", moistureSet: "kering", category: "C2" },
-  { id: "R5", phSet: "optimal", moistureSet: "optimal", category: "C1" },
-  { id: "R6", phSet: "optimal", moistureSet: "basah", category: "C3" },
+  { id: "R5", phSet: "optimal", moistureSet: "lembap", category: "C1" },
+  { id: "R6", phSet: "optimal", moistureSet: "jenuh", category: "C3" },
   { id: "R7", phSet: "basa", moistureSet: "kering", category: "C8" },
-  { id: "R8", phSet: "basa", moistureSet: "optimal", category: "C7" },
-  { id: "R9", phSet: "basa", moistureSet: "basah", category: "C9" },
+  { id: "R8", phSet: "basa", moistureSet: "lembap", category: "C7" },
+  { id: "R9", phSet: "basa", moistureSet: "jenuh", category: "C9" },
 ];
 
-const WATER_PRIORITY = ["STOP", "NONE", "IRRIGATE"];
-const PH_PRIORITY = ["NONE", "LIME", "SULFUR"];
+// Pusat himpunan konsekuen segitiga pada domain [-1, 1] untuk tiap sumbu tindakan.
+const WATER_CENTERS = { STOP: -1, NONE: 0, IRRIGATE: 1 };
+const PH_CENTERS = { SULFUR: -1, NONE: 0, LIME: 1 };
 
-module.exports = { CATEGORIES, RULE_BASE, WATER_PRIORITY, PH_PRIORITY };
+module.exports = {
+  CATEGORIES,
+  RULE_BASE,
+  WATER_CENTERS,
+  PH_CENTERS,
+};

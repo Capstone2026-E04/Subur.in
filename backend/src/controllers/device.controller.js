@@ -312,6 +312,7 @@ exports.getDeviceRecommendation = async (req, res, next) => {
         sensorData = {
           ph: dbLog.ph,
           moisture: dbLog.moisture,
+          moistureType: dbLog.moistureType,
           timestamp: dbLog.timestamp,
         };
       }
@@ -336,6 +337,15 @@ exports.getDeviceRecommendation = async (req, res, next) => {
         res,
         200,
         "Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.",
+        null,
+      );
+    }
+
+    if (sensorData.moistureType !== "vwc_percent") {
+      return sendSuccess(
+        res,
+        200,
+        "Rekomendasi membutuhkan pembacaan VWC; data sensor terakhir masih indeks lama.",
         null,
       );
     }
