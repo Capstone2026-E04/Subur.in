@@ -304,7 +304,7 @@ export default function AnalyticsPage() {
         <Card className="flex-row items-center justify-between gap-4 p-5">
           <div className="min-w-0 space-y-1.5">
             <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
-              Rata-rata Kelembapan (NMI)
+              Rata-rata Kelembapan
             </p>
             <p className="text-[10px] leading-none font-medium text-gray-400">
               Dihitung dari data {durationText}

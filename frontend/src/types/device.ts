@@ -85,6 +85,8 @@ export interface DeviceRecommendation {
   limeDosageGram: number;
   sulfurDosageGram: number;
   reduceWatering: boolean;
+  decisionSource?: "fuzzy" | "safety_override";
+  overrideReason?: string | null;
   timestamp?: string;
 }
 
@@ -118,6 +120,8 @@ export interface NotificationItem {
   message: string;
   type: "warning" | "success" | "info";
   isRead: boolean;
+  telegramStatus?: "skipped" | "sent" | "failed";
+  telegramError?: string | null;
   createdAt: string;
   device?: {
     label: string;

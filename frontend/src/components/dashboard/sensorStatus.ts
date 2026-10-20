@@ -68,6 +68,24 @@ export function classifyPh(ph: number, range: { min: number; max: number }) {
   return { label: "Basa", tone: "violet" as Tone };
 }
 
+// Batas atas VWC lembap = 7/6 x theta_CC (0,3298); di atasnya JENUH mulai aktif.
+const VWC_WET_START = 38.48;
+
+export function classifyVwc(
+  vwc: number,
+  trigger: number | null,
+  target: number | null,
+) {
+  if (trigger === null || target === null)
+    return { label: "Tanpa parameter", tone: "sky" as Tone };
+  if (vwc < trigger) return { label: "Kering", tone: "red" as Tone };
+  if (vwc < target) {
+    return { label: "Mendekati kering", tone: "amber" as Tone };
+  }
+  if (vwc <= VWC_WET_START) return { label: "Lembap", tone: "sky" as Tone };
+  return { label: "Basah", tone: "violet" as Tone };
+}
+
 export function classifyNmi(nmi: number, trigger: number | null) {
   if (trigger === null)
     return { label: "Tanpa parameter", tone: "sky" as Tone };

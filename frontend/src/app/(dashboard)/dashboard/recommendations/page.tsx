@@ -271,10 +271,10 @@ export default function RecommendationsPage() {
                   </div>
                   <div>
                     <span className="block text-xs font-semibold text-gray-400">
-                      NMI Kelembapan
+                      Kelembapan (VWC)
                     </span>
                     <span className="text-base font-extrabold text-sky-600">
-                      {recommendation.moistureValue.toFixed(1)}
+                      {recommendation.moistureValue.toFixed(1)}%
                     </span>
                   </div>
                 </div>
@@ -344,7 +344,7 @@ export default function RecommendationsPage() {
                             </span>
                           </p>
                           <p className="mt-1 max-w-[85%] text-[11px] leading-relaxed text-sky-600/70">
-                            Estimasi berbasis NMI. Siram perlahan dan hentikan
+                            Estimasi berbasis VWC. Siram perlahan dan hentikan
                             bila air sudah menetes keluar.
                           </p>
                         </div>
@@ -549,9 +549,9 @@ export default function RecommendationsPage() {
                                 </span>
                               </p>
                               <p className="font-medium text-gray-500">
-                                NMI:{" "}
+                                VWC:{" "}
                                 <span className="font-bold text-sky-600">
-                                  {log.moistureValue.toFixed(0)}
+                                  {log.moistureValue.toFixed(0)}%
                                 </span>
                               </p>
                             </div>

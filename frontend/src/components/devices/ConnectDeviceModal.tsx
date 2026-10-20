@@ -336,7 +336,7 @@ export default function ConnectDeviceModal({
                                 </span>
                                 <span className="text-xs text-gray-600">
                                   <span className="font-medium text-gray-800">
-                                    NMI:
+                                    Kelembapan:
                                   </span>{" "}
                                   {selectedDeviceInfo.moisture}
                                 </span>

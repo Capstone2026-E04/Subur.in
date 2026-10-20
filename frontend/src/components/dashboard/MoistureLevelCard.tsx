@@ -1,9 +1,10 @@
 import { Card } from "@/components/ui/card";
-import { TONES, classifyNmi } from "./sensorStatus";
+import { TONES, classifyNmi, classifyVwc } from "./sensorStatus";
 
 interface MoistureLevelCardProps {
   value: number | null;
   nmiTrigger: number | null;
+  nmiTarget?: number | null;
   moistureType?: "legacy_index" | "vwc_percent";
 }
 
@@ -15,6 +16,7 @@ const NEEDLE_OUTER = 100;
 export default function MoistureLevelCard({
   value,
   nmiTrigger,
+  nmiTarget = null,
   moistureType = "legacy_index",
 }: MoistureLevelCardProps) {
   const pct = value === null ? 0 : Math.min(Math.max(value, 0), 100);
@@ -27,7 +29,11 @@ export default function MoistureLevelCard({
   };
   const isVwc = moistureType === "vwc_percent";
   const status =
-    value === null || isVwc ? null : classifyNmi(value, nmiTrigger);
+    value === null
+      ? null
+      : isVwc
+        ? classifyVwc(value, nmiTrigger, nmiTarget)
+        : classifyNmi(value, nmiTrigger);
   const tone = status ? TONES[status.tone] : null;
 
   return (
@@ -67,11 +73,6 @@ export default function MoistureLevelCard({
       </div>
 
       <div className="mt-5 flex justify-center">
-        {isVwc && value !== null && (
-          <span className="rounded-full border border-neutral-200 px-5 py-1 text-sm font-semibold text-neutral-600">
-            Status belum dikalibrasi
-          </span>
-        )}
         {status && tone && (
           <span
             className={`rounded-full border px-5 py-1 text-lg font-bold ${tone.badgeBg} ${tone.badge} ${tone.border}`}

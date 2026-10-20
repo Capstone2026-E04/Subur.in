@@ -152,7 +152,7 @@ export default function PlantsPage() {
                   <div className="border-border flex shrink-0 items-center gap-3 border-t pt-3 md:border-t-0 md:pt-0">
                     <div className="flex min-w-[100px] flex-col items-center rounded-xl border border-sky-100 bg-sky-50 px-3 py-2">
                       <span className="text-[9px] font-bold tracking-wider text-sky-600 uppercase">
-                        Kelembapan (NMI)
+                        Kelembapan (VWC %)
                       </span>
                       <span className="mt-0.5 text-xs font-bold text-gray-700">
                         {plant.nmiTrigger !== null

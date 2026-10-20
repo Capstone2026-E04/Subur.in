@@ -24,7 +24,7 @@ export default function HeroPreview() {
   return (
     <div className="shadow-primary/10 w-full max-w-md rounded-2xl border border-black/8 bg-white p-4 shadow-xl">
       <p className="px-1 pb-3 text-xs font-semibold text-gray-600">
-        Contoh data: selada, pH 5,4, NMI 50
+        Contoh data: pH 5,4, VWC 10%
       </p>
 
       <div className="grid grid-cols-2 gap-3">
@@ -40,9 +40,9 @@ export default function HeroPreview() {
           decimals={1}
         />
         <SensorGaugeCard
-          label="Kelembapan (NMI)"
-          value={50}
-          unit="NMI"
+          label="Kelembapan (VWC)"
+          value={10}
+          unit="%"
           min={0}
           max={100}
           getColor={() => NMI_TONE}
@@ -59,7 +59,7 @@ export default function HeroPreview() {
           correction={{ status: "READY", reasons: [] }}
         />
         <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-900">
-          Siram 160 mL, dolomit 2,86 g (estimasi)
+          Siram 200 mL, dolomit 2,86 g (estimasi)
         </p>
       </div>
     </div>

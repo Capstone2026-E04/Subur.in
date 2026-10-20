@@ -7,6 +7,7 @@ import {
   MdInfoOutline,
   MdDeleteOutline,
   MdNotificationsNone,
+  MdSend,
 } from "react-icons/md";
 import { useDevices } from "@/hooks/useDevices";
 import {
@@ -273,6 +274,24 @@ export default function NotificationsPage() {
                       {notif.device && (
                         <span className="rounded border border-gray-200 bg-gray-100 px-2 py-0.5 text-[10px] font-black text-gray-500 uppercase">
                           {notif.device.label}
+                        </span>
+                      )}
+                      {notif.telegramStatus === "sent" && (
+                        <span
+                          title="Terkirim ke Telegram"
+                          className="inline-flex items-center gap-1 rounded border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-black text-sky-700 uppercase"
+                        >
+                          <MdSend size={10} />
+                          Telegram
+                        </span>
+                      )}
+                      {notif.telegramStatus === "failed" && (
+                        <span
+                          title={notif.telegramError ?? "Gagal terkirim"}
+                          className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-black text-rose-700 uppercase"
+                        >
+                          <MdSend size={10} />
+                          Telegram gagal
                         </span>
                       )}
                       {!notif.isRead && (

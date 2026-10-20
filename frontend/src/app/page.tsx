@@ -15,7 +15,7 @@ const STEPS = [
   },
   {
     title: "Baca kondisi media",
-    body: "Sistem menilai pH dan kelembapan (NMI) memakai batas tiap tanaman, bukan satu angka untuk semua.",
+    body: "Sistem menilai pH dan kelembapan (VWC) memakai batas pH tiap tanaman dan kapasitas media polybag.",
   },
   {
     title: "Ikuti rekomendasi",
@@ -24,9 +24,9 @@ const STEPS = [
 ];
 
 const PLANTS = [
-  { name: "Selada", trigger: 65 },
-  { name: "Bayam", trigger: 70 },
-  { name: "Pakcoy", trigger: 60 },
+  { name: "Selada", trigger: "22,1%" },
+  { name: "Bayam", trigger: "22,1%" },
+  { name: "Pakcoy", trigger: "22,1%" },
 ];
 
 const ctaClass =
@@ -140,11 +140,12 @@ export default function Home() {
               Air secukupnya
             </p>
             <p className="mt-3 text-6xl font-extrabold tracking-tight">
-              <span data-count="160">160</span> mL
+              <span data-count="150">150</span> mL
             </p>
             <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-white/90">
-              Selada di NMI 50 butuh 160 mL. Di NMI 65 sistem tidak menyarankan
-              siram, karena kelembapan masih dalam batas yang wajar.
+              Media 2 L dengan VWC 20% butuh sekitar 150 mL. Di atas 22% sistem
+              tidak menyarankan siram, karena kelembapan masih dalam batas yang
+              wajar. Satu kali siram maksimal 200 mL.
             </p>
           </div>
 
@@ -158,7 +159,7 @@ export default function Home() {
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-amber-900">
               Dolomit dan sulfur tidak disarankan ketika media basah, dan baru
-              muncul lagi 14 hari setelah koreksi terakhir.
+              muncul lagi 7 hari setelah koreksi terakhir.
             </p>
           </div>
 
@@ -182,7 +183,8 @@ export default function Home() {
               ))}
             </dl>
             <p className="mt-4 text-xs leading-relaxed text-gray-600">
-              Angka NMI, bukan persen kadar air.
+              Batas siram berupa persen kadar air volumetrik (VWC), sama untuk
+              semua tanaman.
             </p>
           </div>
 
