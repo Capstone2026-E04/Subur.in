@@ -21,15 +21,30 @@ async function notifyDevice(deviceId, { title, message, type }) {
     },
   });
 
-  if (device?.user?.telegramChatId && device.user.telegramNotifyEnabled) {
-    await telegramService.sendMessage(
-      device.user.telegramChatId,
-      `*${title}*\n${message}`,
-      "Markdown",
-    );
+  if (!device?.user?.telegramChatId || !device.user.telegramNotifyEnabled) {
+    return notification;
   }
 
-  return notification;
+  const result = await telegramService.sendMessage(
+    device.user.telegramChatId,
+    `*${title}*\n${message}`,
+    "Markdown",
+  );
+  const delivered = result?.ok === true;
+
+  // sendMessage gagal senyap; hasilnya dicatat agar kegagalan pengiriman terlihat di database.
+  return prisma.notification.update({
+    where: { id: notification.id },
+    data: {
+      telegramStatus: delivered ? "sent" : "failed",
+      telegramError: delivered
+        ? null
+        : (result?.description ?? "Tidak ada respons dari Telegram").slice(
+            0,
+            255,
+          ),
+    },
+  });
 }
 
 module.exports = { notifyDevice };

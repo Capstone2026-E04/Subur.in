@@ -20,6 +20,8 @@ Menampilkan semua notifikasi untuk device milik pemanggil, terbaru lebih dulu.
         "message": "Data sensor tidak valid. Periksa sensor, daya, atau koneksi.",
         "type": "warning",
         "isRead": false,
+        "telegramStatus": "sent",
+        "telegramError": null,
         "createdAt": "2026-09-03T09:00:00.000Z",
         "device": { "label": "Pakcoy Balkon" }
       }

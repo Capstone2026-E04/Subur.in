@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-20
+
+- **feat(notification):** Status pengiriman Telegram dicatat pada `notifications.telegram_status` (`skipped` bila user belum menautkan atau menonaktifkan Telegram, `sent`, `failed`) beserta `telegram_error` (alasan dari Telegram, maks 255 karakter). Baris lama bernilai `skipped`. **Jalankan `012_notification_telegram_status.sql` (atau `prisma db push`) SEBELUM deploy** (rollback tersedia).
+- **feat(fuzzy):** Fuzzy diganti ke rancangan C501 Draf Final13: input VWC (θ m³/m³, acuan θ_CC = 0,3298), himpunan KERING/LEMBAP/JENUH, Mamdani dengan centroid dua sumbu, override pengaman (`decisionSource`), dosis air maks. 200 mL, batas dolomit 2,8 g dan sulfur 2,4 g per 2 L, masa tunggu koreksi 7 hari. Rekomendasi kini hanya untuk data `vwc_percent`; indeks lama dilewati. Lihat [backend/fuzzy-logic.md](backend/fuzzy-logic.md).
+
 ## 2026-10-19
 
 - **fix(mqtt):** ACK antrean offline ESP32 sebelumnya tidak pernah terkirim karena backend hanya menerima `record_id` angka, sedangkan ESP32 mengirim teks (`node_1-<hash>-1`). Kini `record_id` teks diterima (angka lama dikonversi ke teks) dan kolomnya menjadi `text`. Payload VWC (`soil_vwc_pct`) dibaca dan ditandai `moisture_type = vwc_percent`; rekomendasi lama hanya untuk `legacy_index`. Record tidak valid atau bernilai `null` disimpan dulu (payload asli + alasan) ke `rejected_sensor_records` sebelum ACK; gagal simpan berarti tidak ada ACK. Dedup memakai `sensor_record_receipts` dalam satu transaksi dengan log, sehingga record ber-`measured_at` null tidak menggandakan baris. CSV ekspor mendapat kolom `moisture_type`. **Jalankan `010_record_id_text_and_rejected_records.sql` dan `011_sensor_record_receipts.sql` SEBELUM deploy.**

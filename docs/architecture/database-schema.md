@@ -94,6 +94,8 @@ erDiagram
         text message
         enum type
         bool is_read
+        enum telegram_status
+        varchar telegram_error
     }
 ```
 
@@ -103,7 +105,7 @@ erDiagram
 - Relasi `Device` -> `Plant` menggunakan `onDelete: Restrict`: plant yang sedang digunakan oleh device tidak dapat dihapus, sehingga device tidak menjadi yatim (orphaned).
 - `Device` -> `User` menggunakan `onDelete: Cascade`: menghapus user akan menghapus device miliknya (dan secara transitif juga recommendation log serta notifikasi terkait).
 - `RawSensorLog` menggunakan kunci `(timestamp, id)` dan dipartisi berdasarkan rentang bulan di level database (dikelola oleh [`src/cron/database_cleanup_cron.js`](../../backend/src/cron/database_cleanup_cron.js)) agar penulisan telemetri berfrekuensi tinggi dan pembersihan retensi tetap murah.
-- Enum `DeviceStatus`: `ACTIVE`, `INACTIVE`, `OFFLINE`. Enum `UserRole` (`user_role`): `USER`, `SUPERADMIN`. Enum `NotificationType` (`notification_type`): `warning`, `success`, `info`.
+- Enum `DeviceStatus`: `ACTIVE`, `INACTIVE`, `OFFLINE`. Enum `UserRole` (`user_role`): `USER`, `SUPERADMIN`. Enum `NotificationType` (`notification_type`): `warning`, `success`, `info`. Enum `TelegramDeliveryStatus` (`telegram_delivery_status`): `skipped`, `sent`, `failed`.
 - `User.googleId` nullable karena akun yang dibuat lewat email + password belum tertaut Google. `User.passwordHash` (hash scrypt, lihat [backend/authentication.md](../backend/authentication.md)) nullable karena akun Google belum tentu punya password. Keduanya tidak pernah dikirim ke client.
 - `User.role` default `USER`, `NOT NULL`, dan hanya diubah lewat Supabase Dashboard; tidak ada kode aplikasi yang menulisnya ([ADR-010](../decisions/adr-010-superadmin-role.md)).
 - `RecommendationLog.isDev` dan `RawSensorLog.isDev` bernilai `true` hanya untuk data yang dibangkitkan Dev Mode, dan `false` untuk data dari sensor; nilainya ditentukan di `handleSensorMessage` (`isDev` hanya diteruskan oleh simulator Dev Mode).
