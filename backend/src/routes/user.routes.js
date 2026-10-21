@@ -10,6 +10,7 @@ router.patch("/me", userController.updateProfile);
 router.delete("/me", userController.deleteAccount);
 router.post("/me/password", userController.createPassword);
 router.post("/me/telegram/link-code", userController.getTelegramLinkCode);
+router.post("/me/telegram/test", userController.sendTelegramTestMessage);
 router.delete("/me/telegram", userController.unlinkTelegram);
 
 module.exports = router;

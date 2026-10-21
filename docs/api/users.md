@@ -114,6 +114,6 @@ Menghapus akun user yang terautentikasi secara permanen. Menghapus juga secara c
 
 **Response error:** `401`, `404`, `500`.
 
-## `POST /api/users/me/telegram/link-code` dan `DELETE /api/users/me/telegram`
+## `POST /api/users/me/telegram/link-code`, `POST /api/users/me/telegram/test`, dan `DELETE /api/users/me/telegram`
 
-Membuat/mencabut penautan akun Telegram. Didokumentasikan secara lengkap di [telegram.md](telegram.md).
+Membuat/mencabut penautan akun Telegram dan mengirim pesan uji coba. Didokumentasikan secara lengkap di [telegram.md](telegram.md).

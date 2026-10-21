@@ -7,13 +7,17 @@ jest.mock("../../database/connections/prisma_client", () => ({
   $transaction: jest.fn(),
 }));
 
-jest.mock("../../telegram/telegram_api.service", () => ({}));
+jest.mock("../../telegram/telegram_api.service", () => ({
+  sendMessage: jest.fn(),
+}));
 
 const prisma = require("../../database/connections/prisma_client");
+const telegramService = require("../../telegram/telegram_api.service");
 const {
   deleteAccount,
   getProfile,
   createPassword,
+  sendTelegramTestMessage,
 } = require("../../controllers/user.controller");
 
 function makeRes() {
@@ -141,5 +145,43 @@ describe("createPassword", () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(409);
+  });
+});
+
+describe("sendTelegramTestMessage", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("menolak dengan 409 dan tidak mengirim jika akun belum terhubung", async () => {
+    prisma.user.findUnique.mockResolvedValue({ telegramChatId: null });
+    const res = makeRes();
+
+    await sendTelegramTestMessage({ user: { id: "u" } }, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(telegramService.sendMessage).not.toHaveBeenCalled();
+  });
+
+  it("mengirim pesan ke chat terhubung dan membalas 200", async () => {
+    prisma.user.findUnique.mockResolvedValue({ telegramChatId: "123" });
+    telegramService.sendMessage.mockResolvedValue({ ok: true });
+    const res = makeRes();
+
+    await sendTelegramTestMessage({ user: { id: "u" } }, res, jest.fn());
+
+    expect(telegramService.sendMessage).toHaveBeenCalledWith(
+      "123",
+      expect.any(String),
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("membalas 502 jika Telegram menolak atau tidak terjangkau", async () => {
+    prisma.user.findUnique.mockResolvedValue({ telegramChatId: "123" });
+    telegramService.sendMessage.mockResolvedValue(null);
+    const res = makeRes();
+
+    await sendTelegramTestMessage({ user: { id: "u" } }, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(502);
   });
 });

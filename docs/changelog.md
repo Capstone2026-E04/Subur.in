@@ -2,6 +2,10 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-21
+
+- **feat(telegram):** Tombol "Coba Kirim" di Pengaturan > Telegram mengirim pesan uji coba lewat `POST /api/users/me/telegram/test`. Hanya tampil bila akun sudah terhubung; endpoint membalas `409` bila belum terhubung dan `502` bila Telegram gagal menerima pesan.
+
 ## 2026-10-20
 
 - **feat(notification):** Status pengiriman Telegram dicatat pada `notifications.telegram_status` (`skipped` bila user belum menautkan atau menonaktifkan Telegram, `sent`, `failed`) beserta `telegram_error` (alasan dari Telegram, maks 255 karakter). Baris lama bernilai `skipped`. **Jalankan `012_notification_telegram_status.sql` (atau `prisma db push`) SEBELUM deploy** (rollback tersedia).

@@ -43,6 +43,14 @@ export async function generateTelegramLinkCode(token: string): Promise<string> {
   return json.data.linkCode;
 }
 
+export async function sendTelegramTestMessage(token: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/users/me/telegram/test`, {
+    method: "POST",
+    headers: headers(token),
+  });
+  await handleResponse(res);
+}
+
 export async function disconnectTelegram(token: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/users/me/telegram`, {
     method: "DELETE",

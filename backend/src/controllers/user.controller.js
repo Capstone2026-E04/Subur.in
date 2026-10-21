@@ -218,6 +218,45 @@ exports.getTelegramLinkCode = async (req, res, next) => {
   }
 };
 
+exports.sendTelegramTestMessage = async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { telegramChatId: true },
+    });
+
+    if (!user?.telegramChatId) {
+      return sendError(res, 409, "Akun Telegram Anda belum terhubung.");
+    }
+
+    const result = await telegramService.sendMessage(
+      user.telegramChatId,
+      "Pesan uji coba dari Subur.in. Jika Anda menerima pesan ini, notifikasi Telegram Anda berfungsi.",
+    );
+
+    if (!result?.ok) {
+      return sendError(
+        res,
+        502,
+        "Gagal mengirim pesan ke Telegram. Coba lagi beberapa saat.",
+      );
+    }
+
+    return sendSuccess(
+      res,
+      200,
+      "Pesan uji coba berhasil dikirim ke Telegram.",
+    );
+  } catch (error) {
+    console.error("[UserController] Gagal mengirim pesan uji coba Telegram:", {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
+    return next(error);
+  }
+};
+
 exports.unlinkTelegram = async (req, res, next) => {
   try {
     const userId = req.user.id;

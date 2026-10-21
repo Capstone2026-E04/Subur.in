@@ -18,6 +18,7 @@ import {
   fetchMe,
   generateTelegramLinkCode,
   disconnectTelegram,
+  sendTelegramTestMessage,
 } from "@/services/userService";
 import PageHeader from "@/components/dashboard/PageHeader";
 
@@ -38,6 +39,8 @@ export default function SettingsPage() {
   const [isTelegramLoading, setIsTelegramLoading] = useState(false);
   const [telegramLinkCode, setTelegramLinkCode] = useState<string | null>(null);
   const [telegramError, setTelegramError] = useState<string | null>(null);
+  const [isTelegramTesting, setIsTelegramTesting] = useState(false);
+  const [telegramTestSent, setTelegramTestSent] = useState(false);
 
   const [moistureNotif, setMoistureNotif] = useState(true);
   const [phNotif, setPhNotif] = useState(true);
@@ -90,6 +93,25 @@ export default function SettingsPage() {
     }
   };
 
+  const handleTestTelegram = async () => {
+    if (!backendToken) return;
+    setIsTelegramTesting(true);
+    setTelegramTestSent(false);
+    setTelegramError(null);
+    try {
+      await sendTelegramTestMessage(backendToken);
+      setTelegramTestSent(true);
+    } catch (err) {
+      setTelegramError(
+        err instanceof Error
+          ? err.message
+          : "Gagal mengirim pesan uji coba Telegram.",
+      );
+    } finally {
+      setIsTelegramTesting(false);
+    }
+  };
+
   const handleDisconnectTelegram = async () => {
     if (!backendToken) return;
     setIsTelegramLoading(true);
@@ -98,6 +120,7 @@ export default function SettingsPage() {
       await disconnectTelegram(backendToken);
       setIsTelegramLinked(false);
       setTelegramLinkCode(null);
+      setTelegramTestSent(false);
     } catch (err) {
       setTelegramError(
         err instanceof Error
@@ -347,14 +370,24 @@ export default function SettingsPage() {
                 Terhubung ke Telegram
               </p>
             </div>
-            <button
-              onClick={handleDisconnectTelegram}
-              disabled={isTelegramLoading}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-60"
-            >
-              <MdLinkOff size={14} />
-              Putuskan Koneksi
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleTestTelegram}
+                disabled={isTelegramTesting || isTelegramLoading}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-60"
+              >
+                <MdSend size={14} />
+                {isTelegramTesting ? "Mengirim..." : "Coba Kirim"}
+              </button>
+              <button
+                onClick={handleDisconnectTelegram}
+                disabled={isTelegramLoading}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-60"
+              >
+                <MdLinkOff size={14} />
+                Putuskan Koneksi
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -387,6 +420,12 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
+        )}
+
+        {telegramTestSent && !telegramError && (
+          <p className="text-xs font-semibold text-emerald-600">
+            ✓ Pesan uji coba terkirim. Cek Telegram Anda.
+          </p>
         )}
 
         {telegramError && (

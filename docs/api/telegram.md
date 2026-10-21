@@ -76,6 +76,17 @@ Memerlukan `Authorization: Bearer <jwt>`. Membuat kode alfanumerik 8 karakter (d
 }
 ```
 
+## `POST /api/users/me/telegram/test`
+
+Memerlukan `Authorization: Bearer <jwt>`. Mengirim satu pesan uji coba ke chat Telegram yang tertaut pada akun pemanggil; dipicu tombol "Coba Kirim" di halaman Pengaturan. Berbeda dari `sendMessage` yang meredam error, endpoint ini memeriksa `result.ok` agar kegagalan terlihat oleh user.
+
+**Response sukses `200`:**
+```json
+{ "success": true, "message": "Pesan uji coba berhasil dikirim ke Telegram.", "data": null }
+```
+
+**Response error:** `401`, `409` (akun belum terhubung ke Telegram), `502` (Telegram menolak atau tidak terjangkau), `500`.
+
 ## `DELETE /api/users/me/telegram`
 
 Memerlukan `Authorization: Bearer <jwt>`. Menghapus `telegramChatId` dan `telegramLinkCode` pada akun pemanggil, memutuskan notifikasi Telegram. Setara dengan perintah `/unlink` pada bot, hanya dipicu dari dashboard alih-alih chat.
