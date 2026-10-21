@@ -22,7 +22,7 @@ interface SensorTrendCardProps {
 
 const POINT_OPTIONS = [5, 10, 20, 30];
 const TIME_ZONE = "Asia/Jakarta";
-const TZ_OFFSET_MS = 7 * 3600 * 1000; // WIB tetap UTC+7, tanpa DST
+const TZ_OFFSET_MS = 7 * 3600 * 1000;
 
 const GRANULARITIES = [
   { id: "minute", label: "Menit", ms: 60 * 1000 },

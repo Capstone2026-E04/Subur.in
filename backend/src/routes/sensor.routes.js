@@ -40,7 +40,6 @@ router.get(
   getSensorHistory,
 );
 
-// Untuk Excel (Data > From Web): EXPORT_API_KEY (?api_key= atau header X-API-Key) atau JWT pemilik.
 const exportKeyOrOwner = (req, res, next) =>
   hasValidExportKey(req)
     ? next()

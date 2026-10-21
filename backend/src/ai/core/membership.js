@@ -21,7 +21,6 @@ function fuzzifyPh(p, minPh, maxPh) {
   };
 }
 
-// theta: VWC dalam m3/m3.
 function fuzzifyMoisture(theta) {
   return {
     kering: clamp01((MOISTURE_B - theta) / (MOISTURE_B - MOISTURE_A)),

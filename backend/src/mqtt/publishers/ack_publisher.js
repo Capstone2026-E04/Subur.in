@@ -2,8 +2,6 @@
 
 const { connectMQTT } = require("../connection");
 
-// Payload ACK = record_id polos (bukan JSON). Gagal publish hanya dicatat:
-// ESP32 mengirim ulang record tertua tiap 30 detik, dan penyimpanan idempoten.
 function publishRecordAck(deviceCode, recordId) {
   return new Promise((resolve) => {
     const client = connectMQTT();

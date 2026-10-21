@@ -14,7 +14,6 @@ function hasValidSecret(req) {
 
 exports.handleWebhook = async (req, res) => {
   if (!hasValidSecret(req)) return res.status(401).send();
-  // Balas 200 dulu agar Telegram tidak timeout/retry; processUpdate menangani error-nya sendiri.
   res.status(200).send();
   await processUpdate(req.body || {});
 };

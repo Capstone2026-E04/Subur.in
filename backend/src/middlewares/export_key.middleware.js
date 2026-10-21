@@ -4,7 +4,6 @@ const crypto = require("crypto");
 
 const sha256 = (v) => crypto.createHash("sha256").update(v).digest();
 
-// Kunci statis untuk ekspor CSV (Excel tidak bisa memperbarui JWT). Nonaktif bila EXPORT_API_KEY kosong.
 function hasValidExportKey(req) {
   const expected = process.env.EXPORT_API_KEY;
   const given =

@@ -32,7 +32,6 @@ async function notifyDevice(deviceId, { title, message, type }) {
   );
   const delivered = result?.ok === true;
 
-  // sendMessage gagal senyap; hasilnya dicatat agar kegagalan pengiriman terlihat di database.
   return prisma.notification.update({
     where: { id: notification.id },
     data: {

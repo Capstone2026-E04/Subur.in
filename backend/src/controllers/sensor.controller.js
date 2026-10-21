@@ -113,7 +113,6 @@ exports.getLatestSensor = async (req, res, next) => {
 };
 
 const EXPORT_MAX_ROWS = 10000;
-// "2026-10-17 14:03:22": format yang dikenali Excel sebagai tanggal-waktu.
 const toWib = (date) =>
   date.toLocaleString("sv-SE", { timeZone: "Asia/Jakarta" });
 
@@ -142,7 +141,6 @@ exports.exportSensorCsv = async (req, res, next) => {
       select: { deviceCode: true },
     });
     if (!device) return sendError(res, 404, "Device tidak ditemukan.");
-    // Sumber: buffer pesan MQTT di Redis (bukan database); urut waktu menaik, `limit` terbaru.
     const entries = (await getSensorExport(device.deviceCode))
       .map((e) => ({ ...e, time: new Date(e.t) }))
       .filter((e) => (!from || e.time >= from) && (!to || e.time <= to))

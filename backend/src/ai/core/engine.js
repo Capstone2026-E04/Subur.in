@@ -6,7 +6,6 @@ const EPSILON = 1e-9;
 const STEPS = Math.round(2 / DELTA_Y);
 const Y_GRID = Array.from({ length: STEPS + 1 }, (_, i) => -1 + i * DELTA_Y);
 
-// Saat override, kelembapan diperlakukan sebagai JENUH penuh tanpa mengubah nilai VWC (Bagian 4.7).
 const OVERRIDE_MOISTURE = { kering: 0, lembap: 0, jenuh: 1 };
 
 function evaluateRules(membership) {
@@ -22,7 +21,6 @@ function evaluateRules(membership) {
   })).filter((r) => r.alpha > 0);
 }
 
-// Mamdani: potong konsekuen segitiga dengan alpha (MIN), agregasi (MAX), centroid pada grid DELTA_Y.
 function centroid(activeRules, key, centers) {
   let num = 0;
   let den = 0;
@@ -47,7 +45,6 @@ function decide(y, centers) {
   return "NONE";
 }
 
-// Kekuatan aktivasi tertinggi aturan yang konsekuennya sama dengan tindakan terpilih.
 function actionStrength(activeRules, key, action) {
   return activeRules
     .filter((r) => CATEGORIES[r.category][key] === action)

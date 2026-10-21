@@ -22,7 +22,6 @@ const RULE_BASE = [
   { id: "R9", phSet: "basa", moistureSet: "jenuh", category: "C9" },
 ];
 
-// Pusat himpunan konsekuen segitiga pada domain [-1, 1] untuk tiap sumbu tindakan.
 const WATER_CENTERS = { STOP: -1, NONE: 0, IRRIGATE: 1 };
 const PH_CENTERS = { SULFUR: -1, NONE: 0, LIME: 1 };
 

@@ -68,7 +68,6 @@ export function classifyPh(ph: number, range: { min: number; max: number }) {
   return { label: "Basa", tone: "violet" as Tone };
 }
 
-// Batas atas VWC lembap = 7/6 x theta_CC (0,3298); di atasnya JENUH mulai aktif.
 const VWC_WET_START = 38.48;
 
 export function classifyVwc(

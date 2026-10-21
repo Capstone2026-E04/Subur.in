@@ -76,7 +76,6 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       ? data.moisture
       : data.soil_moisture;
   const moistureType = hasVwc ? "vwc_percent" : "legacy_index";
-  // Record dari antrean ESP32 membawa record_id teks (atau angka lama); tanpa itu = telemetri lama (tanpa ACK).
   const recordId = parseRecordId(data.record_id);
 
   const phValid = isValidSensorValue(ph, "ph");
@@ -114,8 +113,6 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         },
       );
     }
-    // Nilai tidak valid tidak akan membaik bila dikirim ulang; payload asli disimpan
-    // permanen dulu, baru ACK agar antrean tidak macet dan ESP32 tidak kehilangan data.
     if (recordId !== null) {
       try {
         const device = await prisma.device.findUnique({
@@ -147,8 +144,6 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   );
 
   const measuredAt = parseMeasuredAt(data.measured_at);
-  // Telemetri lama (tanpa record_id) langsung masuk buffer ekspor; record bernomor
-  // masuk setelah tersimpan sebagai record baru, agar kirim ulang tidak menggandakan.
   if (recordId === null) {
     await bufferForExport(
       deviceCode,
@@ -189,9 +184,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         );
       }
       await updateDeviceLastSeen(device.id);
-      // ACK hanya setelah commit (juga untuk record duplikat yang sudah tersimpan).
       await publishRecordAck(deviceCode, recordId);
-      // Duplikat dan data lama dari antrean tidak boleh memicu rekomendasi/notifikasi.
       if (!created || isStale(data.measured_at, device.sensorInterval)) return;
     }
 
@@ -212,7 +205,6 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     };
     broadcastToDevice(device.id, sensorPayload);
 
-    // Fuzzy C501 bekerja pada VWC; indeks lama tidak bisa dipetakan ke VWC.
     if (moistureType === "vwc_percent")
       try {
         const redis = getRedisClient();
@@ -346,7 +338,6 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   }
 }
 
-// Sumber ekspor CSV. Gagal buffer hanya dicatat; jalur database tetap berjalan.
 async function bufferForExport(
   deviceCode,
   time,
@@ -379,7 +370,6 @@ function parseRecordId(value) {
   return Number.isSafeInteger(value) ? String(value) : null;
 }
 
-// measured_at: ISO string atau epoch (detik/ms); null/tidak valid = belum sinkron NTP.
 function parseMeasuredAt(value) {
   if (value === null || value === undefined) return null;
   const date = new Date(

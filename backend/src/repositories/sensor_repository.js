@@ -26,7 +26,6 @@ async function saveRawSensorLog(
   });
 }
 
-// Idempoten lewat UNIQUE(device_id, record_id); payload asli disimpan utuh bersama alasan penolakan.
 async function saveRejectedSensorRecord(deviceId, recordId, payload, reason) {
   await prisma.rejectedSensorRecord.createMany({
     data: [{ deviceId, recordId, payload, reason }],
@@ -34,9 +33,6 @@ async function saveRejectedSensorRecord(deviceId, recordId, payload, reason) {
   });
 }
 
-// Idempoten lewat sensor_record_receipts (PK device_id+record_id, tidak dipartisi sehingga tetap
-// unik walau measured_at null); receipt dan log satu transaksi. true bila record baru tersimpan.
-// measuredAt null = jam ESP32 belum sinkron NTP: waktu terima hanya penanda posisi, time_synced=false.
 async function saveBufferedSensorLog(
   deviceId,
   recordId,

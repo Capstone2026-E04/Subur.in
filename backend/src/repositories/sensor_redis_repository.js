@@ -82,8 +82,6 @@ async function shouldSaveToDatabase(deviceCode) {
   }
 }
 
-// Buffer setiap pesan MQTT yang diterima (tanpa throttle) untuk ekspor CSV.
-// Error sengaja dilempar: backend tidak boleh diam-diam kehilangan data ekspor.
 async function pushSensorExport(deviceCode, entry) {
   const redis = getRedisClient();
   const key = `${EXPORT_KEY_PREFIX}${deviceCode}`;

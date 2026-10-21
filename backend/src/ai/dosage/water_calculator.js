@@ -4,7 +4,6 @@ const {
   F_V,
 } = require("../config/treatment_constants");
 
-// theta: VWC m3/m3. Neraca volumetrik C251 Pers. 4.55-4.56 dengan target isi ulang THETA_FILL.
 function calculateWaterVolume(theta, volumeLiter = MEDIA_REF_LITER) {
   if (typeof theta !== "number" || typeof volumeLiter !== "number") {
     throw new TypeError(
