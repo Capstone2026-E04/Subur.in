@@ -20,7 +20,15 @@ interface SensorTrendCardProps {
   color: string;
 }
 
-const POINT_OPTIONS = [5, 10, 20, 30];
+const RANGES = [
+  { hours: 1, label: "1 jam terakhir" },
+  { hours: 3, label: "3 jam terakhir" },
+  { hours: 6, label: "6 jam terakhir" },
+  { hours: 12, label: "12 jam terakhir" },
+  { hours: 24, label: "1 hari terakhir" },
+];
+const MIN_POINTS = 2;
+const MAX_POINTS = 60;
 const TIME_ZONE = "Asia/Jakarta";
 const TZ_OFFSET_MS = 7 * 3600 * 1000;
 
@@ -78,8 +86,15 @@ export default function SensorTrendCard({
   history,
   color,
 }: SensorTrendCardProps) {
-  const [granularity, setGranularity] = useState<Granularity>(GRANULARITIES[0]);
-  const [points, setPoints] = useState(POINT_OPTIONS[1]);
+  const [granularityId, setGranularityId] = useState<string>(GRANULARITIES[0].id);
+  const [rangeHours, setRangeHours] = useState(RANGES[0].hours);
+  const pointsFor = (g: Granularity) => Math.ceil((rangeHours * 3600e3) / g.ms);
+  const allowed = GRANULARITIES.filter((g) => {
+    const n = pointsFor(g);
+    return n >= MIN_POINTS && n <= MAX_POINTS;
+  });
+  const granularity = allowed.find((g) => g.id === granularityId) ?? allowed[0];
+  const points = pointsFor(granularity);
   const data = buildAverages(history, metric, granularity, points);
   const domain: [number, number] = metric === "ph" ? [0, 14] : [0, 100];
   const formatValue = (v: number) =>
@@ -93,29 +108,24 @@ export default function SensorTrendCard({
         </h3>
         <div className="flex gap-2">
           <select
-            aria-label="Jumlah data terakhir"
-            value={points}
-            onChange={(e) => setPoints(Number(e.target.value))}
+            aria-label="Rentang waktu"
+            value={rangeHours}
+            onChange={(e) => setRangeHours(Number(e.target.value))}
             className="cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 focus:outline-none"
           >
-            {POINT_OPTIONS.map((n) => (
-              <option key={n} value={n}>
-                {n} data terakhir
+            {RANGES.map((r) => (
+              <option key={r.hours} value={r.hours}>
+                {r.label}
               </option>
             ))}
           </select>
           <select
             aria-label="Granularitas waktu"
             value={granularity.id}
-            onChange={(e) =>
-              setGranularity(
-                GRANULARITIES.find((g) => g.id === e.target.value) ??
-                  GRANULARITIES[0],
-              )
-            }
+            onChange={(e) => setGranularityId(e.target.value)}
             className="cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 focus:outline-none"
           >
-            {GRANULARITIES.map((g) => (
+            {allowed.map((g) => (
               <option key={g.id} value={g.id}>
                 Per {g.label}
               </option>

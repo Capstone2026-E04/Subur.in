@@ -24,6 +24,7 @@ import type {
 import { Card } from "@/components/ui/card";
 
 const HISTORY_LIMIT = 500;
+const HISTORY_HOURS = 24;
 
 function DashboardSkeleton() {
   return (
@@ -176,7 +177,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!token || !selectedDevice?.id) return;
     let cancelled = false;
-    fetchSensorHistory(token, selectedDevice.id, HISTORY_LIMIT)
+    fetchSensorHistory(token, selectedDevice.id, HISTORY_LIMIT, HISTORY_HOURS)
       .then((data) => {
         if (!cancelled) setHistory(data);
       })

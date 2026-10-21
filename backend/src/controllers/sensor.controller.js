@@ -9,6 +9,7 @@ const {
 const {
   getLatestSensorLog,
   getSensorHistory,
+  getSensorHistorySince,
 } = require("../repositories/sensor_repository");
 const { sendSuccess, sendError } = require("../utils/response");
 
@@ -174,6 +175,11 @@ exports.exportSensorCsv = async (req, res, next) => {
 exports.getSensorHistory = async (req, res, next) => {
   const { deviceId } = req.params;
   const limit = Math.min(Math.max(parseInt(req.query.limit) || 30, 1), 500);
+  const hours = Math.min(parseFloat(req.query.hours) || 0, 24 * 7);
+  const fetchHistory = () =>
+    hours > 0
+      ? getSensorHistorySince(deviceId, new Date(Date.now() - hours * 3600e3))
+      : getSensorHistory(deviceId, limit);
 
   const retries = 3;
   const delay = 250;
@@ -182,7 +188,7 @@ exports.getSensorHistory = async (req, res, next) => {
 
   for (let i = 0; i < retries; i++) {
     try {
-      history = await getSensorHistory(deviceId, limit);
+      history = await fetchHistory();
       break;
     } catch (err) {
       lastError = err;
