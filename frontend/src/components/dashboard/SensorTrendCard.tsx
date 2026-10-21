@@ -26,9 +26,13 @@ const RANGES = [
   { hours: 6, label: "6 jam terakhir" },
   { hours: 12, label: "12 jam terakhir" },
   { hours: 24, label: "1 hari terakhir" },
+  { hours: 72, label: "3 hari terakhir" },
+  { hours: 168, label: "7 hari terakhir" },
+  { hours: 336, label: "14 hari terakhir" },
+  { hours: 720, label: "30 hari terakhir" },
 ];
 const MIN_POINTS = 2;
-const MAX_POINTS = 60;
+const MAX_POINTS = 72;
 const TIME_ZONE = "Asia/Jakarta";
 const TZ_OFFSET_MS = 7 * 3600 * 1000;
 

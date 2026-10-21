@@ -24,7 +24,7 @@ import type {
 import { Card } from "@/components/ui/card";
 
 const HISTORY_LIMIT = 500;
-const HISTORY_HOURS = 24;
+const HISTORY_HOURS = 720;
 
 function DashboardSkeleton() {
   return (
