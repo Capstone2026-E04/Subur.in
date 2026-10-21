@@ -86,7 +86,9 @@ export default function SensorTrendCard({
   history,
   color,
 }: SensorTrendCardProps) {
-  const [granularityId, setGranularityId] = useState<string>(GRANULARITIES[0].id);
+  const [granularityId, setGranularityId] = useState<string>(
+    GRANULARITIES[0].id,
+  );
   const [rangeHours, setRangeHours] = useState(RANGES[0].hours);
   const pointsFor = (g: Granularity) => Math.ceil((rangeHours * 3600e3) / g.ms);
   const allowed = GRANULARITIES.filter((g) => {
