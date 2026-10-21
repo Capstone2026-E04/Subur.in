@@ -1,3 +1,9 @@
+const net = require("node:net");
+
+if (typeof net.setDefaultAutoSelectFamilyAttemptTimeout === "function") {
+  net.setDefaultAutoSelectFamilyAttemptTimeout(2000);
+}
+
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
