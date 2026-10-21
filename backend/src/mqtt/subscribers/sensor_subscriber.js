@@ -19,7 +19,12 @@ const prisma = require("../../database/connections/prisma_client");
 const {
   generateRecommendation,
 } = require("../../ai/services/recommendation.service");
-const { PH_ACTION_MARGIN } = require("../../ai/config/treatment_constants");
+const { adcToVwc } = require("../../ai/core/vwc_calibration");
+const { getPhMonitor } = require("../../ai/services/ph_monitor.service");
+const {
+  recordMoisture,
+  claimWaterDecision,
+} = require("../../ai/services/water_schedule.service");
 const { getRedisClient } = require("../../database/connections/redis");
 const { notifyDevice } = require("../../services/notification.service");
 
@@ -70,12 +75,17 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
 
   const ph = data.ph;
   const hasVwc = Object.prototype.hasOwnProperty.call(data, "soil_vwc_pct");
-  const moisture = hasVwc
-    ? data.soil_vwc_pct
-    : data.moisture !== undefined
-      ? data.moisture
-      : data.soil_moisture;
-  const moistureType = hasVwc ? "vwc_percent" : "legacy_index";
+  const hasAdc = !hasVwc && typeof data.soil_adc === "number";
+  const calibrated = hasAdc ? adcToVwc(data.soil_adc) : null;
+  const safetyOverride = calibrated?.safetyOverride ?? null;
+  const moisture = calibrated
+    ? calibrated.vwcPercent
+    : hasVwc
+      ? data.soil_vwc_pct
+      : data.moisture !== undefined
+        ? data.moisture
+        : data.soil_moisture;
+  const moistureType = hasVwc || hasAdc ? "vwc_percent" : "legacy_index";
   const recordId = parseRecordId(data.record_id);
 
   const phValid = isValidSensorValue(ph, "ph");
@@ -205,33 +215,45 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     };
     broadcastToDevice(device.id, sensorPayload);
 
-    if (moistureType === "vwc_percent")
+    let decisionMoisture = null;
+    if (moistureType === "vwc_percent") {
+      try {
+        if (safetyOverride) {
+          decisionMoisture = moisture;
+        } else {
+          await recordMoisture(deviceCode, moisture);
+          decisionMoisture = await claimWaterDecision(deviceCode);
+        }
+      } catch (err) {
+        console.error(
+          "[SensorSubscriber] Gagal memproses jendela kelembapan:",
+          {
+            message: err.message,
+            stack: err.stack,
+            deviceCode,
+          },
+        );
+      }
+    }
+
+    if (decisionMoisture !== null)
       try {
         const redis = getRedisClient();
-        const phOutKey = `sensor:ph_out_of_range:${deviceCode}`;
-        const phOutOfRange =
-          ph <= device.plant.minPh - PH_ACTION_MARGIN ||
-          ph >= device.plant.maxPh + PH_ACTION_MARGIN;
-        let consistentReadings = 0;
-        if (phOutOfRange) {
-          consistentReadings = await redis.incr(phOutKey);
-        } else {
-          await redis.del(phOutKey);
-        }
 
         const recommendation = await generateRecommendation({
           phValue: ph,
-          moistureValue: moisture,
+          moistureValue: decisionMoisture,
           plantIdOrName: device.plantId,
           deviceId: device.id,
-          consistentReadings,
+          safetyOverride,
+          phMonitor: await getPhMonitor(device.id, device.plant),
         });
 
         await prisma.recommendationLog.create({
           data: {
             deviceId: device.id,
             phValue: ph,
-            moistureValue: moisture,
+            moistureValue: decisionMoisture,
             fuzzyIndex: recommendation.fuzzyIndex,
             categoryCode: recommendation.categoryCode,
             actionText: recommendation.actionText,

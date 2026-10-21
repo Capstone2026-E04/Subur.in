@@ -22,6 +22,13 @@ jest.mock("../../../database/connections/prisma_client", () => ({
 jest.mock("../../../ai/services/recommendation.service", () => ({
   generateRecommendation: jest.fn(),
 }));
+jest.mock("../../../ai/services/water_schedule.service", () => ({
+  recordMoisture: jest.fn(),
+  claimWaterDecision: jest.fn(),
+}));
+jest.mock("../../../ai/services/ph_monitor.service", () => ({
+  getPhMonitor: jest.fn(),
+}));
 jest.mock("../../../database/connections/redis", () => ({
   getRedisClient: jest.fn(),
 }));
@@ -46,6 +53,11 @@ const prisma = require("../../../database/connections/prisma_client");
 const {
   generateRecommendation,
 } = require("../../../ai/services/recommendation.service");
+const {
+  recordMoisture,
+  claimWaterDecision,
+} = require("../../../ai/services/water_schedule.service");
+const { getPhMonitor } = require("../../../ai/services/ph_monitor.service");
 const { getRedisClient } = require("../../../database/connections/redis");
 const { notifyDevice } = require("../../../services/notification.service");
 const {
@@ -54,7 +66,6 @@ const {
 
 const DEVICE_CODE = "ESP32-A1B2C3";
 const TOPIC = `suburin/devices/${DEVICE_CODE}/telemetry`;
-const PH_KEY = `sensor:ph_out_of_range:${DEVICE_CODE}`;
 const DRY_KEY = `sensor:consecutive_dry:${DEVICE_CODE}`;
 const WET_KEY = `sensor:consecutive_wet:${DEVICE_CODE}`;
 const INVALID_KEY = `sensor:invalid_notified:${DEVICE_CODE}`;
@@ -106,6 +117,12 @@ describe("handleSensorMessage", () => {
     prisma.device.findUnique.mockResolvedValue(deviceFixture);
     prisma.recommendationLog.create.mockResolvedValue({});
     generateRecommendation.mockResolvedValue(idleRecommendation);
+    let lastMoisture = null;
+    recordMoisture.mockImplementation(async (_code, m) => {
+      lastMoisture = m;
+    });
+    claimWaterDecision.mockImplementation(async () => lastMoisture);
+    getPhMonitor.mockResolvedValue({ status: "PANTAU", allowDose: false });
     shouldSaveToDatabase.mockResolvedValue(true);
   });
 
@@ -476,54 +493,52 @@ describe("handleSensorMessage", () => {
     });
   });
 
-  describe("consistent pH readings for the safety gate", () => {
-    it("counts a reading at the lime threshold (minimum pH minus 0.25)", async () => {
-      await send({ ph: 5.75, soil_vwc_pct: 80 });
+  describe("water decision cadence and sensor safety", () => {
+    it("skips the recommendation until the 4-hour decision slot is due", async () => {
+      claimWaterDecision.mockResolvedValue(null);
+
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
+
+      expect(recordMoisture).toHaveBeenCalledWith(DEVICE_CODE, 50);
+      expect(generateRecommendation).not.toHaveBeenCalled();
+      expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
+    });
+
+    it("decides on the median of the recent window and passes the pH monitor", async () => {
+      claimWaterDecision.mockResolvedValue(42);
+
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
 
       expect(generateRecommendation).toHaveBeenCalledWith(
-        expect.objectContaining({ consistentReadings: 1 }),
+        expect.objectContaining({
+          moistureValue: 42,
+          phMonitor: { status: "PANTAU", allowDose: false },
+        }),
+      );
+      expect(prisma.recommendationLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ moistureValue: 42 }),
+      });
+    });
+
+    it("calibrates soil_adc to VWC and keeps the reading in the window", async () => {
+      await send({ ph: 6.5, soil_adc: 950 });
+
+      const [, vwc] = recordMoisture.mock.calls[0];
+      expect(vwc).toBeCloseTo(29.6, 0);
+      expect(generateRecommendation).toHaveBeenCalledWith(
+        expect.objectContaining({ safetyOverride: null }),
       );
     });
 
-    it("counts a reading at the sulfur threshold (maximum pH plus 0.25)", async () => {
-      await send({ ph: 7.25, soil_vwc_pct: 80 });
+    it("forces a safety override and bypasses the window for an out-of-range ADC", async () => {
+      await send({ ph: 6.5, soil_adc: 3000 });
 
+      expect(recordMoisture).not.toHaveBeenCalled();
       expect(generateRecommendation).toHaveBeenCalledWith(
-        expect.objectContaining({ consistentReadings: 1 }),
-      );
-    });
-
-    it("does not count a reading just inside the lime threshold", async () => {
-      await send({ ph: 5.8, soil_vwc_pct: 80 });
-
-      expect(generateRecommendation).toHaveBeenCalledWith(
-        expect.objectContaining({ consistentReadings: 0 }),
-      );
-    });
-
-    it("does not count a reading just inside the sulfur threshold", async () => {
-      await send({ ph: 7.2, soil_vwc_pct: 80 });
-
-      expect(generateRecommendation).toHaveBeenCalledWith(
-        expect.objectContaining({ consistentReadings: 0 }),
-      );
-    });
-
-    it("accumulates consecutive out-of-range readings", async () => {
-      await send({ ph: 5.4, soil_vwc_pct: 80 });
-      await send({ ph: 5.3, soil_vwc_pct: 80 });
-
-      expect(generateRecommendation).toHaveBeenLastCalledWith(
-        expect.objectContaining({ consistentReadings: 2 }),
-      );
-    });
-
-    it("resets the counter when the pH returns inside the threshold", async () => {
-      await send({ ph: 6.5, soil_vwc_pct: 80 });
-
-      expect(redis.del).toHaveBeenCalledWith(PH_KEY);
-      expect(generateRecommendation).toHaveBeenCalledWith(
-        expect.objectContaining({ consistentReadings: 0 }),
+        expect.objectContaining({
+          moistureValue: 0,
+          safetyOverride: "sensor_out_of_range",
+        }),
       );
     });
   });

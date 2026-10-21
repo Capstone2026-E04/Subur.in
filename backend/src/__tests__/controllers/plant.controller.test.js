@@ -34,7 +34,7 @@ describe("getAllPlants", () => {
     await getAllPlants({}, res, jest.fn());
 
     const { data } = res.json.mock.calls[0][0];
-    expect(data[0]).toMatchObject({ nmiTrigger: 22.07, nmiTarget: 27.48 });
+    expect(data[0]).toMatchObject({ nmiTrigger: 22.07, nmiTarget: 25.72 });
   });
 
   it("matches the plant name without case or surrounding spaces", async () => {
@@ -44,7 +44,7 @@ describe("getAllPlants", () => {
     await getAllPlants({}, res, jest.fn());
 
     const { data } = res.json.mock.calls[0][0];
-    expect(data[0]).toMatchObject({ nmiTrigger: 22.07, nmiTarget: 27.48 });
+    expect(data[0]).toMatchObject({ nmiTrigger: 22.07, nmiTarget: 25.72 });
   });
 
   it("returns null NMI values for a plant without parameters", async () => {

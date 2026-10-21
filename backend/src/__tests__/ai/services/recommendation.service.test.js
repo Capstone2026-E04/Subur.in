@@ -39,6 +39,21 @@ describe("generateRecommendation", () => {
   });
 
   describe("correction history", () => {
+    it("withholds the lime dose until the pH monitor allows it", async () => {
+      const held = await generateRecommendation(
+        acidicDryRequest({ phMonitor: { status: "PANTAU", allowDose: false } }),
+      );
+      const allowed = await generateRecommendation(
+        acidicDryRequest({
+          phMonitor: { status: "REKOMENDASI", allowDose: true },
+        }),
+      );
+
+      expect(held.limeDosageGram).toBe(0);
+      expect(held.phMonitor.status).toBe("PANTAU");
+      expect(allowed.limeDosageGram).toBeGreaterThan(0);
+    });
+
     it("defers lime but keeps the water estimate with fewer than two consistent readings", async () => {
       const input = acidicDryRequest({ consistentReadings: 1 });
 

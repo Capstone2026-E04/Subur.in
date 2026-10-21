@@ -293,6 +293,7 @@ export default function RecommendationsPage() {
               <PhCorrectionStatus
                 phAction={recommendation.phAction}
                 correction={recommendation.phCorrection}
+                monitor={recommendation.phMonitor}
               />
 
               <div className="space-y-3">

@@ -72,6 +72,19 @@ export interface PhCorrection {
   reasons: string[];
 }
 
+export type PhMonitorState =
+  "PANTAU" | "REKOMENDASI" | "MASA_REAKSI" | "EVALUASI" | "ESKALASI";
+
+export interface PhMonitor {
+  status: PhMonitorState;
+  phAction: PhAction;
+  allowDose: boolean;
+  day?: number;
+  totalDays?: number;
+  outcome?: "LANJUT_PANTAU" | "REKOMENDASI_ULANG";
+  reason?: "OVERSHOOT" | "NO_PROGRESS";
+}
+
 export interface DeviceRecommendation {
   phValue: number;
   moistureValue: number;
@@ -81,6 +94,7 @@ export interface DeviceRecommendation {
   waterAction: WaterAction;
   phAction: PhAction;
   phCorrection: PhCorrection;
+  phMonitor?: PhMonitor | null;
   waterVolumeLiter: number;
   limeDosageGram: number;
   sulfurDosageGram: number;

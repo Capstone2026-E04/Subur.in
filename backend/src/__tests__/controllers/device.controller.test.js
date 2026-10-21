@@ -16,6 +16,12 @@ jest.mock("../../database/connections/prisma_client", () => ({
 jest.mock("../../database/connections/redis", () => ({
   getRedisClient: jest.fn(),
 }));
+jest.mock("../../ai/services/ph_monitor.service", () => ({
+  getPhMonitor: jest.fn().mockResolvedValue(null),
+}));
+jest.mock("../../ai/services/water_schedule.service", () => ({
+  getWindowMedian: jest.fn().mockResolvedValue(null),
+}));
 jest.mock("../../ai/services/recommendation.service", () => ({
   generateRecommendation: jest.fn(),
 }));

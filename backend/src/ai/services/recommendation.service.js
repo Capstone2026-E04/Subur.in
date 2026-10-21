@@ -17,6 +17,7 @@ async function generateRecommendation({
   lastCorrectionAt = null,
   deviceId = null,
   safetyOverride = null,
+  phMonitor = null,
 }) {
   if (typeof phValue !== "number" || typeof moistureValue !== "number") {
     throw new AppError("phValue dan moistureValue harus berupa angka.", 400);
@@ -107,7 +108,8 @@ async function generateRecommendation({
     consistentReadings,
     lastCorrectionAt,
   });
-  const correctionReady = phCorrection.status === "READY";
+  const correctionReady =
+    phCorrection.status === "READY" && (!phMonitor || phMonitor.allowDose);
 
   const waterDetail =
     waterAction === "IRRIGATE"
@@ -131,6 +133,7 @@ async function generateRecommendation({
     waterAction,
     phAction,
     phCorrection,
+    phMonitor,
     waterVolumeLiter: waterDetail?.waterVolumeLiter ?? 0,
     limeDosageGram: correctionReady ? (limeDetail?.limeDosageGram ?? 0) : 0,
     sulfurDosageGram: correctionReady
