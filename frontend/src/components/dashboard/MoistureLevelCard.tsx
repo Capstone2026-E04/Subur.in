@@ -1,10 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { TONES, classifyNmi, classifyVwc } from "./sensorStatus";
+import { TONES, classifyNmi, toVwcDisplay } from "./sensorStatus";
 
 interface MoistureLevelCardProps {
   value: number | null;
   nmiTrigger: number | null;
-  nmiTarget?: number | null;
   moistureType?: "legacy_index" | "vwc_percent";
 }
 
@@ -16,10 +15,15 @@ const NEEDLE_OUTER = 100;
 export default function MoistureLevelCard({
   value,
   nmiTrigger,
-  nmiTarget = null,
   moistureType = "legacy_index",
 }: MoistureLevelCardProps) {
-  const pct = value === null ? 0 : Math.min(Math.max(value, 0), 100);
+  const isVwc = moistureType === "vwc_percent";
+  const vwc = value !== null && isVwc ? toVwcDisplay(value) : null;
+  const pct = vwc
+    ? vwc.gaugeFill
+    : value === null
+      ? 0
+      : Math.min(Math.max(value, 0), 100);
   const angle = Math.PI * (1 - pct / 100);
   const needle = {
     x1: CX + NEEDLE_INNER * Math.cos(angle),
@@ -27,19 +31,17 @@ export default function MoistureLevelCard({
     x2: CX + NEEDLE_OUTER * Math.cos(angle),
     y2: CY - NEEDLE_OUTER * Math.sin(angle),
   };
-  const isVwc = moistureType === "vwc_percent";
-  const status =
-    value === null
+  const status = vwc
+    ? vwc
+    : value === null
       ? null
-      : isVwc
-        ? classifyVwc(value, nmiTrigger, nmiTarget)
-        : classifyNmi(value, nmiTrigger);
+      : classifyNmi(value, nmiTrigger);
   const tone = status ? TONES[status.tone] : null;
 
   return (
     <Card className="rounded-3xl p-6">
       <h3 className="text-xl font-bold tracking-tight text-neutral-800">
-        {isVwc ? "Kelembapan Tanah (VWC)" : "Kelembapan Tanah"}
+        Kelembapan Tanah
       </h3>
 
       <div className="relative mx-auto mt-3 w-full max-w-[240px]">
@@ -66,11 +68,19 @@ export default function MoistureLevelCard({
         <span className="absolute inset-x-0 bottom-0 text-center text-4xl leading-none font-bold text-neutral-800 tabular-nums">
           {value === null
             ? "—"
-            : isVwc
-              ? `${value.toFixed(1)}%`
+            : vwc
+              ? vwc.mainPercent === null
+                ? "—"
+                : `${vwc.mainPercent}% CC`
               : `${Math.round(value)}%`}
         </span>
       </div>
+
+      {vwc?.vwcPercent != null && (
+        <p className="mt-2 text-center text-sm text-neutral-500 tabular-nums">
+          VWC {vwc.vwcPercent.toFixed(1).replace(".", ",")}%
+        </p>
+      )}
 
       <div className="mt-5 flex justify-center">
         {status && tone && (

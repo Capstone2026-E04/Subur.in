@@ -242,7 +242,6 @@ export default function DashboardPage() {
           value={currentMoisture}
           moistureType={moistureType}
           nmiTrigger={devicePlant?.nmiTrigger ?? null}
-          nmiTarget={devicePlant?.nmiTarget ?? null}
         />
       </div>
 

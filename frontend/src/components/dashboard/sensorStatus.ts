@@ -68,21 +68,33 @@ export function classifyPh(ph: number, range: { min: number; max: number }) {
   return { label: "Basa", tone: "violet" as Tone };
 }
 
-const VWC_WET_START = 38.48;
+const THETA_CC_PERCENT = 32.98;
 
-export function classifyVwc(
-  vwc: number,
-  trigger: number | null,
-  target: number | null,
-) {
-  if (trigger === null || target === null)
-    return { label: "Tanpa parameter", tone: "sky" as Tone };
-  if (vwc < trigger) return { label: "Kering", tone: "red" as Tone };
-  if (vwc < target) {
-    return { label: "Mendekati kering", tone: "amber" as Tone };
+export function toVwcDisplay(vwcPercent: number) {
+  if (vwcPercent <= 0) {
+    return {
+      mainPercent: null,
+      vwcPercent: null,
+      gaugeFill: 0,
+      label: "sensor_out_of_range",
+      tone: "red" as Tone,
+    };
   }
-  if (vwc <= VWC_WET_START) return { label: "Lembap", tone: "sky" as Tone };
-  return { label: "Basah", tone: "violet" as Tone };
+  const rwc = (vwcPercent / THETA_CC_PERCENT) * 100;
+  let label = "Sangat kering";
+  let tone: Tone = "red";
+  if (rwc >= 50) [label, tone] = ["Kering", "orange"];
+  if (rwc >= 66.9) [label, tone] = ["Lembap", "sky"];
+  if (rwc >= 90) [label, tone] = ["Lembap penuh", "green"];
+  if (rwc >= 100) [label, tone] = ["Penuh", "green"];
+  if (rwc >= 116.7) [label, tone] = ["Jenuh", "violet"];
+  return {
+    mainPercent: Math.round(rwc),
+    vwcPercent,
+    gaugeFill: Math.min(rwc, 100),
+    label,
+    tone,
+  };
 }
 
 export function classifyNmi(nmi: number, trigger: number | null) {
