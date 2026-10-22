@@ -42,6 +42,8 @@ Tanaman lain ditolak `422`. Angka kelembapan adalah parameter desain, bukan opti
 
 ## Fungsi keanggotaan
 
+![Diagram fungsi keanggotaan pH dan kelembapan](membership-functions.svg)
+
 **pH** (`ASAM`, `OPTIMAL`, `BASA`; transisi 0,5 satuan di luar [min, max]) tidak berubah.
 
 **Kelembapan** (`KERING`, `LEMBAP`, `JENUH`) dengan titik `a = 1/2`, `b = 5/6`, `d = 7/6`, `e = 4/3` kali `theta_CC` (0,1649; 0,2748; 0,3848; 0,4397):
