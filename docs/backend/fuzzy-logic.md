@@ -4,23 +4,23 @@ Dokumen ini menjelaskan mesin fuzzy di `backend/src/ai` setelah disesuaikan deng
 
 ## Alur
 
-```
+```text
 Sensor (VWC) -> fuzzifikasi (pH, theta) -> rule base 3x3 -> Mamdani MIN-MAX
              -> centroid per sumbu (air, pH) -> kategori C1-C9 -> safety gate -> kalkulator dosis
 ```
 
 Fuzzy hanya menentukan **jenis** tindakan. Besaran air/dolomit/sulfur dihitung kalkulator deterministik, dan safety gate menentukan apakah koreksi pH boleh ditampilkan sebagai instruksi.
 
-| File | Peran |
-|------|-------|
-| `core/membership.js` | Fungsi keanggotaan pH dan kelembapan (VWC) |
-| `core/rules.js` | Rule base 3x3, kategori C1-C9, pusat himpunan konsekuen |
-| `core/engine.js` | MIN-MAX, centroid dua sumbu, ambang aksi, override |
-| `core/safety_gate.js` | Pemeriksaan koreksi pH |
-| `dosage/*` | Kalkulator air, dolomit, sulfur |
-| `config/plant_moisture.js` | Pemicu/target kelembapan (persen VWC) untuk tampilan |
-| `config/treatment_constants.js` | Semua konstanta desain |
-| `services/recommendation.service.js` | Orkestrasi + akses database |
+| File                                 | Peran                                                   |
+| ------------------------------------ | ------------------------------------------------------- |
+| `core/membership.js`                 | Fungsi keanggotaan pH dan kelembapan (VWC)              |
+| `core/rules.js`                      | Rule base 3x3, kategori C1-C9, pusat himpunan konsekuen |
+| `core/engine.js`                     | MIN-MAX, centroid dua sumbu, ambang aksi, override      |
+| `core/safety_gate.js`                | Pemeriksaan koreksi pH                                  |
+| `dosage/*`                           | Kalkulator air, dolomit, sulfur                         |
+| `config/plant_moisture.js`           | Pemicu/target kelembapan (persen VWC) untuk tampilan    |
+| `config/treatment_constants.js`      | Semua konstanta desain                                  |
+| `services/recommendation.service.js` | Orkestrasi + akses database                             |
 
 ## Input
 
@@ -32,11 +32,11 @@ Fuzzy hanya menentukan **jenis** tindakan. Besaran air/dolomit/sulfur dihitung k
 
 Acuan kelembapan adalah container capacity polybag 2 L: `theta_CC = 0,3298` m3/m3 (659,6 mL / 2.000 mL). Semua tanaman memakai fraksi `theta_CC` yang sama; yang berbeda per tanaman hanya rentang pH (tabel `plants`).
 
-| Tanaman | pH min | pH max | pH target |
-|---------|-------:|-------:|----------:|
-| Selada | 6,0 | 6,7 | 6,5 |
-| Bayam (*Amaranthus*) | 6,0 | 7,0 | 6,5 |
-| Pakcoy | 6,0 | 7,5 | 6,8 |
+| Tanaman              | pH min | pH max | pH target |
+| -------------------- | -----: | -----: | --------: |
+| Selada               |    6,0 |    6,7 |       6,5 |
+| Bayam (_Amaranthus_) |    6,0 |    7,0 |       6,5 |
+| Pakcoy               |    6,0 |    7,5 |       6,8 |
 
 Tanaman lain ditolak `422`. Angka kelembapan adalah parameter desain, bukan optimum agronomi teruji.
 
@@ -57,24 +57,24 @@ Ketiganya selalu berjumlah 1. JENUH baru aktif di atas 0,3848, di luar daerah ka
 ## Rule base 3x3
 
 | pH \ Kelembapan | KERING | LEMBAP | JENUH |
-|----------|--------|--------|-------|
-| ASAM | C5 | C4 | C6 |
-| OPTIMAL | C2 | C1 | C3 |
-| BASA | C8 | C7 | C9 |
+| --------------- | ------ | ------ | ----- |
+| ASAM            | C5     | C4     | C6    |
+| OPTIMAL         | C2     | C1     | C3    |
+| BASA            | C8     | C7     | C9    |
 
 Setiap kategori = `WaterAction` x `pHAction`:
 
 | Kategori | WaterAction | pHAction |
-|----------|-------------|----------|
-| C1 | NONE | NONE |
-| C2 | IRRIGATE | NONE |
-| C3 | STOP | NONE |
-| C4 | NONE | LIME |
-| C5 | IRRIGATE | LIME |
-| C6 | STOP | LIME |
-| C7 | NONE | SULFUR |
-| C8 | IRRIGATE | SULFUR |
-| C9 | STOP | SULFUR |
+| -------- | ----------- | -------- |
+| C1       | NONE        | NONE     |
+| C2       | IRRIGATE    | NONE     |
+| C3       | STOP        | NONE     |
+| C4       | NONE        | LIME     |
+| C5       | IRRIGATE    | LIME     |
+| C6       | STOP        | LIME     |
+| C7       | NONE        | SULFUR   |
+| C8       | IRRIGATE    | SULFUR   |
+| C9       | STOP        | SULFUR   |
 
 ## Inferensi (Mamdani, centroid per sumbu)
 
@@ -95,11 +95,11 @@ Dengan `safetyOverride`, kelembapan diperlakukan JENUH penuh: air STOP, volume 0
 
 Rumus mengikuti Bagian 4.8-4.9 dokumen C501 untuk media **2 L** (preset polybag 25x25 cm, `src/ai/config/polybag.js`).
 
-| Kalkulator | Rumus | Batas |
-|------------|-------|-------|
-| Air | `Vneed = max(0, (0,2748 - theta) x 2.000)` mL | `min(Vneed, 0,10 x 2.000)` = maks. 200 mL per siram; hanya bila `WaterAction = IRRIGATE`, selain itu 0 |
-| Dolomit | `1,3 x V x max(0, pH target - pH)` g | 1,4 g/L = 2,8 g per 2 L |
-| Sulfur | `0,6 x V x max(0, pH - pH target)` g | 1,2 g/L = 2,4 g per 2 L |
+| Kalkulator | Rumus                                         | Batas                                                                                                  |
+| ---------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Air        | `Vneed = max(0, (0,2748 - theta) x 2.000)` mL | `min(Vneed, 0,10 x 2.000)` = maks. 200 mL per siram; hanya bila `WaterAction = IRRIGATE`, selain itu 0 |
+| Dolomit    | `1,3 x V x max(0, pH target - pH)` g          | 1,4 g/L = 2,8 g per 2 L                                                                                |
+| Sulfur     | `0,6 x V x max(0, pH - pH target)` g          | 1,2 g/L = 2,4 g per 2 L                                                                                |
 
 Koefisien dan batas adalah estimasi berbasis literatur, belum diuji pada media Subur.in.
 
