@@ -338,7 +338,7 @@ export default function RecommendationsPage() {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {recommendation.waterVolumeLiter > 0 && (
                       <div className="group relative flex items-start gap-3 overflow-hidden rounded-2xl border border-sky-200/55 bg-sky-50 p-4 shadow-sm transition-all duration-300 hover:shadow">
-                        <div className="absolute right-[-10px] bottom-[-10px] text-sky-200/40 opacity-50 transition-transform duration-300 group-hover:scale-110">
+                        <div className="absolute -right-2.5 -bottom-2.5 text-sky-200/40 opacity-50 transition-transform duration-300 group-hover:scale-110">
                           <MdOpacity size={80} />
                         </div>
                         <MdOpacity
@@ -365,7 +365,7 @@ export default function RecommendationsPage() {
 
                     {recommendation.reduceWatering && (
                       <div className="group relative flex items-start gap-3 overflow-hidden rounded-2xl border border-rose-200/55 bg-rose-50 p-4 shadow-sm transition-all duration-300 hover:shadow">
-                        <div className="absolute right-[-10px] bottom-[-10px] text-rose-200/40 opacity-50 transition-transform duration-300 group-hover:scale-110">
+                        <div className="absolute -right-2.5 -bottom-2.5 text-rose-200/40 opacity-50 transition-transform duration-300 group-hover:scale-110">
                           <MdWarningAmber size={80} />
                         </div>
                         <MdWarningAmber
@@ -389,7 +389,7 @@ export default function RecommendationsPage() {
 
                     {recommendation.limeDosageGram > 0 && (
                       <div className="group border-primary/20 bg-primary/5 relative flex items-start gap-3 overflow-hidden rounded-2xl border p-4 shadow-sm transition-all duration-300 hover:shadow">
-                        <div className="text-primary-light/40 absolute right-[-10px] bottom-[-10px] opacity-50 transition-transform duration-300 group-hover:scale-110">
+                        <div className="text-primary-light/40 absolute -right-2.5 -bottom-2.5 opacity-50 transition-transform duration-300 group-hover:scale-110">
                           <MdScience size={80} />
                         </div>
                         <MdScience
@@ -416,7 +416,7 @@ export default function RecommendationsPage() {
 
                     {recommendation.sulfurDosageGram > 0 && (
                       <div className="group border-primary/20 bg-primary/5 relative flex items-start gap-3 overflow-hidden rounded-2xl border p-4 shadow-sm transition-all duration-300 hover:shadow">
-                        <div className="text-primary-light/40 absolute right-[-10px] bottom-[-10px] opacity-50 transition-transform duration-300 group-hover:scale-110">
+                        <div className="text-primary-light/40 absolute -right-2.5 -bottom-2.5 opacity-50 transition-transform duration-300 group-hover:scale-110">
                           <MdScience size={80} />
                         </div>
                         <MdScience
@@ -587,7 +587,7 @@ export default function RecommendationsPage() {
                                   Aman (Pertahankan)
                                 </span>
                               ) : (
-                                <div className="flex max-w-[200px] flex-wrap justify-end gap-1">
+                                <div className="flex max-w-50 flex-wrap justify-end gap-1">
                                   {log.waterVolumeLiter > 0 && (
                                     <span className="inline-flex items-center rounded border border-sky-500/10 bg-sky-50 px-1.5 py-0.5 text-[9px] font-bold text-sky-700">
                                       Air: {log.waterVolumeLiter.toFixed(1)}L

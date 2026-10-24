@@ -28,7 +28,7 @@ function LogoutButton() {
           opacity: open ? 1 : 0,
           display: open ? "inline-block" : "none",
         }}
-        className="!m-0 !p-0 whitespace-pre"
+        className="m-0! p-0! whitespace-pre"
       >
         Keluar
       </motion.span>
@@ -52,7 +52,7 @@ function Logo() {
           opacity: open ? 1 : 0,
           display: open ? "inline-block" : "none",
         }}
-        className="!m-0 !p-0 text-2xl font-bold tracking-tight whitespace-pre text-white"
+        className="m-0! p-0! text-2xl font-bold tracking-tight whitespace-pre text-white"
       >
         Subur.in
       </motion.span>
