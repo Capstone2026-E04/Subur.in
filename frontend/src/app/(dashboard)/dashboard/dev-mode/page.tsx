@@ -48,10 +48,10 @@ export default function DevModePage() {
               <MdDeveloperMode size={18} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-neutral-800">
                 Aktifkan Dev Mode
               </p>
-              <p className="text-[10px] text-gray-400 sm:text-xs">
+              <p className="text-[10px] text-neutral-400 sm:text-xs">
                 Data sensor acak (pH & kelembapan) dikirim setiap 5 detik ke
                 semua perangkat Anda, seolah dari alat asli.
               </p>
@@ -69,7 +69,7 @@ export default function DevModePage() {
               onChange={(e) => handleToggle(e.target.checked)}
               className="peer sr-only"
             />
-            <div className="peer peer-checked:bg-primary h-5 w-9 rounded-full bg-gray-200 peer-focus:outline-none peer-disabled:opacity-60 after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+            <div className="peer peer-checked:bg-primary h-5 w-9 rounded-full bg-neutral-200 peer-focus:outline-none peer-disabled:opacity-60 after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
           </label>
         </div>
         {error && (

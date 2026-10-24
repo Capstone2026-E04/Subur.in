@@ -60,7 +60,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-xl border border-black/8 bg-white/95 p-3.5 shadow-xl backdrop-blur-sm">
-        <p className="mb-1.5 text-xs font-bold text-gray-500">{label}</p>
+        <p className="mb-1.5 text-xs font-bold text-neutral-500">{label}</p>
         <div className="space-y-1">
           {payload.map((p) => (
             <div key={p.name} className="flex items-center gap-2">
@@ -68,10 +68,10 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
                 className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: p.stroke }}
               />
-              <span className="text-xs font-semibold text-gray-600">
+              <span className="text-xs font-semibold text-neutral-600">
                 {p.name}:
               </span>
-              <span className="text-xs font-bold text-gray-800">
+              <span className="text-xs font-bold text-neutral-800">
                 {p.value.toFixed(p.name === "pH" ? 1 : 0)}
                 {p.name === "pH" ? "" : "%"}
               </span>
@@ -141,12 +141,12 @@ export default function SensorHistoryChart({
   }, [token, deviceId, limit]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     loadHistory();
   }, [loadHistory]);
 
@@ -158,7 +158,7 @@ export default function SensorHistoryChart({
   if (!isMounted) {
     return (
       <Card className="h-96 items-center justify-center">
-        <p className="text-sm text-gray-400">Menyiapkan grafik...</p>
+        <p className="text-sm text-neutral-400">Menyiapkan grafik...</p>
       </Card>
     );
   }
@@ -174,7 +174,7 @@ export default function SensorHistoryChart({
             <h3 className="text-primary text-sm leading-tight font-bold">
               Tren Grafik Sensor
             </h3>
-            <p className="text-xs font-medium text-gray-400">
+            <p className="text-xs font-medium text-neutral-400">
               Riwayat pengukuran berkala waktu ke waktu
             </p>
           </div>
@@ -182,7 +182,7 @@ export default function SensorHistoryChart({
 
         {!simple && (
           <div className="flex items-center gap-2">
-            <div className="flex rounded-xl border border-black/5 bg-gray-100 p-0.5 text-xs font-semibold">
+            <div className="flex rounded-xl border border-black/5 bg-neutral-100 p-0.5 text-xs font-semibold">
               {[
                 { id: "both", label: "Semua", Icon: MdCompare },
                 { id: "ph", label: "pH", Icon: MdOutlineSpa },
@@ -202,7 +202,7 @@ export default function SensorHistoryChart({
                     className={`flex cursor-pointer items-center gap-1 rounded-lg px-3 py-1.5 transition ${
                       isActive
                         ? "text-primary bg-white shadow-sm"
-                        : "text-gray-500 hover:text-gray-700"
+                        : "text-neutral-500 hover:text-neutral-700"
                     }`}
                   >
                     <Icon size={13} />
@@ -216,7 +216,7 @@ export default function SensorHistoryChart({
               id="chart-limit-select"
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 shadow-sm focus:ring-1 focus:outline-none"
+              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-600 shadow-sm focus:ring-1 focus:outline-none"
             >
               <option value={10}>10 data</option>
               <option value={20}>20 data</option>
@@ -228,7 +228,7 @@ export default function SensorHistoryChart({
               id="refresh-chart-btn"
               onClick={loadHistory}
               disabled={isLoading}
-              className="hover:text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-gray-500 shadow-sm transition hover:bg-gray-50 disabled:opacity-50"
+              className="hover:text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-neutral-500 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50"
               aria-label="Segarkan riwayat sensor"
             >
               <MdRefresh
@@ -245,7 +245,7 @@ export default function SensorHistoryChart({
       >
         {isLoading && history.length === 0 ? (
           <div className="absolute inset-0 z-10 flex animate-pulse items-center justify-center bg-white/70">
-            <p className="text-sm font-semibold text-gray-500">
+            <p className="text-sm font-semibold text-neutral-500">
               Memuat riwayat...
             </p>
           </div>
@@ -261,10 +261,10 @@ export default function SensorHistoryChart({
           </div>
         ) : history.length === 0 ? (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center">
-            <p className="text-sm font-semibold text-gray-400">
+            <p className="text-sm font-semibold text-neutral-400">
               Belum ada riwayat data tercatat untuk perangkat ini.
             </p>
-            <p className="mt-1 max-w-xs text-xs leading-relaxed text-gray-400">
+            <p className="mt-1 max-w-xs text-xs leading-relaxed text-neutral-400">
               Data sensor akan tersimpan ke riwayat secara otomatis setelah
               perangkat ESP32 Anda mulai mengirimkan data sensor berkala.
             </p>

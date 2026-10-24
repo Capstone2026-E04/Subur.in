@@ -111,15 +111,15 @@ export default function SensorTrendCard({
   return (
     <Card className="min-w-0 rounded-2xl border-white p-3 shadow-sm sm:rounded-3xl sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900 sm:text-lg">
-          <MdBarChart size={24} className="shrink-0 text-[#0b5038]" /> {title}
+        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900 sm:text-lg">
+          <MdBarChart size={24} className="text-primary shrink-0" /> {title}
         </h3>
         <div className="flex flex-wrap gap-2">
           <select
             aria-label="Rentang waktu"
             value={rangeHours}
             onChange={(e) => setRangeHours(Number(e.target.value))}
-            className="cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 focus:outline-none"
+            className="cursor-pointer rounded-xl border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-600 focus:outline-none"
           >
             {RANGES.map((r) => (
               <option key={r.hours} value={r.hours}>
@@ -131,7 +131,7 @@ export default function SensorTrendCard({
             aria-label="Granularitas waktu"
             value={granularity.id}
             onChange={(e) => setGranularityId(e.target.value)}
-            className="cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 focus:outline-none"
+            className="cursor-pointer rounded-xl border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-600 focus:outline-none"
           >
             {allowed.map((g) => (
               <option key={g.id} value={g.id}>

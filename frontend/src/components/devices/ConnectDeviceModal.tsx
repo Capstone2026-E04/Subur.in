@@ -170,7 +170,7 @@ export default function ConnectDeviceModal({
               exit={{ scale: 0.95, y: 16 }}
               transition={{ type: "spring", stiffness: 300, damping: 28 }}
             >
-              <div className="flex shrink-0 items-center justify-between border-b border-black/6 bg-gray-50 px-6 py-4">
+              <div className="flex shrink-0 items-center justify-between border-b border-black/6 bg-neutral-50 px-6 py-4">
                 <div className="flex items-center gap-2.5">
                   <div className="bg-primary/10 flex h-9 w-9 items-center justify-center rounded-xl">
                     <MdOutlineWifi size={18} className="text-primary" />
@@ -179,7 +179,7 @@ export default function ConnectDeviceModal({
                     <h2 className="text-primary text-sm leading-tight font-bold">
                       Hubungkan Alat Baru
                     </h2>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-neutral-400">
                       Klaim device ESP32 yang terdeteksi di jaringan
                     </p>
                   </div>
@@ -187,7 +187,7 @@ export default function ConnectDeviceModal({
                 <button
                   id="close-connect-modal"
                   onClick={onClose}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
                   aria-label="Tutup modal"
                 >
                   <MdClose size={18} />
@@ -202,13 +202,13 @@ export default function ConnectDeviceModal({
                 >
                   <fieldset className="overflow-hidden rounded-xl border border-black/6">
                     <legend className="sr-only">Pilih Alat</legend>
-                    <div className="flex items-center justify-between border-b border-black/5 bg-gray-50/80 px-4 py-3">
+                    <div className="flex items-center justify-between border-b border-black/5 bg-neutral-50/80 px-4 py-3">
                       <div className="flex items-center gap-2">
                         <MdOutlineDeviceHub
                           size={15}
                           className="text-primary"
                         />
-                        <span className="text-xs font-bold text-gray-700">
+                        <span className="text-xs font-bold text-neutral-700">
                           Langkah 1 — Pilih Alat yang Terdeteksi
                         </span>
                       </div>
@@ -254,7 +254,7 @@ export default function ConnectDeviceModal({
                               />
                             </div>
                           </div>
-                          <p className="text-xs font-medium text-gray-500">
+                          <p className="text-xs font-medium text-neutral-500">
                             Memindai alat di jaringan…
                           </p>
                         </motion.div>
@@ -270,10 +270,10 @@ export default function ConnectDeviceModal({
                             <MdSignalWifiOff size={20} />
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-700">
+                            <p className="text-sm font-semibold text-neutral-700">
                               Tidak ada alat baru terdeteksi
                             </p>
-                            <p className="mt-1 max-w-xs text-xs text-gray-400">
+                            <p className="mt-1 max-w-xs text-xs text-neutral-400">
                               Pastikan alat ESP32 Anda sudah terhubung ke WiFi
                               dan menyala, lalu klik Pindai Ulang.
                             </p>
@@ -305,7 +305,7 @@ export default function ConnectDeviceModal({
                             onChange={(e) =>
                               setSelectedDeviceId(e.target.value)
                             }
-                            className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
+                            className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
                           >
                             <option value="">— Pilih alat —</option>
                             {discovered.map((d) => (
@@ -328,19 +328,19 @@ export default function ConnectDeviceModal({
                                 className="mt-0.5 shrink-0 text-emerald-600"
                               />
                               <div className="flex flex-wrap gap-x-4 gap-y-1">
-                                <span className="text-xs text-gray-600">
-                                  <span className="font-medium text-gray-800">
+                                <span className="text-xs text-neutral-600">
+                                  <span className="font-medium text-neutral-800">
                                     pH:
                                   </span>{" "}
                                   {selectedDeviceInfo.ph.toFixed(1)}
                                 </span>
-                                <span className="text-xs text-gray-600">
-                                  <span className="font-medium text-gray-800">
+                                <span className="text-xs text-neutral-600">
+                                  <span className="font-medium text-neutral-800">
                                     Kelembapan:
                                   </span>{" "}
                                   {selectedDeviceInfo.moisture}
                                 </span>
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-neutral-400">
                                   {formatDiscoveredAge(
                                     selectedDeviceInfo.timestamp,
                                   )}
@@ -355,8 +355,8 @@ export default function ConnectDeviceModal({
 
                   <fieldset className="overflow-hidden rounded-xl border border-black/6">
                     <legend className="sr-only">Detail Alat</legend>
-                    <div className="border-b border-black/5 bg-gray-50/80 px-4 py-3">
-                      <span className="text-xs font-bold text-gray-700">
+                    <div className="border-b border-black/5 bg-neutral-50/80 px-4 py-3">
+                      <span className="text-xs font-bold text-neutral-700">
                         Langkah 2 — Lengkapi Detail Alat
                       </span>
                     </div>
@@ -365,7 +365,7 @@ export default function ConnectDeviceModal({
                       <div className="flex flex-col gap-1.5">
                         <label
                           htmlFor="device-label-input"
-                          className="flex items-center gap-1.5 text-xs font-semibold text-gray-600"
+                          className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
                         >
                           <MdOutlineLabel size={13} />
                           Nama / Label Alat
@@ -377,14 +377,14 @@ export default function ConnectDeviceModal({
                           onChange={(e) => setLabel(e.target.value)}
                           placeholder="cth. Bayam Halaman Depan"
                           maxLength={80}
-                          className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition placeholder:text-gray-300 focus:ring-2 focus:outline-none"
+                          className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition placeholder:text-neutral-300 focus:ring-2 focus:outline-none"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1.5">
                         <label
                           htmlFor="select-plant"
-                          className="flex items-center gap-1.5 text-xs font-semibold text-gray-600"
+                          className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
                         >
                           <MdOutlineSpa size={13} />
                           Tanaman
@@ -393,7 +393,7 @@ export default function ConnectDeviceModal({
                           id="select-plant"
                           value={selectedPlantId}
                           onChange={(e) => setSelectedPlantId(e.target.value)}
-                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
+                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
                         >
                           <option value="">— Pilih tanaman —</option>
                           {plants.map((p) => (
@@ -403,7 +403,7 @@ export default function ConnectDeviceModal({
                           ))}
                         </select>
                         {plants.length === 0 && (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-neutral-400">
                             Belum ada data tanaman. Tambahkan tanaman terlebih
                             dahulu.
                           </p>
@@ -413,7 +413,7 @@ export default function ConnectDeviceModal({
                       <div className="flex flex-col gap-1.5">
                         <label
                           htmlFor="select-interval"
-                          className="flex items-center gap-1.5 text-xs font-semibold text-gray-600"
+                          className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
                         >
                           <MdAccessTime size={13} className="text-amber-500" />
                           Interval Pengambilan Data
@@ -424,7 +424,7 @@ export default function ConnectDeviceModal({
                           onChange={(e) =>
                             setSensorInterval(Number(e.target.value))
                           }
-                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none"
+                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
                         >
                           <option value={1}>1 Menit</option>
                           <option value={5}>5 Menit</option>
@@ -435,7 +435,7 @@ export default function ConnectDeviceModal({
                           <option value={360}>6 Jam</option>
                           <option value={720}>12 Jam</option>
                         </select>
-                        <p className="text-[10px] leading-normal text-gray-400">
+                        <p className="text-[10px] leading-normal text-neutral-400">
                           Tentukan seberapa sering alat membaca & mengirim data
                           sensor.
                         </p>
@@ -458,12 +458,12 @@ export default function ConnectDeviceModal({
                 </form>
               </div>
 
-              <div className="flex shrink-0 items-center justify-end gap-3 border-t border-black/6 bg-gray-50/50 px-6 py-4">
+              <div className="flex shrink-0 items-center justify-end gap-3 border-t border-black/6 bg-neutral-50/50 px-6 py-4">
                 <button
                   type="button"
                   id="cancel-connect-btn"
                   onClick={onClose}
-                  className="cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
+                  className="cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
                 >
                   Batal
                 </button>

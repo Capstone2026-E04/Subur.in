@@ -37,9 +37,9 @@ function monitorText(m: PhMonitor): string | null {
 
 const STATUS_STYLE = {
   READY: {
-    box: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    box: "border-primary/20 bg-primary/5 text-primary",
     icon: MdCheckCircleOutline,
-    iconClass: "text-emerald-600",
+    iconClass: "text-primary-light",
     title: "Koreksi pH siap dipertimbangkan",
   },
   DEFERRED: {
@@ -49,9 +49,9 @@ const STATUS_STYLE = {
     title: "Koreksi pH ditunda",
   },
   NEEDS_CONFIRMATION: {
-    box: "border-violet-200 bg-violet-50 text-violet-900",
+    box: "border-primary/20 bg-primary/5 text-primary",
     icon: MdSensors,
-    iconClass: "text-violet-600",
+    iconClass: "text-primary-light",
     title: "Konfirmasi pengukuran pH dahulu",
   },
 } as const;

@@ -81,22 +81,22 @@ export default function RecommendationSummaryCard({
         className="pointer-events-none absolute right-0 bottom-0 -z-10 h-full w-40 object-contain object-bottom opacity-10 lg:w-[38%] lg:opacity-95"
       />
       <div>
-        <p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.16em] text-[#0b5038] sm:text-xs sm:tracking-[0.2em]">
+        <p className="text-primary flex items-center gap-2 text-[10px] font-bold tracking-[0.16em] sm:text-xs sm:tracking-[0.2em]">
           <MdOutlineSpa size={18} /> REKOMENDASI HARI INI
         </p>
         {isLoading ? (
           <div role="status" className="animate-pulse py-8">
-            <div className="h-8 w-3/4 rounded-lg bg-emerald-900/10" />
-            <p className="mt-4 text-sm text-slate-500">
+            <div className="bg-primary/10 h-8 w-3/4 rounded-lg" />
+            <p className="mt-4 text-sm text-neutral-500">
               Mengalkulasi rekomendasi perawatan...
             </p>
           </div>
         ) : !recommendation ? (
           <div className="py-6">
-            <h2 className="text-xl font-bold text-slate-950 sm:text-3xl">
+            <h2 className="text-xl font-bold text-neutral-900 sm:text-3xl">
               {error ? "Gagal memuat rekomendasi" : "Belum ada rekomendasi"}
             </h2>
-            <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-600">
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-neutral-600">
               {error ||
                 message ||
                 "Rekomendasi belum tersedia untuk perangkat ini."}
@@ -104,14 +104,14 @@ export default function RecommendationSummaryCard({
           </div>
         ) : (
           <>
-            <h2 className="mt-3 max-w-xl text-xl leading-tight font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">
+            <h2 className="mt-3 max-w-xl text-xl leading-tight font-bold tracking-tight text-neutral-900 sm:text-3xl lg:text-4xl">
               {title}
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-neutral-600 sm:text-base">
               {recommendation.actionText}
             </p>
             {treatments.length > 0 ? (
-              <div className="mt-5 grid gap-px overflow-hidden rounded-2xl bg-slate-100 sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:bg-transparent">
+              <div className="mt-5 grid gap-px overflow-hidden rounded-2xl bg-neutral-100 sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:bg-transparent">
                 {treatments.map((item) => (
                   <Link
                     key={item.title}
@@ -133,28 +133,28 @@ export default function RecommendationSummaryCard({
                       )}
                     </span>
                     <div className="flex min-w-0 flex-1 items-center justify-between gap-2 sm:block">
-                      <p className="text-xs text-slate-600 sm:text-sm">
+                      <p className="text-xs text-neutral-600 sm:text-sm">
                         {item.title}
                       </p>
-                      <p className="mt-0.5 text-base font-bold text-slate-950 tabular-nums sm:text-2xl">
+                      <p className="mt-0.5 text-base font-bold text-neutral-900 tabular-nums sm:text-2xl">
                         {item.value}
                       </p>
                     </div>
                     <MdChevronRight
                       size={22}
-                      className="shrink-0 text-slate-700"
+                      className="shrink-0 text-neutral-700"
                     />
                   </Link>
                 ))}
               </div>
             ) : (
-              <p className="mt-5 text-sm font-medium text-[#0b5038]">
+              <p className="text-primary mt-5 text-sm font-medium">
                 {isOptimal
                   ? "Belum diperlukan treatment tambahan. Lanjutkan pemantauan kondisi tanaman."
                   : "Tidak ada dosis tambahan pada respons ini. Periksa status pemantauan sebelum melakukan treatment."}
               </p>
             )}
-            <p className="mt-4 text-[10px] text-slate-500 sm:text-xs">
+            <p className="mt-4 text-[10px] text-neutral-500 sm:text-xs">
               Diperbarui {formatTimestamp(updatedAt)}
             </p>
           </>

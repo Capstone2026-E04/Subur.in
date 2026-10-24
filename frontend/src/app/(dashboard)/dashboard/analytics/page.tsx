@@ -2,13 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  MdCalendarToday,
   MdWaterDrop,
-  MdThermostat,
-  MdTrendingUp,
-  MdTrendingDown,
   MdOutlineSpa,
-  MdOutlineDeviceHub,
   MdRefresh,
   MdOutlineTimeline,
   MdWarningAmber,
@@ -27,7 +22,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import PageHeader from "@/components/dashboard/PageHeader";
 
 type ChartViewMode = "both" | "ph" | "moisture";
@@ -37,16 +32,16 @@ function PageSkeleton() {
     <div className="mx-auto max-w-4xl animate-pulse space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 border-b border-black/5 pb-4 sm:flex-row sm:items-center">
         <div className="space-y-2">
-          <div className="h-6 w-48 animate-pulse rounded bg-gray-200"></div>
-          <div className="h-4 w-64 animate-pulse rounded bg-gray-100"></div>
+          <div className="h-6 w-48 animate-pulse rounded bg-neutral-200"></div>
+          <div className="h-4 w-64 animate-pulse rounded bg-neutral-100"></div>
         </div>
-        <div className="h-10 w-60 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-10 w-60 animate-pulse rounded bg-neutral-200"></div>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="h-32 animate-pulse rounded-3xl bg-gray-200"></div>
-        <div className="h-32 animate-pulse rounded-3xl bg-gray-200"></div>
+        <div className="h-32 animate-pulse rounded-3xl bg-neutral-200"></div>
+        <div className="h-32 animate-pulse rounded-3xl bg-neutral-200"></div>
       </div>
-      <div className="h-96 animate-pulse rounded-3xl bg-gray-200"></div>
+      <div className="h-96 animate-pulse rounded-3xl bg-neutral-200"></div>
     </div>
   );
 }
@@ -57,12 +52,13 @@ function EmptyState() {
       <div className="bg-primary/8 text-primary mb-6 flex h-20 w-20 animate-bounce items-center justify-center rounded-2xl">
         <MdOutlineTimeline size={40} />
       </div>
-      <h3 className="text-lg font-bold text-gray-800">
+      <h3 className="text-lg font-bold text-neutral-800">
         Belum Ada Alat Terdaftar
       </h3>
-      <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
-        Silakan hubungkan perangkat Anda terlebih dahulu pada tab "Perangkat"
-        untuk melihat analitik dan visualisasi data sensor real-time.
+      <p className="mt-2 max-w-sm text-sm leading-relaxed text-neutral-500">
+        Silakan hubungkan perangkat Anda terlebih dahulu pada tab
+        &quot;Perangkat&quot; untuk melihat analitik dan visualisasi data sensor
+        real-time.
       </p>
     </Card>
   );
@@ -80,9 +76,16 @@ function formatChartTime(dateStr: string): string {
   }
 }
 
+type Aggregation = "raw" | "30s" | "1m" | "5m" | "15m" | "30m" | "1h";
+
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: any[];
+  payload?: {
+    name?: string;
+    value: number;
+    color?: string;
+    stroke?: string;
+  }[];
   label?: string;
 }
 
@@ -90,7 +93,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-2xl border border-black/8 bg-white/95 p-3.5 shadow-xl backdrop-blur-sm">
-        <p className="mb-2 text-xs font-bold text-gray-400">{label}</p>
+        <p className="mb-2 text-xs font-bold text-neutral-400">{label}</p>
         <div className="space-y-1.5">
           {payload.map((p) => (
             <div key={p.name} className="flex items-center gap-2">
@@ -98,10 +101,10 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
                 className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: p.stroke || p.color }}
               />
-              <span className="text-xs font-semibold text-gray-600">
+              <span className="text-xs font-semibold text-neutral-600">
                 {p.name}:
               </span>
-              <span className="text-xs font-bold text-gray-800">
+              <span className="text-xs font-bold text-neutral-800">
                 {p.value.toFixed(p.name === "pH" ? 2 : 1)}
                 {p.name === "pH" ? "" : "%"}
               </span>
@@ -121,9 +124,7 @@ export default function AnalyticsPage() {
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [limit, setLimit] = useState(50);
   const [viewMode, setViewMode] = useState<ChartViewMode>("both");
-  const [aggregation, setAggregation] = useState<
-    "raw" | "30s" | "1m" | "5m" | "15m" | "30m" | "1h"
-  >("raw");
+  const [aggregation, setAggregation] = useState<Aggregation>("raw");
   const [isMounted, setIsMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -222,14 +223,12 @@ export default function AnalyticsPage() {
   if (!selectedDevice) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <p className="text-sm font-semibold text-gray-500">
+        <p className="text-sm font-semibold text-neutral-500">
           Memuat perangkat...
         </p>
       </div>
     );
   }
-
-  const plantName = selectedDevice.plant?.name ?? "Tanaman";
 
   const displayData = aggregateHistory(history);
 
@@ -286,7 +285,7 @@ export default function AnalyticsPage() {
             id="analytics-device-selector"
             value={selectedDevice.id}
             onChange={(e) => setSelectedDeviceId(e.target.value)}
-            className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer appearance-none rounded-xl border border-black/10 bg-white py-2.5 pr-10 pl-4 text-sm font-bold text-gray-700 shadow-sm transition focus:ring-2 focus:outline-none sm:w-64"
+            className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer appearance-none rounded-xl border border-black/10 bg-white py-2.5 pr-10 pl-4 text-sm font-bold text-neutral-700 shadow-sm transition focus:ring-2 focus:outline-none sm:w-64"
           >
             {devices.map((device) => (
               <option key={device.id} value={device.id}>
@@ -294,7 +293,7 @@ export default function AnalyticsPage() {
               </option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-500">
             <MdOutlineArrowDropDown size={20} />
           </div>
         </div>
@@ -303,28 +302,28 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card className="flex-row items-center justify-between gap-4 p-5">
           <div className="min-w-0 space-y-1.5">
-            <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
+            <p className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
               Rata-rata Kelembapan
             </p>
-            <p className="text-[10px] leading-none font-medium text-gray-400">
+            <p className="text-[10px] leading-none font-medium text-neutral-400">
               Dihitung dari data {durationText}
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-gray-800">
+              <span className="text-2xl font-black text-neutral-800">
                 {avgMoisture > 0 ? avgMoisture.toFixed(1) : "--"}
               </span>
             </div>
-            <div className="flex items-center gap-3 text-[10px] font-semibold text-gray-400">
+            <div className="flex items-center gap-3 text-[10px] font-semibold text-neutral-400">
               <span>
                 Min:{" "}
-                <strong className="text-gray-600">
+                <strong className="text-neutral-600">
                   {minMoisture > 0 ? minMoisture.toFixed(0) : "--"}
                 </strong>
               </span>
-              <span className="h-1 w-1 rounded-full bg-gray-300" />
+              <span className="h-1 w-1 rounded-full bg-neutral-300" />
               <span>
                 Max:{" "}
-                <strong className="text-gray-600">
+                <strong className="text-neutral-600">
                   {maxMoisture > 0 ? maxMoisture.toFixed(0) : "--"}
                 </strong>
               </span>
@@ -337,28 +336,28 @@ export default function AnalyticsPage() {
 
         <Card className="flex-row items-center justify-between gap-4 p-5">
           <div className="min-w-0 space-y-1.5">
-            <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
+            <p className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
               Rata-rata pH Tanah
             </p>
-            <p className="text-[10px] leading-none font-medium text-gray-400">
+            <p className="text-[10px] leading-none font-medium text-neutral-400">
               Dihitung dari data {durationText}
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-gray-800">
+              <span className="text-2xl font-black text-neutral-800">
                 {avgPh > 0 ? avgPh.toFixed(2) : "--"}
               </span>
             </div>
-            <div className="flex items-center gap-3 text-[10px] font-semibold text-gray-400">
+            <div className="flex items-center gap-3 text-[10px] font-semibold text-neutral-400">
               <span>
                 Min:{" "}
-                <strong className="text-gray-600">
+                <strong className="text-neutral-600">
                   {minPh > 0 ? minPh.toFixed(1) : "--"}
                 </strong>
               </span>
-              <span className="h-1 w-1 rounded-full bg-gray-300" />
+              <span className="h-1 w-1 rounded-full bg-neutral-300" />
               <span>
                 Max:{" "}
-                <strong className="text-gray-600">
+                <strong className="text-neutral-600">
                   {maxPh > 0 ? maxPh.toFixed(1) : "--"}
                 </strong>
               </span>
@@ -380,14 +379,14 @@ export default function AnalyticsPage() {
               <h3 className="text-primary text-sm leading-tight font-bold">
                 Tren Parameter Lingkungan
               </h3>
-              <p className="text-xs font-medium text-gray-400">
+              <p className="text-xs font-medium text-neutral-400">
                 Riwayat telemetri pH dan Kelembapan secara real-time
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex rounded-xl border border-black/5 bg-gray-100 p-0.5 text-xs font-bold">
+            <div className="flex rounded-xl border border-black/5 bg-neutral-100 p-0.5 text-xs font-bold">
               {[
                 { id: "both", label: "Semua" },
                 { id: "ph", label: "pH" },
@@ -402,7 +401,7 @@ export default function AnalyticsPage() {
                     className={`cursor-pointer rounded-lg px-3 py-1.5 transition ${
                       isActive
                         ? "text-primary bg-white shadow-sm"
-                        : "text-gray-500 hover:text-gray-700"
+                        : "text-neutral-500 hover:text-neutral-700"
                     }`}
                   >
                     <span>{m.label}</span>
@@ -415,7 +414,7 @@ export default function AnalyticsPage() {
               id="analytics-limit-select"
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-600 shadow-sm focus:ring-1 focus:outline-none"
+              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-600 shadow-sm focus:ring-1 focus:outline-none"
             >
               <option value={10}>10 data</option>
               <option value={30}>30 data</option>
@@ -428,8 +427,8 @@ export default function AnalyticsPage() {
             <select
               id="analytics-aggregation-select"
               value={aggregation}
-              onChange={(e) => setAggregation(e.target.value as any)}
-              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-600 shadow-sm focus:ring-1 focus:outline-none"
+              onChange={(e) => setAggregation(e.target.value as Aggregation)}
+              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-600 shadow-sm focus:ring-1 focus:outline-none"
             >
               <option value="raw">Mentah (Semua)</option>
               <option value="30s">Tiap 30 Detik</option>
@@ -444,7 +443,7 @@ export default function AnalyticsPage() {
               id="refresh-analytics-btn"
               onClick={loadHistory}
               disabled={isHistoryLoading}
-              className="hover:text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-gray-500 shadow-sm transition hover:bg-gray-50 disabled:opacity-50"
+              className="hover:text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-neutral-500 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50"
               aria-label="Segarkan riwayat sensor"
             >
               <MdRefresh
@@ -460,7 +459,7 @@ export default function AnalyticsPage() {
             <div className="absolute inset-0 z-10 flex animate-pulse items-center justify-center bg-white/75">
               <div className="flex flex-col items-center gap-2">
                 <div className="border-primary/20 border-t-primary h-8 w-8 animate-spin rounded-full border-2" />
-                <p className="text-xs font-semibold text-gray-400">
+                <p className="text-xs font-semibold text-neutral-400">
                   Memuat analisis data...
                 </p>
               </div>
@@ -480,13 +479,13 @@ export default function AnalyticsPage() {
             </div>
           ) : history.length === 0 ? (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-black/5 bg-gray-50 text-gray-400">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-black/5 bg-neutral-50 text-neutral-400">
                 <MdOutlineTimeline size={24} />
               </div>
-              <p className="text-sm font-bold text-gray-700">
+              <p className="text-sm font-bold text-neutral-700">
                 Belum Ada Riwayat Data
               </p>
-              <p className="mt-1 max-w-sm text-xs leading-relaxed text-gray-400">
+              <p className="mt-1 max-w-sm text-xs leading-relaxed text-neutral-400">
                 Nyalakan perangkat <strong>{selectedDevice.label}</strong> Anda
                 untuk mulai merekam riwayat pembacaan sensor.
               </p>

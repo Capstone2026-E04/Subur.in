@@ -132,9 +132,9 @@ export default function SensorGaugeCard({
       : {
           stroke: "#d1d5db",
           glow: "#d1d5db",
-          text: "text-gray-400",
-          badge: "text-gray-500",
-          badgeBg: "bg-gray-100",
+          text: "text-neutral-400",
+          badge: "text-neutral-500",
+          badgeBg: "bg-neutral-100",
         };
 
   const classification = value !== null ? getClassification(value) : "—";
@@ -165,7 +165,7 @@ export default function SensorGaugeCard({
 
       <div className="flex items-center gap-2 self-start">
         <span className="text-primary/70">{icon}</span>
-        <span className="text-sm font-semibold text-gray-600">{label}</span>
+        <span className="text-sm font-semibold text-neutral-600">{label}</span>
       </div>
 
       <div className="relative flex items-center justify-center">
@@ -184,7 +184,9 @@ export default function SensorGaugeCard({
               "—"
             )}
           </span>
-          <span className="mt-1 text-xs font-medium text-gray-400">{unit}</span>
+          <span className="mt-1 text-xs font-medium text-neutral-400">
+            {unit}
+          </span>
         </div>
       </div>
 

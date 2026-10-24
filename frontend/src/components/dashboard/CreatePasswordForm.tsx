@@ -65,7 +65,7 @@ export default function CreatePasswordForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-neutral-500">
         Akun Anda terdaftar melalui Google. Buat password agar Anda juga bisa
         masuk dengan email dan password.
       </p>

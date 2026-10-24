@@ -31,12 +31,12 @@ function DashboardSkeleton() {
     <div className="w-full animate-pulse space-y-6">
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[2.1fr_1fr_1fr]">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-60 rounded-3xl bg-gray-200"></div>
+          <div key={i} className="h-60 rounded-3xl bg-neutral-200"></div>
         ))}
       </div>
       <div className="grid grid-cols-1 gap-4 sm:gap-5">
         {[...Array(2)].map((_, i) => (
-          <div key={i} className="h-72 rounded-3xl bg-gray-200"></div>
+          <div key={i} className="h-72 rounded-3xl bg-neutral-200"></div>
         ))}
       </div>
     </div>
@@ -50,10 +50,10 @@ function EmptyDashboardState() {
       <div className="bg-primary/8 text-primary mb-6 flex h-20 w-20 items-center justify-center rounded-2xl">
         <MdOutlineDeviceHub size={40} />
       </div>
-      <h3 className="text-lg font-bold text-gray-800">
+      <h3 className="text-lg font-bold text-neutral-800">
         Belum Ada Alat Terhubung
       </h3>
-      <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
+      <p className="mt-2 max-w-sm text-sm leading-relaxed text-neutral-500">
         Anda belum mendaftarkan alat sensor apa pun ke akun Anda. Silakan
         hubungkan alat ESP32 Anda terlebih dahulu untuk mulai memantau kondisi
         tanaman secara real-time.
@@ -82,10 +82,10 @@ function UnselectedDeviceState({
       <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500">
         <MdOutlineDeviceHub size={32} />
       </div>
-      <h3 className="text-lg font-bold text-gray-800">
+      <h3 className="text-lg font-bold text-neutral-800">
         Pilih Alat untuk Memantau
       </h3>
-      <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
+      <p className="mt-2 max-w-sm text-sm leading-relaxed text-neutral-500">
         Silakan pilih salah satu perangkat Anda di bawah ini untuk melihat data
         sensor secara langsung dan panduan perawatan tanaman.
       </p>
@@ -96,17 +96,17 @@ function UnselectedDeviceState({
             key={device.id}
             id={`dashboard-select-${device.id}`}
             onClick={() => onSelect(device)}
-            className="hover:bg-primary/5 hover:border-primary group flex cursor-pointer items-center justify-between rounded-xl border border-black/6 bg-gray-50 p-4 text-left transition-all"
+            className="hover:bg-primary/5 hover:border-primary group flex cursor-pointer items-center justify-between rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-left transition-all"
           >
             <div className="flex items-center gap-3">
-              <div className="group-hover:bg-primary/10 group-hover:text-primary flex h-9 w-9 items-center justify-center rounded-lg border border-black/6 bg-white text-gray-500 transition-all">
+              <div className="group-hover:bg-primary/10 group-hover:text-primary flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 transition-all">
                 <MdOutlineDeviceHub size={18} />
               </div>
               <div>
-                <p className="group-hover:text-primary text-sm font-bold text-gray-700 transition-all">
+                <p className="group-hover:text-primary text-sm font-bold text-neutral-700 transition-all">
                   {device.label}
                 </p>
-                <p className="mt-0.5 font-mono text-xs text-gray-400">
+                <p className="mt-0.5 font-mono text-xs text-neutral-400">
                   {device.deviceCode}
                 </p>
               </div>

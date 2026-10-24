@@ -71,12 +71,12 @@ export default function DeleteConfirmDialog({
                   <MdOutlineDeleteOutline size={28} className="text-rose-500" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-gray-800">
+                  <h2 className="text-base font-bold text-neutral-800">
                     Lepas Klaim Alat?
                   </h2>
-                  <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+                  <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">
                     Alat{" "}
-                    <span className="font-semibold text-gray-700">
+                    <span className="font-semibold text-neutral-700">
                       {device.label}
                     </span>{" "}
                     akan dihapus dari akun Anda. Data historis yang tersimpan
@@ -85,13 +85,13 @@ export default function DeleteConfirmDialog({
                 </div>
               </div>
 
-              <div className="mx-6 mb-4 flex items-center gap-3 rounded-xl border border-black/5 bg-gray-50 px-4 py-3">
+              <div className="mx-6 mb-4 flex items-center gap-3 rounded-xl border border-black/5 bg-neutral-50 px-4 py-3">
                 <MdWarningAmber size={16} className="shrink-0 text-amber-500" />
                 <div>
-                  <p className="text-xs font-semibold text-gray-700">
+                  <p className="text-xs font-semibold text-neutral-700">
                     {device.deviceCode}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-400">
+                  <p className="mt-0.5 text-xs text-neutral-400">
                     Tindakan ini tidak dapat diurungkan.
                   </p>
                 </div>
@@ -109,7 +109,7 @@ export default function DeleteConfirmDialog({
                   type="button"
                   onClick={onClose}
                   disabled={isDeleting}
-                  className="flex-1 cursor-pointer rounded-xl border border-black/8 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-50"
+                  className="flex-1 cursor-pointer rounded-xl border border-black/8 py-2.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 disabled:opacity-50"
                 >
                   Batal
                 </button>

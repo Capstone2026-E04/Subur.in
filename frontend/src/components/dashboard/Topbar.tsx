@@ -81,7 +81,7 @@ export default function Topbar({ user, role }: TopbarProps) {
           if (payload?.notification) {
             loadUnreadCount();
           }
-        } catch (e) {}
+        } catch {}
       };
       return es;
     });
@@ -120,7 +120,7 @@ export default function Topbar({ user, role }: TopbarProps) {
       <div className="relative min-w-0">
         <MdOutlineSpa
           size={23}
-          className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#66a449]"
+          className="text-primary-light pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
         />
         <label className="sr-only" htmlFor={id}>
           Pilih perangkat
@@ -129,7 +129,7 @@ export default function Topbar({ user, role }: TopbarProps) {
           id={id}
           value={selectedDevice?.id ?? ""}
           onChange={(event) => setSelectedDeviceId(event.target.value)}
-          className="h-11 w-full cursor-pointer appearance-none truncate rounded-xl border border-slate-200 bg-white py-2 pr-9 pl-11 text-sm font-medium text-[#0b5038] focus:ring-2 focus:ring-emerald-100 focus:outline-none md:w-44"
+          className="text-primary focus:ring-primary/10 h-11 w-full cursor-pointer appearance-none truncate rounded-xl border border-neutral-200 bg-white py-2 pr-9 pl-11 text-sm font-medium focus:ring-2 focus:outline-none md:w-44"
         >
           {devices.map((device) => (
             <option key={device.id} value={device.id}>
@@ -139,7 +139,7 @@ export default function Topbar({ user, role }: TopbarProps) {
         </select>
         <MdKeyboardArrowDown
           size={20}
-          className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[#0b5038]"
+          className="text-primary pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
         />
       </div>
     );
@@ -151,19 +151,22 @@ export default function Topbar({ user, role }: TopbarProps) {
           <MobileNavigation role={role} />
           <Link href="/dashboard" className="flex items-center gap-2">
             <Image src="/logo/logo-suburin.svg" alt="" width={32} height={32} />
-            <span className="text-xl font-bold tracking-tight text-slate-950">
+            <span className="text-xl font-bold tracking-tight text-neutral-900">
               Subur.in
             </span>
           </Link>
         </div>
         <div className="hidden min-w-0 md:block">
-          <h1 className="truncate text-2xl font-bold tracking-tight text-slate-950">
+          <h1 className="truncate text-2xl font-bold tracking-tight text-neutral-900">
             {pathname === "/dashboard"
               ? `Halo, ${plantName ?? user?.name?.split(" ")[0] ?? "Pekebun"}`
               : breadcrumbs[breadcrumbs.length - 1]?.label}{" "}
-            <MdOutlineSpa aria-hidden className="inline-block text-[#66a449]" />
+            <MdOutlineSpa
+              aria-hidden
+              className="text-primary-light inline-block"
+            />
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-neutral-500">
             Pantau kondisi tanamanmu hari ini.
           </p>
         </div>
@@ -174,7 +177,7 @@ export default function Topbar({ user, role }: TopbarProps) {
           <Link
             href="/dashboard/notifications"
             aria-label="Notifikasi"
-            className="relative flex h-11 w-11 items-center justify-center text-slate-900"
+            className="relative flex h-11 w-11 items-center justify-center text-neutral-900"
           >
             <MdNotifications size={27} />
             {unreadCount > 0 && (
@@ -187,9 +190,9 @@ export default function Topbar({ user, role }: TopbarProps) {
           <Link
             href="/dashboard/profile"
             aria-label="Profil"
-            className="flex items-center gap-3 text-slate-950"
+            className="flex items-center gap-3 text-neutral-900"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#073b2c] text-lg text-white">
+            <span className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-lg text-white">
               {user?.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -212,13 +215,16 @@ export default function Topbar({ user, role }: TopbarProps) {
         </div>
       </div>
       <div className="mt-4 md:hidden">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-950">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
           {pathname === "/dashboard"
             ? `Halo, ${plantName ?? user?.name?.split(" ")[0] ?? "Pekebun"}`
             : breadcrumbs[breadcrumbs.length - 1]?.label}{" "}
-          <MdOutlineSpa aria-hidden className="inline-block text-[#66a449]" />
+          <MdOutlineSpa
+            aria-hidden
+            className="text-primary-light inline-block"
+          />
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-neutral-500">
           Pantau kondisi tanamanmu hari ini.
         </p>
         <div className="mt-3">{deviceSelector("mobile-device-selector")}</div>

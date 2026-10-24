@@ -38,12 +38,12 @@ export default function MoistureLevelCard({
 
   return (
     <Card className="min-w-0 rounded-2xl border-white p-3 shadow-sm sm:rounded-3xl sm:p-6">
-      <h3 className="flex min-h-10 items-center gap-2 text-xs font-medium text-slate-900 sm:min-h-7 sm:text-lg">
+      <h3 className="flex min-h-10 items-center gap-2 text-xs font-medium text-neutral-900 sm:min-h-7 sm:text-lg">
         <MdWaterDrop size={24} className="shrink-0 text-sky-400" /> Kelembapan
         Tanah
       </h3>
       <div className="mt-3 flex min-h-24 flex-col items-start justify-start gap-2 sm:min-h-28 xl:min-h-12 xl:flex-row xl:items-center xl:gap-4">
-        <p className="text-2xl font-bold tracking-tight whitespace-nowrap text-slate-950 tabular-nums sm:text-5xl">
+        <p className="text-2xl font-bold tracking-tight whitespace-nowrap text-neutral-900 tabular-nums sm:text-5xl">
           {displayValue === null
             ? "--"
             : vwc
@@ -57,15 +57,15 @@ export default function MoistureLevelCard({
             {STATUS_LABELS[status.label] ?? status.label}
           </span>
         ) : (
-          <span className="text-xs text-slate-400">Belum ada data</span>
+          <span className="text-xs text-neutral-400">Belum ada data</span>
         )}
       </div>
-      <p className="mt-1 h-4 text-[10px] text-slate-500 sm:text-xs">
+      <p className="mt-1 h-4 text-[10px] text-neutral-500 sm:text-xs">
         {vwc?.vwcPercent != null
           ? `VWC ${vwc.vwcPercent.toFixed(1).replace(".", ",")}%`
           : "Indeks kelembapan"}
       </p>
-      <div className="relative mt-5 h-2.5 rounded-full bg-linear-to-r from-orange-500 via-yellow-200 to-emerald-100 sm:mt-6 sm:h-3.5">
+      <div className="to-primary/10 relative mt-5 h-2.5 rounded-full bg-linear-to-r from-orange-500 via-yellow-200 sm:mt-6 sm:h-3.5">
         {displayValue !== null && (
           <span
             className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-orange-400 shadow-md sm:h-5 sm:w-5"
@@ -73,17 +73,17 @@ export default function MoistureLevelCard({
           />
         )}
       </div>
-      <div className="mt-3 flex justify-between text-[9px] text-slate-500 sm:text-xs">
+      <div className="mt-3 flex justify-between text-[9px] text-neutral-500 sm:text-xs">
         {[0, 25, 50, 75, 100].map((tick) => (
           <span key={tick}>{tick}</span>
         ))}
       </div>
       <div className="mt-3 grid min-h-8 grid-cols-3 items-start gap-1 text-[9px] leading-tight font-medium sm:text-xs">
         <span className="text-left text-orange-600">Kering</span>
-        <span className="text-center text-emerald-700">Optimal</span>
+        <span className="text-primary text-center">Optimal</span>
         <span className="text-right text-sky-700">Jenuh/basah</span>
       </div>
-      <p className="mt-2 min-h-8 text-[9px] text-slate-400 sm:text-xs">
+      <p className="mt-2 min-h-8 text-[9px] text-neutral-400 sm:text-xs">
         {moistureType === "vwc_percent"
           ? "Persentase kapasitas kontainer (% CC)"
           : "Indeks kelembapan"}

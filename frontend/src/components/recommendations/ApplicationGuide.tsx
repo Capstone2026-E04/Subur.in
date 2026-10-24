@@ -106,7 +106,7 @@ export default function ApplicationGuide({
             <MdWaterDrop size={20} /> Panduan air
           </h3>
         </CardHeader>
-        <CardContent className="space-y-4 text-xs leading-relaxed text-slate-600">
+        <CardContent className="space-y-4 text-xs leading-relaxed text-neutral-600">
           {recommendation ? (
             <div className="rounded-xl bg-sky-50 p-4 text-sky-900">
               <p className="font-semibold">
@@ -151,13 +151,13 @@ export default function ApplicationGuide({
             <MdOutlineSpa size={20} /> Panduan pH
           </h3>
         </CardHeader>
-        <CardContent className="space-y-4 text-xs leading-relaxed text-slate-600">
+        <CardContent className="space-y-4 text-xs leading-relaxed text-neutral-600">
           <p>
             Panduan berdasarkan C501 bagian 4.8–4.9. Angka dosis dan keputusan
             perawatan tetap mengikuti hasil backend.
           </p>
-          <section className="rounded-xl border border-slate-200 p-4">
-            <h4 className="text-sm font-semibold text-slate-800">
+          <section className="rounded-xl border border-neutral-200 p-4">
+            <h4 className="text-sm font-semibold text-neutral-800">
               Sebelum tanam: persiapan media
             </h4>
             <p className="mt-3">
@@ -167,8 +167,8 @@ export default function ApplicationGuide({
               pra-tanam.
             </p>
           </section>
-          <section className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
-            <h4 className="text-sm font-semibold text-emerald-900">
+          <section className="border-primary/10 bg-primary/5 rounded-xl border p-4">
+            <h4 className="text-primary text-sm font-semibold">
               Saat tanaman sudah ditanam: top dressing
             </h4>
             <ol className="mt-3 list-decimal space-y-2 pl-5">

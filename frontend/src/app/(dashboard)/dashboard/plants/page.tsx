@@ -2,14 +2,7 @@
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  MdOutlineSpa,
-  MdWaterDrop,
-  MdRefresh,
-  MdOutlineScience,
-  MdOutlineInbox,
-  MdOutlineInfo,
-} from "react-icons/md";
+import { MdOutlineSpa, MdRefresh, MdOutlineInbox } from "react-icons/md";
 import { usePlants } from "@/hooks/usePlants";
 import { Card } from "@/components/ui/card";
 import PageHeader from "@/components/dashboard/PageHeader";
@@ -18,16 +11,16 @@ function PlantSkeletonCard() {
   return (
     <Card className="animate-pulse flex-col items-start justify-between gap-4 p-5 md:flex-row md:items-center">
       <div className="flex shrink-0 items-center gap-3">
-        <div className="h-10 w-10 shrink-0 rounded-xl bg-gray-100" />
+        <div className="h-10 w-10 shrink-0 rounded-xl bg-neutral-100" />
         <div className="flex w-32 flex-col gap-1.5">
-          <div className="h-4 w-full rounded bg-gray-100" />
-          <div className="h-3 w-2/3 rounded bg-gray-100" />
+          <div className="h-4 w-full rounded bg-neutral-100" />
+          <div className="h-3 w-2/3 rounded bg-neutral-100" />
         </div>
       </div>
-      <div className="bg-gray-55 h-8 w-full max-w-md flex-1 rounded" />
+      <div className="bg-neutral-55 h-8 w-full max-w-md flex-1 rounded" />
       <div className="flex shrink-0 gap-3">
-        <div className="h-12 w-24 rounded-xl bg-gray-50" />
-        <div className="h-12 w-24 rounded-xl bg-gray-50" />
+        <div className="h-12 w-24 rounded-xl bg-neutral-50" />
+        <div className="h-12 w-24 rounded-xl bg-neutral-50" />
       </div>
     </Card>
   );
@@ -55,7 +48,7 @@ export default function PlantsPage() {
           onClick={loadPlants}
           disabled={isLoading}
           aria-label="Segarkan katalog tanaman"
-          className="hover:text-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-gray-500 shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-50"
+          className="hover:text-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-neutral-500 shadow-sm transition-colors hover:bg-neutral-50 disabled:opacity-50"
         >
           <MdRefresh size={17} className={isLoading ? "animate-spin" : ""} />
         </button>
@@ -97,10 +90,10 @@ export default function PlantsPage() {
             <MdOutlineSpa size={32} />
           </div>
           <div>
-            <p className="text-base font-bold text-gray-700">
+            <p className="text-base font-bold text-neutral-700">
               Katalog Tanaman Belum Tersedia
             </p>
-            <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-gray-400">
+            <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-neutral-400">
               Data jenis tanaman belum ditambahkan ke sistem. Hubungi admin
               Subur.in untuk melengkapinya.
             </p>
@@ -126,11 +119,11 @@ export default function PlantsPage() {
                       <MdOutlineSpa size={22} />
                     </div>
                     <div className="min-w-0">
-                      <p className="group-hover:text-primary truncate text-sm leading-tight font-bold text-gray-800 transition-colors">
+                      <p className="group-hover:text-primary truncate text-sm leading-tight font-bold text-neutral-800 transition-colors">
                         {plant.name}
                       </p>
                       {plant.scientificName && (
-                        <p className="mt-1 truncate text-xs text-gray-400 italic">
+                        <p className="mt-1 truncate text-xs text-neutral-400 italic">
                           {plant.scientificName}
                         </p>
                       )}
@@ -139,11 +132,11 @@ export default function PlantsPage() {
 
                   <div className="min-w-0 flex-1">
                     {plant.description ? (
-                      <p className="text-xs leading-relaxed font-normal text-gray-500 md:line-clamp-2">
+                      <p className="text-xs leading-relaxed font-normal text-neutral-500 md:line-clamp-2">
                         {plant.description}
                       </p>
                     ) : (
-                      <p className="text-xs leading-relaxed text-gray-400 italic">
+                      <p className="text-xs leading-relaxed text-neutral-400 italic">
                         Tidak ada deskripsi untuk tanaman ini.
                       </p>
                     )}
@@ -154,7 +147,7 @@ export default function PlantsPage() {
                       <span className="text-[9px] font-bold tracking-wider text-sky-600 uppercase">
                         Kelembapan (VWC %)
                       </span>
-                      <span className="mt-0.5 text-xs font-bold text-gray-700">
+                      <span className="mt-0.5 text-xs font-bold text-neutral-700">
                         {plant.nmiTrigger !== null
                           ? `Trigger ${plant.nmiTrigger}`
                           : "-"}
@@ -168,7 +161,7 @@ export default function PlantsPage() {
                       <span className="text-[9px] font-bold tracking-wider text-amber-600 uppercase">
                         pH Tanah
                       </span>
-                      <span className="mt-0.5 text-xs font-bold text-gray-700">
+                      <span className="mt-0.5 text-xs font-bold text-neutral-700">
                         {plant.minPh.toFixed(1)} - {plant.maxPh.toFixed(1)}
                       </span>
                       <span className="mt-0.5 text-[9px] font-semibold text-amber-700/80">

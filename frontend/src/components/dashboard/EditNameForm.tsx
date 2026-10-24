@@ -71,7 +71,7 @@ export default function EditNameForm({
 
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-medium tracking-wide text-gray-500 uppercase">
+      <label className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
         Nama Tampilan
       </label>
       {isEditing ? (
@@ -85,7 +85,7 @@ export default function EditNameForm({
               if (e.key === "Escape") handleCancel();
             }}
             maxLength={60}
-            className="border-primary/30 focus:border-primary focus:ring-primary/10 flex-1 rounded-lg border bg-white px-3 py-2 text-sm text-gray-800 transition-all outline-none focus:ring-2"
+            className="border-primary/30 focus:border-primary focus:ring-primary/10 flex-1 rounded-lg border bg-white px-3 py-2 text-sm text-neutral-800 transition-all outline-none focus:ring-2"
             placeholder="Masukkan nama baru..."
           />
           <button
@@ -99,7 +99,7 @@ export default function EditNameForm({
           <button
             onClick={handleCancel}
             aria-label="Batal"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-black/10 text-gray-500 transition-colors hover:bg-gray-50"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-black/10 text-neutral-500 transition-colors hover:bg-neutral-50"
           >
             <MdClose size={18} />
           </button>
@@ -108,7 +108,7 @@ export default function EditNameForm({
         <div className="flex items-center justify-between rounded-lg border border-black/8 bg-white px-4 py-2.5">
           <div className="flex items-center gap-2.5">
             <MdPerson size={16} className="text-primary/60 shrink-0" />
-            <span className="text-sm font-medium text-gray-800">{name}</span>
+            <span className="text-sm font-medium text-neutral-800">{name}</span>
           </div>
           <button
             onClick={handleEdit}

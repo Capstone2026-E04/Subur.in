@@ -50,10 +50,10 @@ export default async function ProfilePage() {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-semibold text-gray-800">
+          <p className="truncate text-base font-semibold text-neutral-800">
             {name ?? "Pengguna"}
           </p>
-          <p className="truncate text-sm text-gray-400">{email}</p>
+          <p className="truncate text-sm text-neutral-400">{email}</p>
         </div>
       </Card>
 
@@ -63,25 +63,25 @@ export default async function ProfilePage() {
         <EditNameForm currentName={name ?? ""} backendToken={backendToken} />
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium tracking-wide text-gray-500 uppercase">
+          <label className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
             Alamat Email
           </label>
-          <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-gray-50 px-4 py-2.5">
+          <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-neutral-50 px-4 py-2.5">
             <MdEmail size={16} className="text-primary/60 shrink-0" />
-            <span className="text-sm text-gray-500">{email ?? "-"}</span>
-            <span className="ml-auto rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-500">
+            <span className="text-sm text-neutral-500">{email ?? "-"}</span>
+            <span className="ml-auto rounded-full bg-neutral-200 px-2 py-0.5 text-xs text-neutral-500">
               Tidak dapat diubah
             </span>
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium tracking-wide text-gray-500 uppercase">
+          <label className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
             Bergabung Sejak
           </label>
-          <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-gray-50 px-4 py-2.5">
+          <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-neutral-50 px-4 py-2.5">
             <MdCalendarMonth size={16} className="text-primary/60 shrink-0" />
-            <span className="text-sm text-gray-500">{createdAt}</span>
+            <span className="text-sm text-neutral-500">{createdAt}</span>
           </div>
         </div>
       </Card>
@@ -90,9 +90,9 @@ export default async function ProfilePage() {
         <h2 className="text-primary text-sm font-semibold">Password</h2>
 
         {backendUser?.hasPassword ? (
-          <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-gray-50 px-4 py-2.5">
+          <div className="flex items-center gap-2.5 rounded-lg border border-black/8 bg-neutral-50 px-4 py-2.5">
             <MdLock size={16} className="text-primary/60 shrink-0" />
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-neutral-500">
               Password sudah diatur. Anda dapat masuk dengan email dan password.
             </span>
           </div>

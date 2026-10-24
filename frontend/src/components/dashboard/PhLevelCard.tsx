@@ -23,7 +23,7 @@ export default function PhLevelCard({ value, range }: PhLevelCardProps) {
     : `${tone?.badgeBg ?? ""} ${tone?.badge ?? ""}`;
   const markerTone = isAlkaline
     ? "text-sky-500"
-    : (tone?.badge ?? "text-slate-400");
+    : (tone?.badge ?? "text-neutral-400");
   const minPosition = toPosition(range.min);
   const maxPosition = toPosition(range.max);
   const transitionStart = toPosition(range.min - 0.5);
@@ -37,11 +37,11 @@ export default function PhLevelCard({ value, range }: PhLevelCardProps) {
       className="block min-w-0 rounded-2xl transition-shadow hover:shadow-md sm:rounded-3xl"
     >
       <Card className="h-full min-w-0 rounded-2xl border-white p-3 shadow-sm sm:rounded-3xl sm:p-6">
-        <h3 className="flex min-h-10 items-center gap-2 text-xs font-medium text-slate-900 sm:min-h-7 sm:text-lg">
-          <MdScience size={24} className="shrink-0 text-[#0b5038]" /> pH Tanah
+        <h3 className="flex min-h-10 items-center gap-2 text-xs font-medium text-neutral-900 sm:min-h-7 sm:text-lg">
+          <MdScience size={24} className="text-primary shrink-0" /> pH Tanah
         </h3>
         <div className="mt-3 flex min-h-24 flex-col items-start justify-start gap-2 sm:min-h-28 xl:min-h-12 xl:flex-row xl:items-center xl:gap-4">
-          <p className="text-2xl font-bold tracking-tight whitespace-nowrap text-slate-950 tabular-nums sm:text-5xl">
+          <p className="text-2xl font-bold tracking-tight whitespace-nowrap text-neutral-900 tabular-nums sm:text-5xl">
             {value === null ? "--" : value.toFixed(1).replace(".", ",")}
           </p>
           {status && tone ? (
@@ -51,10 +51,10 @@ export default function PhLevelCard({ value, range }: PhLevelCardProps) {
               {status.label}
             </span>
           ) : (
-            <span className="text-xs text-slate-400">Belum ada data</span>
+            <span className="text-xs text-neutral-400">Belum ada data</span>
           )}
         </div>
-        <p className="mt-1 h-4 text-[10px] text-slate-500 sm:text-xs">
+        <p className="mt-1 h-4 text-[10px] text-neutral-500 sm:text-xs">
           Optimal: {range.min.toLocaleString("id-ID")} -{" "}
           {range.max.toLocaleString("id-ID")}
         </p>
@@ -72,17 +72,17 @@ export default function PhLevelCard({ value, range }: PhLevelCardProps) {
           )}
         </div>
 
-        <div className="mt-3 flex justify-between text-[9px] text-slate-500 sm:text-xs">
+        <div className="mt-3 flex justify-between text-[9px] text-neutral-500 sm:text-xs">
           {[4, 5, 6, 7, 8, 9, 10].map((tick) => (
             <span key={tick}>{tick}</span>
           ))}
         </div>
         <div className="mt-3 grid min-h-8 grid-cols-3 items-start gap-1 text-[9px] leading-tight font-medium sm:text-xs">
           <span className="text-left text-red-600">Asam</span>
-          <span className="text-center text-emerald-700">Optimal</span>
+          <span className="text-primary text-center">Optimal</span>
           <span className="text-right text-sky-700">Basa</span>
         </div>
-        <p className="mt-2 min-h-8 text-[9px] text-slate-400 sm:text-xs">
+        <p className="mt-2 min-h-8 text-[9px] text-neutral-400 sm:text-xs">
           Skala tampilan pH 4-10
         </p>
       </Card>

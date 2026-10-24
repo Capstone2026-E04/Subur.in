@@ -148,12 +148,12 @@ export default function LiveLocationTracker() {
   if (isLoading) {
     return (
       <Card className="animate-pulse flex-row items-center gap-4 p-5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100">
-          <MdMyLocation className="animate-spin text-gray-400" size={20} />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
+          <MdMyLocation className="animate-spin text-neutral-400" size={20} />
         </div>
         <div className="min-w-0 flex-1 space-y-2.5">
-          <div className="h-4 w-1/4 rounded bg-gray-200"></div>
-          <div className="h-3 w-3/4 rounded bg-gray-100"></div>
+          <div className="h-4 w-1/4 rounded bg-neutral-200"></div>
+          <div className="h-3 w-3/4 rounded bg-neutral-100"></div>
         </div>
       </Card>
     );
@@ -188,7 +188,7 @@ export default function LiveLocationTracker() {
         </div>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-800">
+            <span className="text-sm font-semibold text-neutral-800">
               Lokasi Kebun (Live)
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
@@ -199,7 +199,7 @@ export default function LiveLocationTracker() {
               Aktif
             </span>
           </div>
-          <p className="max-w-2xl text-sm leading-relaxed text-gray-600">
+          <p className="max-w-2xl text-sm leading-relaxed text-neutral-600">
             {address || "Mendapatkan nama lokasi..."}
           </p>
         </div>

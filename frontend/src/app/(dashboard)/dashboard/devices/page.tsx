@@ -22,10 +22,10 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
         <MdOutlineDeviceHub size={32} />
       </div>
       <div>
-        <p className="text-base font-bold text-gray-700">
+        <p className="text-base font-bold text-neutral-700">
           Belum Ada Alat Terdaftar
         </p>
-        <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-gray-400">
+        <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-neutral-400">
           Hubungkan perangkat ESP32 pertama Anda agar dapat memantau kondisi
           tanah secara real-time.
         </p>
@@ -43,7 +43,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 }
 
 function SkeletonRow() {
-  return <div className="h-14 animate-pulse rounded-xl bg-gray-100" />;
+  return <div className="h-14 animate-pulse rounded-xl bg-neutral-100" />;
 }
 
 export default function DevicesPage() {

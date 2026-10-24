@@ -178,10 +178,10 @@ export default function SettingsPage() {
             <MdAccessTime size={18} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-800">
+            <h3 className="text-sm font-semibold text-neutral-800">
               Interval Telemetri Perangkat
             </h3>
-            <p className="text-[10px] text-gray-400">
+            <p className="text-[10px] text-neutral-400">
               Tentukan durasi pengiriman data sensor dari perangkat ESP32 Anda.
             </p>
           </div>
@@ -190,16 +190,16 @@ export default function SettingsPage() {
         {isLoading ? (
           <div className="flex animate-pulse flex-col items-center justify-center py-6">
             <div className="border-primary/20 border-t-primary h-8 w-8 animate-spin rounded-full border-4" />
-            <p className="mt-3 text-xs font-semibold text-gray-400">
+            <p className="mt-3 text-xs font-semibold text-neutral-400">
               Memuat daftar perangkat Anda...
             </p>
           </div>
         ) : devices.length === 0 ? (
           <div className="py-6 text-center">
-            <p className="text-sm font-semibold text-gray-400">
+            <p className="text-sm font-semibold text-neutral-400">
               Belum ada perangkat terhubung.
             </p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-neutral-400">
               Silakan daftarkan perangkat terlebih dahulu pada menu Perangkat.
             </p>
           </div>
@@ -209,7 +209,7 @@ export default function SettingsPage() {
               <div className="space-y-1.5">
                 <label
                   htmlFor="settings-device-select"
-                  className="flex items-center gap-1 text-[10px] font-bold tracking-wide text-gray-400 uppercase"
+                  className="flex items-center gap-1 text-[10px] font-bold tracking-wide text-neutral-400 uppercase"
                 >
                   <MdOutlineDeviceHub size={12} />
                   Pilih Perangkat
@@ -218,7 +218,7 @@ export default function SettingsPage() {
                   id="settings-device-select"
                   value={selectedDeviceId}
                   onChange={(e) => handleDeviceChange(e.target.value)}
-                  className="focus:border-primary w-full cursor-pointer rounded-lg border border-black/8 bg-white px-3 py-2 text-xs text-gray-700 transition-all outline-none sm:text-sm"
+                  className="focus:border-primary w-full cursor-pointer rounded-lg border border-black/8 bg-white px-3 py-2 text-xs text-neutral-700 transition-all outline-none sm:text-sm"
                 >
                   {devices.map((device) => (
                     <option key={device.id} value={device.id}>
@@ -231,7 +231,7 @@ export default function SettingsPage() {
               <div className="space-y-1.5">
                 <label
                   htmlFor="settings-interval-select"
-                  className="flex items-center gap-1 text-[10px] font-bold tracking-wide text-gray-400 uppercase"
+                  className="flex items-center gap-1 text-[10px] font-bold tracking-wide text-neutral-400 uppercase"
                 >
                   <MdAccessTime size={12} />
                   Interval Pengambilan Data
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                   id="settings-interval-select"
                   value={sensorInterval}
                   onChange={(e) => setSensorInterval(Number(e.target.value))}
-                  className="focus:border-primary w-full cursor-pointer rounded-lg border border-black/8 bg-white px-3 py-2 text-xs text-gray-700 transition-all outline-none sm:text-sm"
+                  className="focus:border-primary w-full cursor-pointer rounded-lg border border-black/8 bg-white px-3 py-2 text-xs text-neutral-700 transition-all outline-none sm:text-sm"
                 >
                   <option value={1}>1 Menit</option>
                   <option value={5}>5 Menit</option>
@@ -286,10 +286,10 @@ export default function SettingsPage() {
             <MdNotificationsActive size={18} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-800">
+            <h3 className="text-sm font-semibold text-neutral-800">
               Preferensi Notifikasi
             </h3>
-            <p className="text-[10px] text-gray-400">
+            <p className="text-[10px] text-neutral-400">
               Atur bagaimana sistem memperingatkan Anda secara real-time.
             </p>
           </div>
@@ -298,10 +298,10 @@ export default function SettingsPage() {
         <div className="divide-border space-y-4 divide-y">
           <div className="flex items-center justify-between gap-4 py-2">
             <div>
-              <p className="text-xs font-medium text-gray-700 sm:text-sm">
+              <p className="text-xs font-medium text-neutral-700 sm:text-sm">
                 Notifikasi Sensor Kelembapan
               </p>
-              <p className="text-[10px] text-gray-400 sm:text-xs">
+              <p className="text-[10px] text-neutral-400 sm:text-xs">
                 Peringatkan jika kelembapan tanaman di bawah batas aman.
               </p>
             </div>
@@ -316,16 +316,16 @@ export default function SettingsPage() {
                 onChange={(e) => setMoistureNotif(e.target.checked)}
                 className="peer sr-only"
               />
-              <div className="peer peer-checked:bg-primary h-5 w-9 rounded-full bg-gray-200 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+              <div className="peer peer-checked:bg-primary h-5 w-9 rounded-full bg-neutral-200 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
             </label>
           </div>
 
           <div className="flex items-center justify-between gap-4 pt-4">
             <div>
-              <p className="text-xs font-medium text-gray-700 sm:text-sm">
+              <p className="text-xs font-medium text-neutral-700 sm:text-sm">
                 Notifikasi Sensor pH
               </p>
-              <p className="text-[10px] text-gray-400 sm:text-xs">
+              <p className="text-[10px] text-neutral-400 sm:text-xs">
                 Peringatkan jika pH tanah terdeteksi terlalu asam atau terlalu
                 basa.
               </p>
@@ -341,7 +341,7 @@ export default function SettingsPage() {
                 onChange={(e) => setPhNotif(e.target.checked)}
                 className="peer sr-only"
               />
-              <div className="peer peer-checked:bg-primary h-5 w-9 rounded-full bg-gray-200 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+              <div className="peer peer-checked:bg-primary h-5 w-9 rounded-full bg-neutral-200 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
             </label>
           </div>
         </div>
@@ -353,10 +353,10 @@ export default function SettingsPage() {
             <MdSend size={18} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-800">
+            <h3 className="text-sm font-semibold text-neutral-800">
               Hubungkan Telegram
             </h3>
-            <p className="text-[10px] text-gray-400">
+            <p className="text-[10px] text-neutral-400">
               Terima notifikasi perangkat Anda langsung di Telegram.
             </p>
           </div>
@@ -392,7 +392,7 @@ export default function SettingsPage() {
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-xs text-gray-500 sm:text-sm">
+              <p className="text-xs text-neutral-500 sm:text-sm">
                 Akun Telegram Anda belum terhubung.
               </p>
               <button
@@ -406,15 +406,15 @@ export default function SettingsPage() {
             </div>
 
             {telegramLinkCode && (
-              <div className="space-y-1.5 rounded-lg border border-black/8 bg-gray-50 px-4 py-3">
-                <p className="text-xs text-gray-500">
+              <div className="space-y-1.5 rounded-lg border border-black/8 bg-neutral-50 px-4 py-3">
+                <p className="text-xs text-neutral-500">
                   Buka bot{" "}
                   {TELEGRAM_BOT_USERNAME
                     ? `@${TELEGRAM_BOT_USERNAME}`
                     : "Subur.in"}{" "}
                   di Telegram, lalu kirim pesan berikut:
                 </p>
-                <p className="font-mono text-sm font-semibold text-gray-800">
+                <p className="font-mono text-sm font-semibold text-neutral-800">
                   /link {telegramLinkCode}
                 </p>
               </div>

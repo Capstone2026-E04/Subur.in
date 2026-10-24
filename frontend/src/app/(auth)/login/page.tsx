@@ -119,7 +119,7 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div className="flex items-center gap-3 text-xs text-gray-500">
+      <div className="flex items-center gap-3 text-xs text-neutral-500">
         <span className="h-px flex-1 bg-black/10" />
         atau
         <span className="h-px flex-1 bg-black/10" />
@@ -133,17 +133,17 @@ export default function LoginPage() {
           signIn("google", { callbackUrl: "/dashboard" });
         }}
         disabled={isBusy}
-        className="focus-visible:ring-primary/40 flex min-h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-black/10 bg-white px-5 text-sm font-semibold text-gray-800 shadow-sm transition-all duration-200 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        className="focus-visible:ring-primary/40 flex min-h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-black/10 bg-white px-5 text-sm font-semibold text-neutral-800 shadow-sm transition-all duration-200 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSigningIn ? (
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600 motion-reduce:animate-none" />
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600 motion-reduce:animate-none" />
         ) : (
           <FcGoogle size={20} />
         )}
         {isSigningIn ? "Menghubungkan…" : "Lanjutkan dengan Google"}
       </button>
 
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-neutral-600">
         Belum punya akun?{" "}
         <Link
           href="/register"
@@ -153,7 +153,7 @@ export default function LoginPage() {
         </Link>
       </p>
 
-      <p className="text-center text-xs leading-relaxed text-gray-600">
+      <p className="text-center text-xs leading-relaxed text-neutral-600">
         Dengan masuk, Anda menyetujui bahwa data perangkat dan sensor Anda akan
         disimpan untuk keperluan pemantauan tanaman.
       </p>

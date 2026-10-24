@@ -43,7 +43,7 @@ function toLocalInputValue(date: Date) {
 }
 
 const inputClass =
-  "focus:border-primary focus:ring-primary/20 min-h-11 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-gray-700 transition focus:ring-2 focus:outline-none";
+  "focus:border-primary focus:ring-primary/20 min-h-11 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none";
 
 interface ChoiceGroupProps<T extends string> {
   legend: string;
@@ -62,7 +62,9 @@ function ChoiceGroup<T extends string>({
 }: ChoiceGroupProps<T>) {
   return (
     <fieldset className="space-y-2">
-      <legend className="text-xs font-semibold text-gray-600">{legend}</legend>
+      <legend className="text-xs font-semibold text-neutral-600">
+        {legend}
+      </legend>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => (
           <label
@@ -70,7 +72,7 @@ function ChoiceGroup<T extends string>({
             className={`focus-within:ring-primary/30 flex min-h-11 cursor-pointer items-center rounded-xl border px-4 text-sm font-semibold transition focus-within:ring-2 ${
               value === opt.value
                 ? "border-primary bg-primary/8 text-primary"
-                : "border-black/10 bg-white text-gray-600 hover:bg-gray-50"
+                : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
             }`}
           >
             <input
@@ -224,7 +226,7 @@ export default function CorrectionPanel({
       </CardHeader>
 
       <CardContent className="space-y-6 p-6">
-        <p className="text-xs leading-relaxed text-gray-500">
+        <p className="text-xs leading-relaxed text-neutral-500">
           Catat dolomit atau sulfur yang benar-benar sudah Anda berikan. Setelah
           koreksi dicatat, sistem menunda rekomendasi koreksi pH berikutnya
           selama masa reaksi. Alur saat ini memakai tujuh hari sebelum evaluasi;
@@ -243,7 +245,7 @@ export default function CorrectionPanel({
           className={`flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-xs font-semibold ${
             isWaiting
               ? "border-amber-200 bg-amber-50 text-amber-900"
-              : "border-black/5 bg-gray-50 text-gray-600"
+              : "border-neutral-200 bg-neutral-50 text-neutral-600"
           }`}
         >
           {isWaiting ? (
@@ -287,7 +289,7 @@ export default function CorrectionPanel({
             <div className="space-y-1.5">
               <label
                 htmlFor={`${uid}-dose`}
-                className="text-xs font-semibold text-gray-600"
+                className="text-xs font-semibold text-neutral-600"
               >
                 Dosis aktual (gram)
               </label>
@@ -307,7 +309,7 @@ export default function CorrectionPanel({
             <div className="space-y-1.5">
               <label
                 htmlFor={`${uid}-ph`}
-                className="text-xs font-semibold text-gray-600"
+                className="text-xs font-semibold text-neutral-600"
               >
                 pH sebelum koreksi
               </label>
@@ -328,7 +330,7 @@ export default function CorrectionPanel({
             <div className="space-y-1.5 sm:col-span-2">
               <label
                 htmlFor={`${uid}-date`}
-                className="text-xs font-semibold text-gray-600"
+                className="text-xs font-semibold text-neutral-600"
               >
                 Waktu aplikasi (opsional)
               </label>
@@ -340,7 +342,7 @@ export default function CorrectionPanel({
                 onChange={(e) => setAppliedAt(e.target.value)}
                 className={`${inputClass} sm:max-w-xs`}
               />
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[11px] text-neutral-500">
                 Kosongkan untuk memakai waktu sekarang.
               </p>
             </div>
@@ -358,7 +360,7 @@ export default function CorrectionPanel({
           {notice && (
             <p
               role="status"
-              className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-xs font-semibold text-emerald-800"
+              className="border-primary/20 bg-primary/5 text-primary rounded-xl border px-3.5 py-2.5 text-xs font-semibold"
             >
               {notice}
             </p>
@@ -375,14 +377,14 @@ export default function CorrectionPanel({
           </button>
         </form>
 
-        <div className="space-y-3 border-t border-black/5 pt-5">
-          <h4 className="flex items-center gap-1.5 text-xs font-bold text-gray-600">
-            <MdHistory size={16} className="text-gray-400" />
+        <div className="space-y-3 border-t border-neutral-200 pt-5">
+          <h4 className="flex items-center gap-1.5 text-xs font-bold text-neutral-600">
+            <MdHistory size={16} className="text-neutral-400" />
             Riwayat koreksi
           </h4>
 
           {isLoading ? (
-            <p className="text-xs text-gray-500" role="status">
+            <p className="text-xs text-neutral-500" role="status">
               Memuat riwayat...
             </p>
           ) : loadError ? (
@@ -399,27 +401,27 @@ export default function CorrectionPanel({
               </button>
             </div>
           ) : corrections.length === 0 ? (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-neutral-500">
               Belum ada koreksi yang dicatat.
             </p>
           ) : (
-            <ul className="divide-y divide-black/5 rounded-xl border border-black/5">
+            <ul className="divide-y divide-neutral-200 rounded-xl border border-neutral-200">
               {corrections.map((c) => (
                 <li
                   key={c.id}
                   className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 text-xs"
                 >
                   <div>
-                    <p className="font-bold text-gray-800">
+                    <p className="font-bold text-neutral-800">
                       {typeLabel(c.type)} · {c.doseGram} g
                     </p>
-                    <p className="text-gray-500">
+                    <p className="text-neutral-500">
                       {methodLabel(c.method)} · pH sebelum {c.phBefore}
                     </p>
                   </div>
                   <time
                     dateTime={c.appliedAt}
-                    className="font-semibold text-gray-500"
+                    className="font-semibold text-neutral-500"
                   >
                     {formatDate(c.appliedAt)}
                   </time>

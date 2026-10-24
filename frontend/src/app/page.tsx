@@ -51,13 +51,13 @@ export default function Home() {
         <div className="space-y-6 md:col-span-7 md:pr-6">
           <h1
             data-hero="title"
-            className="text-4xl leading-[1.05] font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl"
+            className="text-4xl leading-[1.05] font-extrabold tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl"
           >
             Tahu kapan menyiram, tanpa menebak.
           </h1>
           <p
             data-hero="body"
-            className="max-w-[48ch] text-base leading-relaxed text-gray-700"
+            className="max-w-[48ch] text-base leading-relaxed text-neutral-700"
           >
             Sensor pH dan kelembapan di polybag mengirim data ke dashboard, lalu
             sistem menghitung air dan koreksi pH yang pas.
@@ -109,10 +109,10 @@ export default function Home() {
               data-step
               className={i === 1 ? "md:ml-24" : i === 2 ? "md:ml-48" : ""}
             >
-              <h3 className="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
+              <h3 className="text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl">
                 {step.title}
               </h3>
-              <p className="mt-2 max-w-[52ch] text-base leading-relaxed text-gray-700">
+              <p className="mt-2 max-w-[52ch] text-base leading-relaxed text-neutral-700">
                 {step.body}
               </p>
             </li>
@@ -125,7 +125,7 @@ export default function Home() {
           <h2 className="text-primary max-w-[20ch] text-3xl leading-tight font-extrabold tracking-tight md:text-4xl">
             Rekomendasi yang bisa dijelaskan.
           </h2>
-          <p className="mt-4 max-w-[56ch] text-base leading-relaxed text-gray-700">
+          <p className="mt-4 max-w-[56ch] text-base leading-relaxed text-neutral-700">
             Setiap saran punya dasar yang bisa Anda baca: batas tanaman, status
             kelembapan, dan aturan keamanan koreksi pH.
           </p>
@@ -167,7 +167,7 @@ export default function Home() {
             data-reveal
             className="rounded-2xl border border-black/8 bg-white p-8 md:col-span-2"
           >
-            <h3 className="text-lg font-bold text-gray-900">
+            <h3 className="text-lg font-bold text-neutral-900">
               Batas siram tiap tanaman
             </h3>
             <dl className="mt-5 grid grid-cols-3 gap-2">
@@ -176,13 +176,13 @@ export default function Home() {
                   <dd className="text-primary text-3xl font-extrabold tracking-tight">
                     {plant.trigger}
                   </dd>
-                  <dt className="mt-1 text-xs font-semibold text-gray-600">
+                  <dt className="mt-1 text-xs font-semibold text-neutral-600">
                     {plant.name}
                   </dt>
                 </div>
               ))}
             </dl>
-            <p className="mt-4 text-xs leading-relaxed text-gray-600">
+            <p className="mt-4 text-xs leading-relaxed text-neutral-600">
               Batas siram berupa persen kadar air volumetrik (VWC), sama untuk
               semua tanaman.
             </p>
@@ -193,10 +193,10 @@ export default function Home() {
             className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-emerald-50 p-8 md:col-span-4"
           >
             <MdNotificationsActive size={28} className="text-sky-700" />
-            <h3 className="mt-4 text-lg font-bold text-gray-900">
+            <h3 className="mt-4 text-lg font-bold text-neutral-900">
               Peringatan sampai ke Telegram
             </h3>
-            <p className="mt-2 max-w-[52ch] text-base leading-relaxed text-gray-700">
+            <p className="mt-2 max-w-[52ch] text-base leading-relaxed text-neutral-700">
               Dapat kabar saat media terlalu kering atau basah, dan saat pH
               keluar dari rentang tanaman, tanpa membuka dashboard.
             </p>
@@ -228,7 +228,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-xs text-gray-600 sm:px-8">
+      <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-xs text-neutral-600 sm:px-8">
         <span>&copy; {new Date().getFullYear()} Subur.in</span>
         <span>Capstone2026-E04</span>
       </footer>
