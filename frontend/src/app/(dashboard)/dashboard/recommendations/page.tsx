@@ -18,8 +18,9 @@ import {
   MdSchedule,
 } from "react-icons/md";
 import { useDevices } from "@/hooks/useDevices";
+import { useSelectedDeviceStore } from "@/stores/selectedDeviceStore";
 import {
-  fetchDeviceRecommendation,
+  fetchDeviceRecommendationResult,
   fetchRecommendationHistory,
 } from "@/services/deviceService";
 import type {
@@ -28,7 +29,7 @@ import type {
   RecommendationLogItem,
 } from "@/types/device";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import PhCorrectionStatus from "@/components/recommendations/PhCorrectionStatus";
+import ApplicationGuide from "@/components/recommendations/ApplicationGuide";
 import CorrectionPanel from "@/components/recommendations/CorrectionPanel";
 import PageHeader from "@/components/dashboard/PageHeader";
 
@@ -67,11 +68,15 @@ function EmptyState() {
 
 export default function RecommendationsPage() {
   const { devices, isLoading, token, loadDevices } = useDevices();
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const { selectedDeviceId, setSelectedDeviceId } = useSelectedDeviceStore();
 
   const [recommendation, setRecommendation] =
     useState<DeviceRecommendation | null>(null);
   const [isRecLoading, setIsRecLoading] = useState(false);
+  const [recommendationError, setRecommendationError] = useState<string | null>(
+    null,
+  );
+  const [recommendationMessage, setRecommendationMessage] = useState("");
 
   const [historyLogs, setHistoryLogs] = useState<RecommendationLogItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
@@ -101,11 +106,21 @@ export default function RecommendationsPage() {
     setIsHistoryLoading(true);
 
     try {
-      const recData = await fetchDeviceRecommendation(token, selectedDevice.id);
-      setRecommendation(recData);
+      const result = await fetchDeviceRecommendationResult(
+        token,
+        selectedDevice.id,
+      );
+      setRecommendation(result.data);
+      setRecommendationMessage(result.message);
+      setRecommendationError(null);
     } catch (err) {
-      console.error("Gagal memuat rekomendasi alat:", err);
       setRecommendation(null);
+      setRecommendationMessage("");
+      setRecommendationError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat memuat rekomendasi.",
+      );
     } finally {
       setIsRecLoading(false);
     }
@@ -135,7 +150,12 @@ export default function RecommendationsPage() {
   }
 
   if (devices.length === 0) {
-    return <EmptyState />;
+    return (
+      <div className="space-y-6">
+        <EmptyState />
+        <ApplicationGuide recommendation={null} />
+      </div>
+    );
   }
 
   if (!selectedDevice) {
@@ -219,7 +239,7 @@ export default function RecommendationsPage() {
             disabled={isRecLoading}
             className="text-primary focus-visible:ring-primary/40 flex min-h-11 cursor-pointer items-center gap-1 rounded-lg px-2 text-xs font-bold hover:underline focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isRecLoading ? "Memproses..." : "Hitung Ulang"}
+            {isRecLoading ? "Memproses..." : "Perbarui rekomendasi"}
           </button>
         </CardHeader>
 
@@ -237,11 +257,14 @@ export default function RecommendationsPage() {
                 <MdWarningAmber size={28} />
               </div>
               <p className="text-sm font-bold text-gray-700">
-                Belum Ada Rekomendasi Terhitung
+                {recommendationError
+                  ? "Gagal Memuat Rekomendasi"
+                  : "Belum Ada Rekomendasi Terhitung"}
               </p>
               <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-gray-400">
-                Silakan nyalakan alat sensor ESP32 Anda untuk mulai menyuplai
-                telemetri sensor pH dan kelembapan.
+                {recommendationError ||
+                  recommendationMessage ||
+                  "Rekomendasi belum tersedia untuk perangkat ini."}
               </p>
             </div>
           ) : (
@@ -290,12 +313,6 @@ export default function RecommendationsPage() {
                 </div>
               </div>
 
-              <PhCorrectionStatus
-                phAction={recommendation.phAction}
-                correction={recommendation.phCorrection}
-                monitor={recommendation.phMonitor}
-              />
-
               <div className="space-y-3">
                 <span className="flex items-center gap-1.5 text-xs font-bold text-gray-600">
                   <MdScience className="text-violet-500" size={16} />
@@ -313,13 +330,12 @@ export default function RecommendationsPage() {
                     />
                     <div>
                       <p className="text-sm font-extrabold text-emerald-800">
-                        Kondisi Media Sangat Optimal!
+                        Tidak Ada Dosis Tambahan pada Respons Ini
                       </p>
                       <p className="mt-1 text-xs leading-relaxed text-emerald-700/80">
-                        Tingkat keasaman (pH) dan kelembapan tanah Anda saat ini
-                        berada dalam kondisi prima untuk varietas{" "}
-                        <strong>{plantName}</strong>. Lanjutkan rutinitas
-                        perawatan saat ini.
+                        Dosis nol tidak selalu berarti media optimal. Ikuti
+                        status pemantauan dan alasan dari backend di atas
+                        sebelum memberikan treatment.
                       </p>
                     </div>
                   </div>
@@ -436,6 +452,8 @@ export default function RecommendationsPage() {
           )}
         </CardContent>
       </Card>
+
+      <ApplicationGuide recommendation={recommendation} />
 
       {token && (
         <CorrectionPanel

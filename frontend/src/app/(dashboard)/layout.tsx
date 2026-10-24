@@ -30,11 +30,11 @@ export default async function DashboardLayout({
 
   return (
     <SessionProvider session={session} basePath="/api/nextauth">
-      <div className="flex h-dvh flex-col overflow-hidden bg-neutral-100 md:flex-row">
+      <div className="flex h-dvh flex-col overflow-hidden bg-[#f6f9f6] md:flex-row">
         <Sidebar role={backendUser?.role} />
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <Topbar user={freshUser} />
-          <DashboardMotion className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <Topbar user={freshUser} role={backendUser?.role} />
+          <DashboardMotion className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-6 lg:p-7">
             {children}
           </DashboardMotion>
         </div>

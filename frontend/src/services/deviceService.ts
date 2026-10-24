@@ -151,6 +151,14 @@ export async function fetchDeviceRecommendation(
   token: string,
   deviceId: string,
 ): Promise<DeviceRecommendation | null> {
+  const result = await fetchDeviceRecommendationResult(token, deviceId);
+  return result.data;
+}
+
+export async function fetchDeviceRecommendationResult(
+  token: string,
+  deviceId: string,
+): Promise<{ data: DeviceRecommendation | null; message: string }> {
   const res = await fetch(
     `${API_BASE}/api/devices/${deviceId}/recommendation`,
     {
@@ -161,8 +169,12 @@ export async function fetchDeviceRecommendation(
   const json = await handleResponse<{
     success: boolean;
     data: DeviceRecommendation | null;
+    message: string;
   }>(res);
-  return json.data ?? null;
+  return {
+    data: json.data ?? null,
+    message: json.message || "Rekomendasi belum tersedia untuk perangkat ini.",
+  };
 }
 
 export async function fetchRecommendationHistory(

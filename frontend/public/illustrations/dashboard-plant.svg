@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="440" viewBox="0 0 440 440" fill="none">
+  <defs>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bbd578"/><stop offset=".5" stop-color="#6b9d40"/><stop offset="1" stop-color="#275b30"/></linearGradient>
+    <linearGradient id="light" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d6e6a1"/><stop offset="1" stop-color="#5b963c"/></linearGradient>
+    <radialGradient id="soil"><stop stop-color="#9a7145"/><stop offset="1" stop-color="#5d3b25"/></radialGradient>
+  </defs>
+  <ellipse cx="231" cy="420" rx="156" ry="17" fill="#24482e" opacity=".08"/>
+  <path d="M74 425c29-30 50-24 79-38 27-13 38 2 65-8 20-8 34 10 54 8 28-3 36 14 61 13 23 0 38 11 49 25H74Z" fill="url(#soil)"/>
+  <g stroke="#638b3b" stroke-width="5" stroke-linecap="round"><path d="M226 409c-3-100-12-162-40-243M228 409c2-95 44-163 80-221M224 402c-32-66-73-111-115-143M232 402c38-54 73-82 118-96M220 397c-17-115 0-217 17-282"/></g>
+  <g fill="url(#leaf)">
+    <path d="M195 250C117 205 167 133 129 57c89 36 106 111 66 193Z"/>
+    <path d="M234 306c-5-91 19-148 105-174-39 55-7 126-105 174Z"/>
+    <path d="M184 344C105 338 84 277 33 253c86-27 147 17 151 91Z"/>
+    <path d="M258 365c12-60 61-101 136-92-42 35-62 85-136 92Z"/>
+    <path d="M221 224c-41-57-17-108 20-158 12 60 48 116-20 158Z"/>
+  </g>
+  <g fill="url(#light)">
+    <path d="M203 319c-67-27-84-71-82-132 56 24 97 57 82 132Z"/>
+    <path d="M238 347c-6-69 22-102 73-124-20 54-12 88-73 124Z"/>
+    <path d="M286 253c6-57 43-73 89-77-31 26-39 64-89 77Z"/>
+  </g>
+  <g stroke="#d7e7ad" stroke-width="1.5" opacity=".55"><path d="m139 85 56 165m46-161-20 135m102-77-89 159M55 259l129 85m-55-141 74 116m151-35-96 81m39-125-59 107"/></g>
+</svg>

@@ -1,175 +1,165 @@
+import Image from "next/image";
+import Link from "next/link";
 import {
-  MdArrowDownward,
-  MdArrowUpward,
-  MdOutlineInventory2,
-  MdWarningAmber,
+  MdChevronRight,
+  MdOutlineSpa,
+  MdTerrain,
   MdWaterDrop,
 } from "react-icons/md";
 import { Card } from "@/components/ui/card";
 import type { DeviceRecommendation } from "@/types/device";
 import { formatTimestamp } from "./sensorStatus";
 
-type TileVariant = "danger" | "success" | "info" | "neutral";
-
-const TILE_STYLES: Record<TileVariant, string> = {
-  danger: "border-2 border-red-500 bg-red-50 text-red-600",
-  success: "border-2 border-green-500 bg-green-50 text-green-600",
-  info: "border-2 border-sky-500 bg-sky-50 text-sky-600",
-  neutral: "bg-neutral-200/70 text-neutral-600",
-};
-
-interface TileProps {
-  variant: TileVariant;
-  icon: React.ReactNode;
-  title: string;
-  subtitle: string;
-  direction?: "up" | "down";
-  value: string;
-}
-
-function TreatmentTile({
-  variant,
-  icon,
-  title,
-  subtitle,
-  direction,
-  value,
-}: TileProps) {
-  const Arrow = direction === "up" ? MdArrowUpward : MdArrowDownward;
-  return (
-    <div className={`rounded-2xl p-3 sm:p-4 ${TILE_STYLES[variant]}`}>
-      <div className="flex items-center gap-2">
-        <span className="shrink-0 text-2xl">{icon}</span>
-        <div className="min-w-0 leading-tight">
-          <p className="text-lg font-bold">{title}</p>
-          <p className="text-xs">{subtitle}</p>
-        </div>
-      </div>
-      <p className="mt-3 flex items-center gap-1 text-2xl font-bold">
-        {direction && <Arrow size={22} className="shrink-0" />}
-        {value}
-      </p>
-    </div>
-  );
-}
-
 interface RecommendationSummaryCardProps {
   recommendation: DeviceRecommendation | null;
   isLoading: boolean;
   updatedAt: string | null;
+  message?: string;
+  error?: string | null;
 }
 
 export default function RecommendationSummaryCard({
   recommendation,
   isLoading,
   updatedAt,
+  message,
+  error,
 }: RecommendationSummaryCardProps) {
+  const treatments = recommendation
+    ? [
+        {
+          title: recommendation.reduceWatering ? "Kurangi air" : "Tambah air",
+          value: recommendation.reduceWatering
+            ? "Hentikan sementara"
+            : `${Math.round(recommendation.waterVolumeLiter * 1000)} mL`,
+          active:
+            recommendation.reduceWatering ||
+            recommendation.waterVolumeLiter > 0,
+          water: true,
+        },
+        {
+          title: "Tambah kapur",
+          value: `${recommendation.limeDosageGram.toLocaleString("id-ID", { maximumFractionDigits: 1 })} g`,
+          active: recommendation.limeDosageGram > 0,
+          water: false,
+        },
+        {
+          title: "Tambah sulfur",
+          value: `${recommendation.sulfurDosageGram.toLocaleString("id-ID", { maximumFractionDigits: 1 })} g`,
+          active: recommendation.sulfurDosageGram > 0,
+          water: false,
+        },
+      ].filter((item) => item.active)
+    : [];
+  const actions = treatments.map((item) => item.title.toLowerCase());
+  const isOptimal =
+    recommendation?.categoryCode === "C1" &&
+    recommendation.waterAction === "NONE" &&
+    recommendation.phAction === "NONE" &&
+    recommendation.phCorrection.status === "NONE" &&
+    (!recommendation.phMonitor ||
+      recommendation.phMonitor.status === "PANTAU") &&
+    recommendation.decisionSource !== "safety_override" &&
+    treatments.length === 0;
+  const title = isOptimal
+    ? "Kondisi tanaman sudah optimal"
+    : actions.length > 0
+      ? actions.join(" dan ").replace(/^./, (letter) => letter.toUpperCase())
+      : "Status pemantauan tanaman";
+
   return (
-    <Card className="rounded-3xl p-6">
-      <h3 className="text-xl font-bold tracking-tight text-neutral-800">
-        Rekomendasi Treatment Saat ini
-      </h3>
-
-      {isLoading ? (
-        <div className="flex flex-1 animate-pulse flex-col items-center justify-center py-10">
-          <div className="border-primary/20 border-t-primary h-10 w-10 animate-spin rounded-full border-4" />
-          <p className="mt-3 text-xs font-semibold text-gray-400">
-            Mengalkulasi rekomendasi perawatan terbaik...
-          </p>
-        </div>
-      ) : !recommendation ? (
-        <div className="flex flex-1 flex-col items-center justify-center py-8 text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
-            <MdWarningAmber size={24} />
+    <Card className="relative isolate overflow-hidden rounded-2xl border-0 bg-[#edf4ed] p-4 shadow-none sm:rounded-3xl sm:p-8 lg:p-10">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-16 -right-24 -z-10 h-96 w-96 rounded-full bg-[#dcebd9]/60"
+      />
+      <Image
+        src="/illustrations/dashboard-plant.svg"
+        alt=""
+        width={440}
+        height={440}
+        className="pointer-events-none absolute right-0 bottom-0 -z-10 h-full w-40 object-contain object-bottom opacity-10 lg:w-[38%] lg:opacity-95"
+      />
+      <div>
+        <p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.16em] text-[#0b5038] sm:text-xs sm:tracking-[0.2em]">
+          <MdOutlineSpa size={18} /> REKOMENDASI HARI INI
+        </p>
+        {isLoading ? (
+          <div role="status" className="animate-pulse py-8">
+            <div className="h-8 w-3/4 rounded-lg bg-emerald-900/10" />
+            <p className="mt-4 text-sm text-slate-500">
+              Mengalkulasi rekomendasi perawatan...
+            </p>
           </div>
-          <p className="text-sm font-bold text-gray-700">
-            Belum Ada Rekomendasi
-          </p>
-          <p className="mt-1 max-w-sm text-xs text-gray-400">
-            Rekomendasi belum dapat dihitung karena belum ada telemetri sensor
-            yang masuk dari perangkat ini.
-          </p>
-        </div>
-      ) : (
-        <>
-          <p className="mt-1 text-base leading-snug text-neutral-700">
-            {recommendation.actionText}
-          </p>
-
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {recommendation.reduceWatering ? (
-              <TreatmentTile
-                variant="danger"
-                icon={<MdWaterDrop />}
-                title="Air"
-                subtitle="Kurangi Pengairan"
-                direction="down"
-                value="-"
-              />
-            ) : recommendation.waterVolumeLiter > 0 ? (
-              <TreatmentTile
-                variant="info"
-                icon={<MdWaterDrop />}
-                title="Air"
-                subtitle="Tambahkan Air"
-                direction="up"
-                value={`${(recommendation.waterVolumeLiter * 1000).toFixed(0)} mL`}
-              />
-            ) : (
-              <TreatmentTile
-                variant="neutral"
-                icon={<MdWaterDrop />}
-                title="Air"
-                subtitle="Tidak Perlu"
-                value="-"
-              />
-            )}
-
-            {recommendation.sulfurDosageGram > 0 ? (
-              <TreatmentTile
-                variant="success"
-                icon={<MdOutlineInventory2 />}
-                title="Sulfur"
-                subtitle="Tambahkan Sulfur"
-                direction="up"
-                value={`${recommendation.sulfurDosageGram.toFixed(0)} gram`}
-              />
-            ) : (
-              <TreatmentTile
-                variant="neutral"
-                icon={<MdOutlineInventory2 />}
-                title="Sulfur"
-                subtitle="Tidak Perlu"
-                value="-"
-              />
-            )}
-
-            {recommendation.limeDosageGram > 0 ? (
-              <TreatmentTile
-                variant="success"
-                icon={<MdOutlineInventory2 />}
-                title="Kapur"
-                subtitle="Tambahkan Kapur"
-                direction="up"
-                value={`${recommendation.limeDosageGram.toFixed(0)} gram`}
-              />
-            ) : (
-              <TreatmentTile
-                variant="neutral"
-                icon={<MdOutlineInventory2 />}
-                title="Kapur"
-                subtitle="Tidak Perlu"
-                value="-"
-              />
-            )}
+        ) : !recommendation ? (
+          <div className="py-6">
+            <h2 className="text-xl font-bold text-slate-950 sm:text-3xl">
+              {error ? "Gagal memuat rekomendasi" : "Belum ada rekomendasi"}
+            </h2>
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-600">
+              {error ||
+                message ||
+                "Rekomendasi belum tersedia untuk perangkat ini."}
+            </p>
           </div>
-
-          <p className="mt-3 text-xs text-neutral-600">
-            Terakhir diperbarui:{" "}
-            <span className="font-bold">{formatTimestamp(updatedAt)}</span>
-          </p>
-        </>
-      )}
+        ) : (
+          <>
+            <h2 className="mt-3 max-w-xl text-xl leading-tight font-bold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">
+              {title}
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">
+              {recommendation.actionText}
+            </p>
+            {treatments.length > 0 ? (
+              <div className="mt-5 grid gap-px overflow-hidden rounded-2xl bg-slate-100 sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:bg-transparent">
+                {treatments.map((item) => (
+                  <Link
+                    key={item.title}
+                    scroll={false}
+                    href={
+                      item.water
+                        ? "/dashboard/recommendations#panduan-air"
+                        : "/dashboard/recommendations#panduan-ph"
+                    }
+                    className={`flex min-w-0 items-center gap-3 bg-white/95 p-3 transition-shadow hover:shadow-md sm:rounded-2xl sm:p-4 ${item.water ? "sm:col-start-1" : "sm:col-start-2"}`}
+                  >
+                    <span
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full sm:h-12 sm:w-12 ${item.water ? "bg-sky-100 text-sky-500" : "bg-[#f4eee5] text-[#826040]"}`}
+                    >
+                      {item.water ? (
+                        <MdWaterDrop size={29} />
+                      ) : (
+                        <MdTerrain size={29} />
+                      )}
+                    </span>
+                    <div className="flex min-w-0 flex-1 items-center justify-between gap-2 sm:block">
+                      <p className="text-xs text-slate-600 sm:text-sm">
+                        {item.title}
+                      </p>
+                      <p className="mt-0.5 text-base font-bold text-slate-950 tabular-nums sm:text-2xl">
+                        {item.value}
+                      </p>
+                    </div>
+                    <MdChevronRight
+                      size={22}
+                      className="shrink-0 text-slate-700"
+                    />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-5 text-sm font-medium text-[#0b5038]">
+                {isOptimal
+                  ? "Belum diperlukan treatment tambahan. Lanjutkan pemantauan kondisi tanaman."
+                  : "Tidak ada dosis tambahan pada respons ini. Periksa status pemantauan sebelum melakukan treatment."}
+              </p>
+            )}
+            <p className="mt-4 text-[10px] text-slate-500 sm:text-xs">
+              Diperbarui {formatTimestamp(updatedAt)}
+            </p>
+          </>
+        )}
+      </div>
     </Card>
   );
 }
