@@ -2,6 +2,12 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-24
+
+- **style(dashboard):** Warna dashboard diselaraskan dengan design system setelah PR desain dashboard digabung: `gray`/`slate` menjadi `neutral`, hex hardcode dan `emerald`/`violet` menjadi token `primary`, latar dashboard `bg-neutral-100`. Lihat [frontend/design-system.md](frontend/design-system.md).
+- **refactor(dashboard):** Filter menu (`hidden`, `superadminOnly`) dipindah ke `visibleNavItems(role)` di `navConfig.ts`, dipakai Sidebar dan MobileNavigation.
+- **chore(eslint):** Aturan `react-hooks/set-state-in-effect` dan `react-hooks/preserve-manual-memoization` dimatikan di `frontend/eslint.config.js` karena menandai pola fetch data di `useEffect` yang dipakai di seluruh dashboard.
+
 ## 2026-10-21
 
 - **feat(telegram):** Tombol "Coba Kirim" di Pengaturan > Telegram mengirim pesan uji coba lewat `POST /api/users/me/telegram/test`. Hanya tampil bila akun sudah terhubung; endpoint membalas `409` bila belum terhubung dan `502` bila Telegram gagal menerima pesan.

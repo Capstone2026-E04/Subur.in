@@ -43,8 +43,8 @@ npm run lint
 ## Struktur proyek & reusability
 
 Komponen halaman dashboard dibuat modular dan fleksibel:
-- **`src/components/dashboard/navConfig.ts`**: Cukup edit konfigurasi array di berkas ini untuk menambah menu/halaman baru pada Sidebar dan Topbar secara otomatis.
-- **`src/components/dashboard/Sidebar.tsx`**: Navigasi sidebar dinamis yang mendeteksi rute aktif.
+- **`src/components/dashboard/navConfig.ts`**: Cukup edit konfigurasi array di berkas ini untuk menambah menu/halaman baru pada Sidebar dan MobileNavigation secara otomatis (disaring oleh `visibleNavItems(role)`).
+- **`src/components/dashboard/Sidebar.tsx`** / **`MobileNavigation.tsx`**: Navigasi sidebar (desktop) dan drawer (mobile) yang mendeteksi rute aktif.
 - **`src/components/dashboard/StatCard.tsx`**: Widget kartu indikator (kelembaban, suhu, jumlah tanaman) yang reusable.
 
 ## Dokumentasi lengkap

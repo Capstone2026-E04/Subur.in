@@ -21,8 +21,8 @@ Widget khusus dashboard, sebagian besar digerakkan oleh [`navConfig.ts`](../../f
 
 | Component | Tujuan |
 |---|---|
-| `Sidebar.tsx` / `Topbar.tsx` | Chrome navigasi dashboard, dirender dari `NAV_ITEMS` di `navConfig.ts` |
-| `RecommendationSummaryCard.tsx` | Kartu "Rekomendasi Treatment Saat ini": teks aksi, tiga tile Air/Sulfur/Kapur (merah = kurangi air, biru = tambah air, hijau = tambah dosis, abu-abu = tidak perlu), dan waktu pembaruan terakhir; menangani status memuat dan belum ada data |
+| `Sidebar.tsx` / `MobileNavigation.tsx` / `Topbar.tsx` | Chrome navigasi dashboard. Sidebar (desktop) dan MobileNavigation (drawer `<dialog>`, di bawah `md`) merender `visibleNavItems(role)` dari `navConfig.ts` |
+| `RecommendationSummaryCard.tsx` | Kartu "Rekomendasi Hari Ini": judul aksi, teks rekomendasi, dan tile treatment (air, kapur, sulfur) yang hanya muncul bila dosisnya > 0; tile menautkan ke `ApplicationGuide`, dan waktu pembaruan terakhir; menangani status memuat dan belum ada data |
 | `PhLevelCard.tsx` | Bar gradasi pH 0-14 dengan penanda nilai dan lencana klasifikasi (`classifyPh`) |
 | `MoistureLevelCard.tsx` | Gauge setengah lingkaran kelembapan dengan jarum dan lencana klasifikasi (`classifyNmi`) |
 | `SensorTrendCard.tsx` | Grafik garis rata-rata (pH atau kelembapan) dari riwayat sensor dengan dua dropdown: granularitas (per menit, 10 menit, jam, hari) dan jumlah data terakhir (5, 10, 20, 30; default 10), serta tooltip nilai; pembacaan realtime ikut ditambahkan oleh halaman |
@@ -64,10 +64,11 @@ UI manajemen device, semuanya didukung oleh [`useDevices`](../../frontend/src/ho
 | Component | Tujuan |
 |---|---|
 | `PhCorrectionStatus.tsx` | Banner status safety gate koreksi pH (`READY`, `DEFERRED`, `NEEDS_CONFIRMATION`) beserta alasannya; tidak dirender bila `NONE` |
+| `ApplicationGuide.tsx` | Panduan penerapan air (`#panduan-air`) dan koreksi pH (`#panduan-ph`) berdasarkan rekomendasi aktif; kartu ringkasan di dashboard menautkan ke anchor ini dan halaman men-scroll ke sana |
 | `CorrectionPanel.tsx` | Form pencatatan koreksi dolomit/sulfur (`POST /api/devices/:id/corrections`), status periode tunggu 14 hari, dan riwayat koreksi (`GET`) |
 
 ## Konvensi
 
-- Tambahkan entri navigasi dengan mengedit `navConfig.ts`; Sidebar dan Topbar dirender dari array tersebut secara otomatis tanpa perlu wiring route per-komponen. Set `hidden: true` untuk route yang harus dapat diakses tetapi tidak ditampilkan di nav (misalnya `/dashboard/profile`), dan `superadminOnly: true` untuk item yang hanya boleh muncul bagi `SUPERADMIN` (disaring di `Sidebar.tsx` berdasarkan `role` dari backend; ini hanya kenyamanan UI, penegakan ada di server dan API).
+- Tambahkan entri navigasi dengan mengedit `navConfig.ts`; Sidebar dan Topbar dirender dari array tersebut secara otomatis tanpa perlu wiring route per-komponen. Set `hidden: true` untuk route yang harus dapat diakses tetapi tidak ditampilkan di nav (misalnya `/dashboard/profile`), dan `superadminOnly: true` untuk item yang hanya boleh muncul bagi `SUPERADMIN` (disaring oleh `visibleNavItems(role)` di `navConfig.ts`, dipakai Sidebar dan MobileNavigation, berdasarkan `role` dari backend; ini hanya kenyamanan UI, penegakan ada di server dan API).
 - Komponen yang membutuhkan data backend live melakukan fetch melalui `src/services/*` (wrapper Axios/fetch), bukan pemanggilan `fetch()` inline, lihat [state-management.md](state-management.md).
 - Semua komponen dashboard mengasumsikan sesi NextAuth yang sudah terautentikasi; komponen tersebut dirender di bawah layout route group `(dashboard)`, yang merupakan titik penegakan (enforcement) untuk autentikasi (lihat [routing.md](routing.md)).

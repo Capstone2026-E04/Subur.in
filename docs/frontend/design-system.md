@@ -39,7 +39,8 @@ Ukuran font dasar sengaja dinaikkan sedikit di atas default Tailwind `1rem` demi
 Mengikuti desain Figma untuk halaman Ringkasan dan Perangkat; halaman lain memakai bahasa visual yang sama lewat komponen bersama.
 
 - Latar `bg-neutral-100` (dipasang di `(dashboard)/layout.tsx`), kartu putih `rounded-3xl` dengan border `neutral-200`, judul `neutral-900`. Palet krem `--color-background` hanya untuk halaman publik.
-- Sidebar hijau `primary` selebar 256 px (menciut 72 px saat tidak di-hover) dengan item aktif `primary-light`; ikon berwarna krem `#f5eec3`, tombol keluar `#8b3a3a`.
+- Sidebar desktop (`md` ke atas) hijau `primary` selebar 256 px; item aktif `bg-white/15`, ikon dan teks putih, tombol keluar `bg-white/5`. Di bawah `md` navigasi berupa drawer `MobileNavigation` (elemen `<dialog>`) yang dibuka dari tombol menu di Topbar.
+- Warna: abu-abu memakai skala `neutral-*` (bukan `gray`/`slate`), hijau hanya lewat token `primary`/`primary-light` (tanpa `emerald`/`violet` atau hex hardcode). Warna `sky`, `orange`, `amber`, dan `rose` dipertahankan hanya untuk makna status (air/basa, kering, peringatan, galat).
 - Topbar `h-18` dengan breadcrumb, dropdown perangkat (state bersama lewat Zustand), lonceng, dan nama user.
 - Aksesibilitas: ikon sidebar punya `aria-label` dan `title` (nama tampil di tooltip saat menciut), nav berlabel "Menu utama", dropdown perangkat dan lonceng minimal 44 px, ring fokus global (`:focus-visible`), semua gerak mati pada `prefers-reduced-motion`.
 - Gerak: `DashboardMotion.tsx` (GSAP) memunculkan elemen `data-reveal` secara bertahap dan mengamati elemen yang ditambahkan belakangan; sidebar dan beberapa kartu memakai `framer-motion`.
