@@ -15,7 +15,9 @@ const ACTION_LABEL: Record<PhAction, string> = {
 function monitorText(m: PhMonitor): string | null {
   switch (m.status) {
     case "MASA_REAKSI":
-      return `Menunggu reaksi, hari ke-${m.day} dari ${m.totalDays}. Rekomendasi pH baru ditahan; rekomendasi air tetap berjalan.`;
+      return m.day != null && m.totalDays != null
+        ? `Menunggu reaksi, hari ke-${m.day} dari ${m.totalDays}. Rekomendasi pH baru ditahan; pemantauan air tetap berjalan.`
+        : "Menunggu reaksi koreksi pH. Pemantauan air tetap berjalan.";
     case "EVALUASI":
       return m.outcome === "LANJUT_PANTAU"
         ? "Evaluasi: pH bergerak menuju target. Lanjut pantau tanpa dosis baru."
@@ -26,6 +28,8 @@ function monitorText(m: PhMonitor): string | null {
         : "pH belum membaik setelah tiga evaluasi. Periksa probe, kalibrasi, dan media; tidak ada dosis otomatis.";
     case "REKOMENDASI":
       return "pH di luar batas pada dua median harian berurutan. Catat pemberian pada formulir di bawah setelah dosis diberikan.";
+    case "PANTAU":
+      return "Status backend: pantau pH. Belum ada izin pemberian dosis koreksi pH dari hasil pemantauan.";
     default:
       return null;
   }
@@ -78,7 +82,18 @@ export default function PhCorrectionStatus({
     );
   }
 
-  const style = STATUS_STYLE[correction.status];
+  const monitorHoldsDose = monitor != null && !monitor.allowDose;
+  const style = monitorHoldsDose
+    ? {
+        ...STATUS_STYLE.DEFERRED,
+        title:
+          monitor.status === "MASA_REAKSI"
+            ? "Masa reaksi koreksi pH"
+            : monitor.status === "ESKALASI"
+              ? "Periksa kondisi media dan sensor"
+              : "Pemantauan pH berlanjut",
+      }
+    : STATUS_STYLE[correction.status];
   const Icon = style.icon;
   const material = ACTION_LABEL[phAction];
 
@@ -108,7 +123,7 @@ export default function PhCorrectionStatus({
             {monitorMessage}
           </p>
         )}
-        {showHint && correction.status === "READY" && (
+        {showHint && correction.status === "READY" && !monitorHoldsDose && (
           <p className="text-xs leading-relaxed opacity-80">
             Angka dosis adalah estimasi model, bukan dosis pasti. Catat koreksi
             yang benar-benar Anda lakukan pada formulir di bawah.

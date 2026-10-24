@@ -16,9 +16,6 @@ import type {
   DeviceRecommendation,
 } from "@/types/device";
 
-const WAIT_DAYS = 14;
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 const TYPE_OPTIONS: { value: CorrectionType; label: string }[] = [
   { value: "LIME", label: "Dolomit" },
   { value: "SULFUR", label: "Sulfur" },
@@ -127,7 +124,7 @@ export default function CorrectionPanel({
 
   const suggestion = getSuggestion(recommendation);
   const [typeInput, setTypeInput] = useState<CorrectionType | null>(null);
-  const [method, setMethod] = useState<CorrectionMethod>("INCORPORATION");
+  const [method, setMethod] = useState<CorrectionMethod>("TOP_DRESSING");
   const [doseInput, setDoseInput] = useState<string | null>(null);
   const [phInput, setPhInput] = useState<string | null>(null);
   const type = typeInput ?? suggestion.type;
@@ -139,7 +136,6 @@ export default function CorrectionPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [reloadKey, setReloadKey] = useState(0);
-  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -147,7 +143,6 @@ export default function CorrectionPanel({
       .then((data) => {
         if (!active) return;
         setCorrections(data);
-        setNow(Date.now());
       })
       .catch((err) => {
         if (!active) return;
@@ -169,12 +164,8 @@ export default function CorrectionPanel({
     setReloadKey((key) => key + 1);
   }, []);
 
-  const latest = corrections[0];
-  const waitEndsAt = latest
-    ? new Date(new Date(latest.appliedAt).getTime() + WAIT_DAYS * DAY_MS)
-    : null;
-  const isWaiting =
-    waitEndsAt !== null && now !== null && waitEndsAt.getTime() > now;
+  const monitor = recommendation?.phMonitor;
+  const isWaiting = monitor?.status === "MASA_REAKSI";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -206,7 +197,7 @@ export default function CorrectionPanel({
       setPhInput(null);
       setAppliedAt("");
       setNotice(
-        `Koreksi dicatat. Rekomendasi koreksi pH berikutnya ditunda ${WAIT_DAYS} hari.`,
+        "Pemberian berhasil dicatat. Status pemantauan diperbarui dari backend.",
       );
       reload();
       onSaved?.();
@@ -226,7 +217,9 @@ export default function CorrectionPanel({
       <CardHeader className="py-4">
         <div className="flex items-center gap-2">
           <MdOutlineScience className="text-primary" size={20} />
-          <h3 className="text-primary text-sm font-bold">Catat Koreksi pH</h3>
+          <h3 className="text-primary text-sm font-bold">
+            Catat Pemberian Koreksi pH
+          </h3>
         </div>
       </CardHeader>
 
@@ -234,7 +227,8 @@ export default function CorrectionPanel({
         <p className="text-xs leading-relaxed text-gray-500">
           Catat dolomit atau sulfur yang benar-benar sudah Anda berikan. Setelah
           koreksi dicatat, sistem menunda rekomendasi koreksi pH berikutnya
-          selama {WAIT_DAYS} hari agar tidak memberikan bahan berulang.
+          selama masa reaksi. Alur saat ini memakai tujuh hari sebelum evaluasi;
+          dosis berikutnya tetap mengikuti hasil pemantauan backend.
           {recommendation && (
             <>
               {" "}
@@ -258,15 +252,22 @@ export default function CorrectionPanel({
             <MdSchedule className="mt-0.5 shrink-0" size={16} />
           )}
           <span>
-            {isWaiting && waitEndsAt
-              ? `Periode tunggu aktif sampai ${formatDate(waitEndsAt.toISOString())}.`
-              : latest
-                ? "Periode tunggu sudah selesai."
-                : "Belum ada koreksi tercatat untuk alat ini."}
+            {isWaiting
+              ? monitor.day != null && monitor.totalDays != null
+                ? `Masa reaksi: hari ke-${monitor.day} dari ${monitor.totalDays}. Tunggu hasil evaluasi sebelum pemberian ulang.`
+                : "Masa reaksi aktif. Tunggu hasil evaluasi sebelum pemberian ulang."
+              : monitor
+                ? "Lihat status pemantauan pH dari backend pada rekomendasi di atas."
+                : "Status pemantauan pH belum tersedia. Riwayat pemberian tidak menentukan sendiri kesiapan dosis berikutnya."}
           </span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          <p className="rounded-xl bg-sky-50 px-4 py-3 text-xs leading-relaxed text-sky-900">
+            {method === "TOP_DRESSING"
+              ? "Setelah tanam: tabur merata di permukaan media, jauh dari batang dan daun, lalu siram. Pencampuran dangkal hanya bila tidak merusak akar."
+              : "Persiapan media: pencampuran dilakukan sebelum tanam. Estimasi dosis susulan pada rekomendasi ini bukan dosis awal persiapan media."}
+          </p>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <ChoiceGroup
               legend="Bahan koreksi"
@@ -368,7 +369,9 @@ export default function CorrectionPanel({
             disabled={isSubmitting}
             className="bg-primary hover:bg-primary-light focus-visible:ring-primary/40 min-h-11 cursor-pointer rounded-xl px-5 text-sm font-bold text-white transition focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Menyimpan..." : "Simpan koreksi"}
+            {isSubmitting
+              ? "Menyimpan..."
+              : "Catat pemberian yang sudah dilakukan"}
           </button>
         </form>
 

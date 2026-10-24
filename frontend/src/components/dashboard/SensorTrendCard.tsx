@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { MdBarChart } from "react-icons/md";
+import { useId, useState } from "react";
 import {
   CartesianGrid,
-  Line,
-  LineChart,
+  Area,
+  AreaChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -90,6 +91,7 @@ export default function SensorTrendCard({
   history,
   color,
 }: SensorTrendCardProps) {
+  const gradientId = useId().replace(/:/g, "");
   const [granularityId, setGranularityId] = useState<string>(
     GRANULARITIES[0].id,
   );
@@ -107,12 +109,12 @@ export default function SensorTrendCard({
     metric === "ph" ? v.toFixed(1) : `${Math.round(v)}%`;
 
   return (
-    <Card className="rounded-3xl p-6">
+    <Card className="min-w-0 rounded-2xl border-white p-3 shadow-sm sm:rounded-3xl sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-xl font-bold tracking-tight text-neutral-800">
-          {title}
+        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900 sm:text-lg">
+          <MdBarChart size={24} className="shrink-0 text-[#0b5038]" /> {title}
         </h3>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <select
             aria-label="Rentang waktu"
             value={rangeHours}
@@ -140,39 +142,57 @@ export default function SensorTrendCard({
         </div>
       </div>
 
-      <div className="mt-4 h-50 w-full">
+      <div className="mt-4 h-48 w-full sm:h-60">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 16, left: 16 }}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#e9e7c3"
-              vertical={false}
-            />
+          <AreaChart
+            data={data}
+            margin={{ top: 10, right: 8, left: -20, bottom: 8 }}
+          >
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity={0.22} />
+                <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="0" stroke="#eef2ef" vertical />
             <XAxis
               dataKey="label"
               stroke="#6b7280"
-              fontSize={13}
+              fontSize={10}
               tickLine={false}
               axisLine={false}
               dy={8}
             />
-            <YAxis hide domain={domain} />
+            <YAxis
+              domain={domain}
+              ticks={
+                metric === "moisture"
+                  ? [0, 25, 50, 75, 100]
+                  : [0, 3.5, 7, 10.5, 14]
+              }
+              tickFormatter={formatValue}
+              tickLine={false}
+              axisLine={false}
+              fontSize={10}
+              stroke="#64748b"
+            />
             <Tooltip
               formatter={(v) => [formatValue(Number(v)), title]}
               labelStyle={{ fontWeight: 700 }}
               contentStyle={{ borderRadius: 12, fontSize: 12 }}
             />
-            <Line
+            <Area
               type="monotone"
               dataKey="value"
               stroke={color}
-              strokeWidth={3}
-              dot={{ r: 4, fill: color, strokeWidth: 0 }}
+              strokeWidth={2}
+              fill={`url(#${gradientId})`}
+              dot={{ r: 3, fill: color, strokeWidth: 0 }}
               activeDot={{ r: 7, strokeWidth: 0 }}
               connectNulls
               isAnimationActive={false}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </Card>

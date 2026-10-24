@@ -20,7 +20,7 @@ function LogoutButton() {
       onClick={() => signOut({ callbackUrl: "/login" })}
       aria-label="Keluar"
       title="Keluar"
-      className="flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-[#8b3a3a] px-4 py-3 text-base font-medium text-white transition-colors hover:bg-[#9c4343]"
+      className="relative z-10 flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-white/5 px-4 py-3 text-base font-medium text-white transition-colors hover:bg-white/10"
     >
       <MdOutlineLogout size={22} className="shrink-0" />
       <motion.span
@@ -52,7 +52,7 @@ function Logo() {
           opacity: open ? 1 : 0,
           display: open ? "inline-block" : "none",
         }}
-        className="!m-0 !p-0 text-2xl font-bold tracking-tight whitespace-pre text-[#f1e8a6]"
+        className="!m-0 !p-0 text-2xl font-bold tracking-tight whitespace-pre text-white"
       >
         Subur.in
       </motion.span>
@@ -62,38 +62,47 @@ function Logo() {
 
 export default function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
+  const items = NAV_ITEMS.filter(
+    (item) => !item.hidden && (!item.superadminOnly || role === "SUPERADMIN"),
+  );
+  const renderLink = (item: (typeof NAV_ITEMS)[number]) => {
+    const Icon = item.icon;
+    return (
+      <SidebarLink
+        key={item.href}
+        active={pathname === item.href}
+        className={pathname === item.href ? "bg-white/15" : ""}
+        link={{
+          label: item.label,
+          href: item.href,
+          icon: <Icon size={24} className="shrink-0 text-white" />,
+        }}
+      />
+    );
+  };
 
   return (
-    <SidebarRoot>
-      <SidebarBody className="justify-between gap-10">
-        <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-          <Logo />
+    <div className="hidden h-full shrink-0 md:flex">
+      <SidebarRoot open animate={false}>
+        <SidebarBody className="relative justify-between gap-10 overflow-hidden bg-[#073b2c] py-7">
+          <div className="relative z-10 flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+            <Logo />
 
-          <nav aria-label="Menu utama" className="mt-6 flex flex-col gap-0.5">
-            {NAV_ITEMS.filter(
-              (item) =>
-                !item.hidden && (!item.superadminOnly || role === "SUPERADMIN"),
-            ).map((item) => {
-              const Icon = item.icon;
-              return (
-                <SidebarLink
-                  key={item.href}
-                  active={pathname === item.href}
-                  link={{
-                    label: item.label,
-                    href: item.href,
-                    icon: (
-                      <Icon size={24} className="shrink-0 text-[#f5eec3]" />
-                    ),
-                  }}
-                />
-              );
-            })}
-          </nav>
-        </div>
+            <nav aria-label="Menu utama" className="mt-6 flex flex-col gap-0.5">
+              {items.map(renderLink)}
+            </nav>
+          </div>
 
-        <LogoutButton />
-      </SidebarBody>
-    </SidebarRoot>
+          <Image
+            src="/illustrations/dashboard-plant.svg"
+            alt=""
+            width={256}
+            height={300}
+            className="pointer-events-none absolute -bottom-12 -left-8 w-64 opacity-10"
+          />
+          <LogoutButton />
+        </SidebarBody>
+      </SidebarRoot>
+    </div>
   );
 }

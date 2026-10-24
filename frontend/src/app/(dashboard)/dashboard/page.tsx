@@ -7,7 +7,7 @@ import { useDevices } from "@/hooks/useDevices";
 import { usePlants } from "@/hooks/usePlants";
 import { useSensorRealtime } from "@/hooks/useSensorRealtime";
 import {
-  fetchDeviceRecommendation,
+  fetchDeviceRecommendationResult,
   fetchSensorHistory,
 } from "@/services/deviceService";
 import { useSelectedDeviceStore } from "@/stores/selectedDeviceStore";
@@ -34,7 +34,7 @@ function DashboardSkeleton() {
           <div key={i} className="h-60 rounded-3xl bg-gray-200"></div>
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5">
         {[...Array(2)].map((_, i) => (
           <div key={i} className="h-72 rounded-3xl bg-gray-200"></div>
         ))}
@@ -129,6 +129,10 @@ export default function DashboardPage() {
   const [recommendation, setRecommendation] =
     useState<DeviceRecommendation | null>(null);
   const [isRecLoading, setIsRecLoading] = useState(false);
+  const [recommendationMessage, setRecommendationMessage] = useState("");
+  const [recommendationError, setRecommendationError] = useState<string | null>(
+    null,
+  );
   const [history, setHistory] = useState<SensorHistoryItem[]>([]);
 
   useEffect(() => {
@@ -154,10 +158,21 @@ export default function DashboardPage() {
       if (!token || !selectedDevice?.id) return;
       if (!silent) setIsRecLoading(true);
       try {
-        const data = await fetchDeviceRecommendation(token, selectedDevice.id);
-        setRecommendation(data);
-      } catch {
+        const result = await fetchDeviceRecommendationResult(
+          token,
+          selectedDevice.id,
+        );
+        setRecommendation(result.data);
+        setRecommendationMessage(result.message);
+        setRecommendationError(null);
+      } catch (error) {
         setRecommendation(null);
+        setRecommendationMessage("");
+        setRecommendationError(
+          error instanceof Error
+            ? error.message
+            : "Terjadi kesalahan saat memuat rekomendasi.",
+        );
       } finally {
         if (!silent) setIsRecLoading(false);
       }
@@ -230,33 +245,37 @@ export default function DashboardPage() {
     : DEFAULT_PH_RANGE;
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[2.1fr_1fr_1fr]">
+    <div className="mx-auto w-full max-w-7xl space-y-4 sm:space-y-5">
+      <div>
         <RecommendationSummaryCard
           recommendation={recommendation}
           isLoading={isRecLoading}
+          message={recommendationMessage}
+          error={recommendationError}
           updatedAt={lastUpdated ?? recommendation?.timestamp ?? null}
         />
-        <PhLevelCard value={currentPh} range={phRange} />
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:gap-5">
         <MoistureLevelCard
           value={currentMoisture}
           moistureType={moistureType}
           nmiTrigger={devicePlant?.nmiTrigger ?? null}
         />
+        <PhLevelCard value={currentPh} range={phRange} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
+        <SensorTrendCard
+          title="Tren Kelembapan Tanah"
+          metric="moisture"
+          history={trendHistory}
+          color="#237844"
+        />
         <SensorTrendCard
           title="Tingkat pH Tanah"
           metric="ph"
           history={trendHistory}
           color="#2f6f3a"
-        />
-        <SensorTrendCard
-          title="Kelembapan Tanah"
-          metric="moisture"
-          history={trendHistory}
-          color="#4cb84c"
         />
       </div>
     </div>
