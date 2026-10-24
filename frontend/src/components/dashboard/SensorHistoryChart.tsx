@@ -141,12 +141,10 @@ export default function SensorHistoryChart({
   }, [token, deviceId, limit]);
 
   useEffect(() => {
-     
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-     
     loadHistory();
   }, [loadHistory]);
 
