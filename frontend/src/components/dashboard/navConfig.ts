@@ -74,3 +74,8 @@ export const NAV_ITEMS: NavItem[] = [
     hidden: true,
   },
 ];
+
+export const visibleNavItems = (role?: string) =>
+  NAV_ITEMS.filter(
+    (item) => !item.hidden && (!item.superadminOnly || role === "SUPERADMIN"),
+  );

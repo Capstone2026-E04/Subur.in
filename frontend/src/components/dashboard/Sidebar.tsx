@@ -11,7 +11,7 @@ import {
   SidebarLink,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { NAV_ITEMS } from "./navConfig";
+import { type NavItem, visibleNavItems } from "./navConfig";
 
 function LogoutButton() {
   const { open } = useSidebar();
@@ -62,10 +62,8 @@ function Logo() {
 
 export default function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
-  const items = NAV_ITEMS.filter(
-    (item) => !item.hidden && (!item.superadminOnly || role === "SUPERADMIN"),
-  );
-  const renderLink = (item: (typeof NAV_ITEMS)[number]) => {
+  const items = visibleNavItems(role);
+  const renderLink = (item: NavItem) => {
     const Icon = item.icon;
     return (
       <SidebarLink
@@ -84,7 +82,7 @@ export default function Sidebar({ role }: { role?: string }) {
   return (
     <div className="hidden h-full shrink-0 md:flex">
       <SidebarRoot open animate={false}>
-        <SidebarBody className="relative justify-between gap-10 overflow-hidden bg-[#073b2c] py-7">
+        <SidebarBody className="bg-primary relative justify-between gap-10 overflow-hidden py-7">
           <div className="relative z-10 flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
             <Logo />
 
