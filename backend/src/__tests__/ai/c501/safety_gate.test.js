@@ -2,7 +2,6 @@
 
 const { checkPhCorrection } = require("../../../ai/core/safety_gate");
 
-
 const limeInput = {
   phAction: "LIME",
   waterAction: "IRRIGATE",
