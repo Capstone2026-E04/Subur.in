@@ -89,10 +89,14 @@ async function getSensorHistory(deviceId, limit = 30) {
   return logs.reverse();
 }
 
-async function getSensorHistorySince(deviceId, sinceDate) {
+async function getSensorHistorySince(deviceId, sinceDate, untilDate, take) {
   const logs = await prisma.rawSensorLog.findMany({
-    where: { deviceId, timestamp: { gte: sinceDate } },
+    where: {
+      deviceId,
+      timestamp: { gte: sinceDate, ...(untilDate && { lte: untilDate }) },
+    },
     orderBy: { timestamp: "asc" },
+    ...(take && { take }),
   });
   return logs;
 }

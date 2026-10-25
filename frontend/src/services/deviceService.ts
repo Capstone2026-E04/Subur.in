@@ -132,9 +132,14 @@ export async function fetchSensorHistory(
   deviceId: string,
   limit: number = 30,
   hours?: number,
+  range?: { from?: string; to?: string },
 ): Promise<SensorHistoryItem[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (hours) params.set("hours", String(hours));
+  if (range?.from) params.set("from", range.from);
+  if (range?.to) params.set("to", range.to);
   const res = await fetch(
-    `${API_BASE}/api/sensors/${deviceId}/history?limit=${limit}${hours ? `&hours=${hours}` : ""}`,
+    `${API_BASE}/api/sensors/${deviceId}/history?${params}`,
     {
       headers: headers(token),
       cache: "no-store",

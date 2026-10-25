@@ -31,10 +31,11 @@ interface SensorHistoryChartProps {
 
 type ChartViewMode = "both" | "ph" | "moisture";
 
-function formatChartTime(dateStr: string): string {
+function formatChartTime(dateStr: string, withDate = false): string {
   try {
     const d = new Date(dateStr);
-    return d.toLocaleTimeString("id-ID", {
+    return d.toLocaleString("id-ID", {
+      ...(withDate && { day: "2-digit", month: "short" }),
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
@@ -95,11 +96,17 @@ export default function SensorHistoryChart({
   const [limit, setLimit] = useState(simple ? 15 : 20);
   const [viewMode, setViewMode] = useState<ChartViewMode>("both");
   const [error, setError] = useState<string | null>(null);
+  // datetime-local value (waktu lokal), "" = tidak dibatasi
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const hasRange = from !== "" || to !== "";
+  const invalidRange = from !== "" && to !== "" && from > to;
 
   const { ph, moisture, lastUpdated } = useSensorRealtime(deviceId, token);
 
   useEffect(() => {
-    if (ph !== null && moisture !== null && lastUpdated) {
+    // data realtime hanya ditambahkan saat tidak memakai rentang waktu
+    if (!hasRange && ph !== null && moisture !== null && lastUpdated) {
       setHistory((prev) => {
         if (prev.some((item) => item.timestamp === lastUpdated)) {
           return prev;
@@ -118,14 +125,17 @@ export default function SensorHistoryChart({
         return updated.slice(-limit);
       });
     }
-  }, [ph, moisture, lastUpdated, deviceId, limit]);
+  }, [ph, moisture, lastUpdated, deviceId, limit, hasRange]);
 
   const loadHistory = useCallback(async () => {
-    if (!token || !deviceId) return;
+    if (!token || !deviceId || invalidRange) return;
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchSensorHistory(token, deviceId, limit);
+      const data = await fetchSensorHistory(token, deviceId, limit, undefined, {
+        from: from ? new Date(from).toISOString() : undefined,
+        to: to ? new Date(to).toISOString() : undefined,
+      });
       const sorted = [...data].sort(
         (a, b) =>
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
@@ -138,7 +148,7 @@ export default function SensorHistoryChart({
     } finally {
       setIsLoading(false);
     }
-  }, [token, deviceId, limit]);
+  }, [token, deviceId, limit, from, to, invalidRange]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -150,7 +160,7 @@ export default function SensorHistoryChart({
 
   const formattedData = history.map((item) => ({
     ...item,
-    timeLabel: formatChartTime(item.timestamp),
+    timeLabel: formatChartTime(item.timestamp, hasRange),
   }));
 
   if (!isMounted) {
@@ -214,13 +224,51 @@ export default function SensorHistoryChart({
               id="chart-limit-select"
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-600 shadow-sm focus:ring-1 focus:outline-none"
+              disabled={hasRange}
+              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-600 shadow-sm focus:ring-1 focus:outline-none disabled:opacity-50"
             >
               <option value={10}>10 data</option>
               <option value={20}>20 data</option>
               <option value={30}>30 data</option>
               <option value={50}>50 data</option>
             </select>
+
+            {[
+              { id: "chart-from", label: "Dari", value: from, set: setFrom },
+              { id: "chart-to", label: "Sampai", value: to, set: setTo },
+            ].map((f) => (
+              <label
+                key={f.id}
+                htmlFor={f.id}
+                className="flex items-center gap-1 text-xs font-semibold text-neutral-500"
+              >
+                {f.label}
+                <input
+                  id={f.id}
+                  type="datetime-local"
+                  value={f.value}
+                  onChange={(e) => f.set(e.target.value)}
+                  className="focus:ring-primary rounded-xl border border-black/10 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-600 shadow-sm focus:ring-1 focus:outline-none"
+                />
+              </label>
+            ))}
+            {hasRange && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFrom("");
+                  setTo("");
+                }}
+                className="text-primary cursor-pointer text-xs font-bold hover:underline"
+              >
+                Reset
+              </button>
+            )}
+            {invalidRange && (
+              <span className="text-xs font-semibold text-rose-600">
+                &quot;Dari&quot; harus sebelum &quot;Sampai&quot;
+              </span>
+            )}
 
             <button
               id="refresh-chart-btn"

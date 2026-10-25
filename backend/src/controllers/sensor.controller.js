@@ -176,10 +176,25 @@ exports.getSensorHistory = async (req, res, next) => {
   const { deviceId } = req.params;
   const limit = Math.min(Math.max(parseInt(req.query.limit) || 30, 1), 500);
   const hours = Math.min(parseFloat(req.query.hours) || 0, 24 * 30);
+  const from = req.query.from ? new Date(req.query.from) : null;
+  const to = req.query.to ? new Date(req.query.to) : null;
+  if ([from, to].some((d) => d && isNaN(d))) {
+    return sendError(
+      res,
+      400,
+      'Parameter "from"/"to" harus berupa tanggal valid.',
+    );
+  }
+  if (from && to && from > to) {
+    return sendError(res, 400, 'Parameter "from" tidak boleh setelah "to".');
+  }
+  // ponytail: rentang dibatasi 500 data pertama; tambah downsampling jika perlu rentang panjang
   const fetchHistory = () =>
-    hours > 0
-      ? getSensorHistorySince(deviceId, new Date(Date.now() - hours * 3600e3))
-      : getSensorHistory(deviceId, limit);
+    from || to
+      ? getSensorHistorySince(deviceId, from ?? new Date(0), to, 500)
+      : hours > 0
+        ? getSensorHistorySince(deviceId, new Date(Date.now() - hours * 3600e3))
+        : getSensorHistory(deviceId, limit);
 
   const retries = 3;
   const delay = 250;

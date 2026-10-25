@@ -2,6 +2,10 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-25
+
+- **feat(chart):** Grafik pH dan kelembapan punya pilihan rentang waktu ("Dari" dan "Sampai"). `GET /api/sensors/:deviceId/history` menerima `from`/`to` (ISO), maksimal 500 data per rentang.
+
 ## 2026-10-24
 
 - **style(dashboard):** Warna dashboard diselaraskan dengan design system setelah PR desain dashboard digabung: `gray`/`slate` menjadi `neutral`, hex hardcode dan `emerald`/`violet` menjadi token `primary`, latar dashboard `bg-neutral-100`. Lihat [frontend/design-system.md](frontend/design-system.md).
