@@ -1,12 +1,17 @@
 # Subur.in Backend
 
-Backend service untuk proyek **Subur.in**.
+Backend service untuk proyek **Subur.in** (Platform Monitoring & Rekomendasi Tanaman Pintar): menerima data sensor IoT lewat MQTT, menghitung rekomendasi perawatan dengan logika fuzzy Mamdani, dan menyajikannya lewat REST API, SSE, serta bot Telegram.
 
 ## Tech Stack
 
-- Node.js
-- Express.js
-- Supabase (Database)
+- Node.js + Express.js
+- PostgreSQL (Supabase) lewat Prisma ORM
+- Redis (ioredis) untuk cache dan buffer data sensor
+- MQTT (EMQX Cloud) untuk data sensor perangkat
+- JWT + Google OAuth2 (`google-auth-library`) untuk autentikasi
+- `node-cron` untuk pembersihan database terjadwal
+- Telegram Bot API untuk notifikasi dan perintah bot
+- Jest untuk pengujian
 
 ## Cara menjalankan
 
@@ -14,98 +19,76 @@ Backend service untuk proyek **Subur.in**.
    ```bash
    npm install
    ```
-2. Jalankan server:
+2. Salin `.env.example` menjadi `.env`, lalu isi nilainya (lihat [`../docs/setup/environment.md`](../docs/setup/environment.md)).
+3. Generate Prisma client:
+   ```bash
+   npm run db:generate
+   ```
+4. Jalankan server (default port `3000`):
    ```bash
    npm run dev
    ```
 
+### Script
+
+| Perintah                | Fungsi                                      |
+| ----------------------- | ------------------------------------------- |
+| `npm run dev`           | Server dengan auto-reload (nodemon)         |
+| `npm start`             | Server mode produksi                        |
+| `npm test`              | Menjalankan test Jest                       |
+| `npm run db:generate`   | Generate Prisma client                      |
+| `npm run db:seed`       | Mengisi data awal (tanaman)                 |
+| `npm run format`        | Format kode dengan Prettier                 |
+| `npm run format:check`  | Cek format tanpa mengubah berkas            |
+
+## Struktur `src/`
+
+| Folder          | Isi                                                                         |
+| --------------- | --------------------------------------------------------------------------- |
+| `routes/`       | Definisi route, digabung di `routes/api.js` dengan prefix `/api`            |
+| `controllers/`  | Handler request per resource                                                |
+| `middlewares/`  | Auth JWT, superadmin, rate limit login, kunci ekspor, error handler         |
+| `repositories/` | Akses data sensor (Prisma dan Redis)                                        |
+| `ai/`           | Mesin fuzzy (`core/`), kalkulator dosis (`dosage/`), konfigurasi preset     |
+| `mqtt/`         | Koneksi broker, subscriber data sensor, publisher ACK dan konfigurasi       |
+| `sse/`          | Streaming data sensor real-time ke klien                                    |
+| `telegram/`     | Bot Telegram: router, command, callback, keyboard, sesi                     |
+| `cron/`         | Job pembersihan database                                                    |
+| `__tests__/`    | Test Jest                                                                   |
+
 ## API Endpoints
 
-Daftar endpoint API yang sudah dibuat dan aktif sejauh ini:
+Semua endpoint berada di bawah prefix `/api`. Endpoint selain yang ditandai publik membutuhkan header `Authorization: Bearer <JWT>`.
 
-### 1. Health check
-* **Endpoint:** `GET /api/health`
-* **Deskripsi:** Memeriksa status kesehatan server backend dan koneksi database Supabase secara real-time.
-* **Format Response:**
-  ```json
-  {
-    "status": "UP",
-    "message": "Server Subur.in-Backend berjalan normal dan terkoneksi ke Supabase!",
-    "timestamp": "2026-05-28T12:00:00.000Z"
-  }
-  ```
+| Prefix               | Endpoint utama                                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `/api`               | `GET /health` (status server dan koneksi database), `GET /version`                                          |
+| `/api/auth`          | `POST /register`, `POST /login` (rate limited), `POST /google`                                              |
+| `/api/users`         | `GET/PATCH/DELETE /me`, `POST /me/password`, `POST /me/telegram/link-code`, `POST /me/telegram/test`, `DELETE /me/telegram` |
+| `/api/devices`       | `POST /`, `GET /`, `GET /discovered`, `PATCH/DELETE /:id`, `GET /:id/recommendation`, `GET/POST /:id/corrections` |
+| `/api/sensors`       | `GET /:deviceId/latest`, `/history`, `/stream` (SSE), `/export.csv`                                         |
+| `/api/plants`        | `GET /` daftar tanaman                                                                                      |
+| `/api/recommendations` | `POST /simulate` simulasi fuzzy logic dan dosis (publik)                                                  |
+| `/api/notifications` | `GET /`, `PATCH /read`, `DELETE /:id`, `POST /test`                                                         |
+| `/api/telegram`      | `POST /webhook` (diverifikasi dengan `TELEGRAM_WEBHOOK_SECRET`)                                             |
+| `/api/dev-mode`      | `GET /`, `PUT /`                                                                                            |
+| `/api/superadmin`    | `GET /overview`, `/device-options`, `/sensor-history`, `/:resource` (khusus role superadmin)                |
 
-### 2. Autentikasi Google (OAuth2)
-* **Endpoint:** `POST /api/auth/google`
-* **Deskripsi:** Melakukan registrasi atau login pengguna secara otomatis menggunakan Google ID Token, lalu mengembalikan token JWT sesi.
-* **Request Body:**
-  ```json
-  {
-    "idToken": "GOOGLE_ID_TOKEN_STRING"
-  }
-  ```
-* **Format Response:**
-  ```json
-  {
-    "success": true,
-    "message": "Autentikasi Google berhasil!",
-    "data": {
-      "token": "JWT_SESSION_TOKEN",
-      "user": {
-        "id": "USER_UUID",
-        "name": "Nama Pengguna",
-        "email": "user@gmail.com",
-        "avatarUrl": "https://lh3.googleusercontent.com/..."
-      }
-    }
-  }
-  ```
+Contoh singkat, `POST /api/recommendations/simulate`:
 
-### 3. Simulasi fuzzy logic & rekomendasi
-* **Endpoint:** `POST /api/recommendations/simulate`
-* **Deskripsi:** Menyimulasikan kalkulasi logika fuzzy Mamdani dan menghitung dosis penyiraman air, kapur dolomit, dan sulfur elemental secara dinamis berdasarkan jenis tanaman pada preset polybag prototipe (30x30 cm, media 2 L).
-* **Request Body:**
-  ```json
-  {
-    "phValue": 5.5,
-    "moistureValue": 50.0,
-    "plantIdOrName": "UUID_OR_NAME_PLANT"
-  }
-  ```
-* **Format Response:**
-  ```json
-  {
-    "success": true,
-    "message": "Simulasi Fuzzy Logic berhasil dijalankan!",
-    "data": {
-      "phValue": 5.5,
-      "moistureValue": 50,
-      "fuzzyIndex": 1,
-      "categoryCode": "C5",
-      "actionText": "pH media terlalu asam dan media kering. Pertimbangkan dolomit, lalu siram sesuai estimasi volume.",
-      "waterAction": "IRRIGATE",
-      "phAction": "LIME",
-      "phCorrection": { "status": "READY", "reasons": [] },
-      "waterVolumeLiter": 0.3,
-      "limeDosageGram": 8.45,
-      "sulfurDosageGram": 0,
-      "reduceWatering": false,
-      "_debug": {
-        "polybagPresetUsed": "STANDAR",
-        "areaM2": 0.03142,
-        "volumeLiterUsed": 5,
-        "plantUsed": "Pakcoy (Brassica rapa subsp. chinensis)",
-        "phTarget": 6.8,
-        "nmiTrigger": 22.07,
-        "nmiTarget": 27.48
-      }
-    }
-  }
-  ```
+```json
+{ "phValue": 5.5, "moistureValue": 50.0, "plantIdOrName": "UUID_OR_NAME_PLANT" }
+```
+
+Format request/response lengkap, kode error, dan contoh tiap endpoint ada di [`../docs/api/`](../docs/api).
+
+## Docker
+
+`Dockerfile` membangun image yang meng-expose port `3000`. Konfigurasi deploy ada di [`../docker-compose.yml`](../docker-compose.yml) dan [`../docs/setup/deployment.md`](../docs/setup/deployment.md).
 
 ## Dokumentasi lengkap
 
-Dokumentasi arsitektur, referensi API penuh, environment variable, dan konvensi kode ada di [`../docs`](../docs), mulai dari [`docs/api/`](../docs/api) untuk semua endpoint dan [`docs/backend/`](../docs/backend) untuk konvensi coding.
+Arsitektur, referensi API penuh, environment variable, skema database, dan konvensi kode ada di [`../docs`](../docs): mulai dari [`docs/api/`](../docs/api), [`docs/backend/`](../docs/backend), dan [`docs/database/`](../docs/database).
 
 ## Author
 
