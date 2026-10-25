@@ -8,7 +8,6 @@
     "start": "node src/server.js",
     "db:generate": "prisma generate",
     "db:seed": "node prisma/seed.js",
-    "db:check-orphans": "node scripts/check_orphan_sensor_logs.js",
     "test": "jest",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

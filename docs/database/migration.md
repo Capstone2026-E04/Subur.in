@@ -32,7 +32,7 @@ Urutan penerapan:
 1. `001_check_constraints.sql`: CHECK numerik dan kategori. Jalankan pra-cek pelanggaran (mis. `select count(*) from raw_sensor_logs where ph < 0 or ph > 14;`) sebelum menerapkan, karena `ADD CONSTRAINT` gagal jika ada baris yang melanggar.
 2. `002_row_level_security.sql`: `ENABLE ROW LEVEL SECURITY` pada semua tabel dan partisi. Verifikasi dulu role koneksi backend: `select rolname, rolbypassrls from pg_roles where rolname = current_user;` harus `rolbypassrls = true`.
 
-3. `003_device_surrogate_key.sql`: mengubah `devices.id` menjadi UUID surrogate key dan memindahkan kode alat lama ke `devices.device_code`, termasuk semua FK `device_id`. **Wajib dijalankan sebelum deploy backend versi baru**, karena `db push` tidak dapat melakukannya tanpa menghapus data. Baris `raw_sensor_logs` yatim ikut dihapus (cek dulu dengan `npm run db:check-orphans`). Rollback: `rollback/003_device_surrogate_key.sql` bersama rollback deploy backend.
+3. `003_device_surrogate_key.sql`: mengubah `devices.id` menjadi UUID surrogate key dan memindahkan kode alat lama ke `devices.device_code`, termasuk semua FK `device_id`. **Wajib dijalankan sebelum deploy backend versi baru**, karena `db push` tidak dapat melakukannya tanpa menghapus data. Baris `raw_sensor_logs` yatim ikut dihapus. Rollback: `rollback/003_device_surrogate_key.sql` bersama rollback deploy backend.
 
 4. `004_correction_logs.sql`: RLS dan CHECK (`dose_gram > 0`, `ph_before` 0-14) untuk `correction_logs`. Jalankan setelah `prisma db push` membuat tabelnya.
 5. `005_drop_polybags.sql`: menghapus `devices.polybag_id` serta tabel `polybags` dan `polybag_types` (preset polybag kini konstanta kode).
