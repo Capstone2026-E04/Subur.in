@@ -65,7 +65,7 @@ Semua endpoint berada di bawah prefix `/api`. Endpoint selain yang ditandai publ
 | `/api`               | `GET /health` (status server dan koneksi database), `GET /version`                                          |
 | `/api/auth`          | `POST /register`, `POST /login` (rate limited), `POST /google`                                              |
 | `/api/users`         | `GET/PATCH/DELETE /me`, `POST /me/password`, `POST /me/telegram/link-code`, `POST /me/telegram/test`, `DELETE /me/telegram` |
-| `/api/devices`       | `POST /`, `GET /`, `GET /discovered`, `PATCH/DELETE /:id`, `GET /:id/recommendation`, `GET/POST /:id/corrections` |
+| `/api/devices`       | `POST /`, `GET /`, `GET /discovered`, `PATCH/DELETE /:id`, `GET /:id/recommendation` |
 | `/api/sensors`       | `GET /:deviceId/latest`, `/history`, `/stream` (SSE), `/export.csv`                                         |
 | `/api/plants`        | `GET /` daftar tanaman                                                                                      |
 | `/api/recommendations` | `POST /simulate` simulasi fuzzy logic dan dosis (publik)                                                  |

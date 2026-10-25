@@ -72,19 +72,6 @@ export interface PhCorrection {
   reasons: string[];
 }
 
-export type PhMonitorState =
-  "PANTAU" | "REKOMENDASI" | "MASA_REAKSI" | "EVALUASI" | "ESKALASI";
-
-export interface PhMonitor {
-  status: PhMonitorState;
-  phAction: PhAction;
-  allowDose: boolean;
-  day?: number;
-  totalDays?: number;
-  outcome?: "LANJUT_PANTAU" | "REKOMENDASI_ULANG";
-  reason?: "OVERSHOOT" | "NO_PROGRESS";
-}
-
 export interface DeviceRecommendation {
   phValue: number;
   moistureValue: number;
@@ -94,7 +81,6 @@ export interface DeviceRecommendation {
   waterAction: WaterAction;
   phAction: PhAction;
   phCorrection: PhCorrection;
-  phMonitor?: PhMonitor | null;
   waterVolumeLiter: number;
   limeDosageGram: number;
   sulfurDosageGram: number;
@@ -140,26 +126,4 @@ export interface NotificationItem {
   device?: {
     label: string;
   } | null;
-}
-
-export type CorrectionType = "LIME" | "SULFUR";
-export type CorrectionMethod = "INCORPORATION" | "TOP_DRESSING";
-
-export interface CorrectionRecord {
-  id: string;
-  deviceId: string;
-  type: CorrectionType;
-  method: CorrectionMethod;
-  doseGram: number;
-  phBefore: number;
-  appliedAt: string;
-  createdAt: string;
-}
-
-export interface CorrectionPayload {
-  type: CorrectionType;
-  method: CorrectionMethod;
-  doseGram: number;
-  phBefore: number;
-  appliedAt?: string;
 }

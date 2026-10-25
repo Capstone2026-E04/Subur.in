@@ -14,10 +14,7 @@ async function generateRecommendation({
   moistureValue,
   plantIdOrName,
   consistentReadings = Infinity,
-  lastCorrectionAt = null,
-  deviceId = null,
   safetyOverride = null,
-  phMonitor = null,
 }) {
   if (typeof phValue !== "number" || typeof moistureValue !== "number") {
     throw new AppError("phValue dan moistureValue harus berupa angka.", 400);
@@ -80,15 +77,6 @@ async function generateRecommendation({
     );
   }
 
-  if (deviceId && !lastCorrectionAt) {
-    const last = await prisma.correctionLog.findFirst({
-      where: { deviceId },
-      orderBy: { appliedAt: "desc" },
-      select: { appliedAt: true },
-    });
-    lastCorrectionAt = last?.appliedAt ?? null;
-  }
-
   const { minPh, maxPh, phTarget } = plant;
   const theta = moistureValue / 100;
   const inference = runInference(phValue, theta, {
@@ -106,10 +94,8 @@ async function generateRecommendation({
     minPh,
     maxPh,
     consistentReadings,
-    lastCorrectionAt,
   });
-  const correctionReady =
-    phCorrection.status === "READY" && (!phMonitor || phMonitor.allowDose);
+  const correctionReady = phCorrection.status === "READY";
 
   const waterDetail =
     waterAction === "IRRIGATE"
@@ -133,7 +119,6 @@ async function generateRecommendation({
     waterAction,
     phAction,
     phCorrection,
-    phMonitor,
     waterVolumeLiter: waterDetail?.waterVolumeLiter ?? 0,
     limeDosageGram: correctionReady ? (limeDetail?.limeDosageGram ?? 0) : 0,
     sulfurDosageGram: correctionReady

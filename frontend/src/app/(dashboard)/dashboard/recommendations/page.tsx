@@ -25,7 +25,6 @@ import type {
 } from "@/types/device";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import ApplicationGuide from "@/components/recommendations/ApplicationGuide";
-import CorrectionPanel from "@/components/recommendations/CorrectionPanel";
 import PageHeader from "@/components/dashboard/PageHeader";
 
 function PageSkeleton() {
@@ -449,16 +448,6 @@ export default function RecommendationsPage() {
       </Card>
 
       <ApplicationGuide recommendation={recommendation} />
-
-      {token && (
-        <CorrectionPanel
-          key={selectedDevice.id}
-          token={token}
-          deviceId={selectedDevice.id}
-          recommendation={recommendation}
-          onSaved={loadData}
-        />
-      )}
 
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/60 flex-wrap gap-4 py-4">

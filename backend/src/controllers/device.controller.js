@@ -3,7 +3,6 @@ const { getRedisClient } = require("../database/connections/redis");
 const {
   generateRecommendation,
 } = require("../ai/services/recommendation.service");
-const { getPhMonitor } = require("../ai/services/ph_monitor.service");
 const { getWindowMedian } = require("../ai/services/water_schedule.service");
 const {
   getLatestSensorData,
@@ -357,8 +356,6 @@ exports.getDeviceRecommendation = async (req, res, next) => {
       moistureValue:
         (await getWindowMedian(device.deviceCode)) ?? sensorData.moisture,
       plantIdOrName: device.plantId,
-      deviceId: device.id,
-      phMonitor: await getPhMonitor(device.id, device.plant),
     });
 
     return sendSuccess(res, 200, "Rekomendasi Fuzzy Logic berhasil dibuat.", {

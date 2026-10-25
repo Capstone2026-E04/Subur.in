@@ -174,7 +174,7 @@ export default function ApplicationGuide({
             <ol className="mt-3 list-decimal space-y-2 pl-5">
               <li>
                 Periksa status koreksi pH dan estimasi dosis yang tersedia. Jika
-                ditunda atau masih masa reaksi, ikuti status tersebut.
+                ditunda, ikuti status tersebut.
               </li>
               <li>
                 Tabur dolomit atau sulfur merata di permukaan media, jauh dari
@@ -182,13 +182,7 @@ export default function ApplicationGuide({
                 merusak akar.
               </li>
               <li>
-                Setelah benar-benar diberikan, catat bahan, dosis aktual,
-                metode, dan waktu pemberian pada formulir di bawah.
-              </li>
-              <li>
-                Pantau pH pada kedalaman yang sama. Masa reaksi tujuh hari
-                menjadi jeda evaluasi, bukan jaminan reaksi selesai atau dosis
-                ulang diperlukan.
+                Pantau pH pada kedalaman yang sama sebelum memberi dosis ulang.
               </li>
             </ol>
           </section>
@@ -196,23 +190,8 @@ export default function ApplicationGuide({
             <PhCorrectionStatus
               phAction={recommendation.phAction}
               correction={recommendation.phCorrection}
-              monitor={recommendation.phMonitor}
             />
           )}
-          <div className="flex items-start gap-3 rounded-xl bg-sky-50 p-4 text-sky-900">
-            <MdSchedule size={20} className="shrink-0" />
-            <div className="space-y-2">
-              <p className="font-semibold">
-                Pemantauan setelah pemberian koreksi pH
-              </p>
-              <p>
-                Rekomendasi awal pH memerlukan hasil median harian yang
-                konsisten pada dua hari berurutan. Setelah pemberian dicatat,
-                backend menentukan masa reaksi, evaluasi, dan kebutuhan koreksi
-                selanjutnya.
-              </p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

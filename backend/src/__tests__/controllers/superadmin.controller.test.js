@@ -7,7 +7,6 @@ jest.mock("../../database/connections/prisma_client", () => {
     device: model(),
     plant: model(),
     recommendationLog: model(),
-    correctionLog: model(),
     rawSensorLog: model(),
     notification: model(),
   };
@@ -43,7 +42,6 @@ describe("superadmin.controller", () => {
       devices: 3,
       plants: 3,
       recommendations: 3,
-      corrections: 3,
       "sensor-logs": 3,
       notifications: 3,
     });

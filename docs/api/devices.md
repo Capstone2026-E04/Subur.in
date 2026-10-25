@@ -102,28 +102,3 @@ Menjalankan mesin fuzzy logic terhadap pembacaan sensor terbaru dari device (Red
 ```json
 { "success": true, "message": "Data sensor sudah lama. Periksa sensor, daya, atau koneksi alat.", "data": null }
 ```
-
-## `POST /api/devices/:id/corrections`
-
-**Perlu autentikasi:** Ya. Hanya pemilik device (`404` bila bukan).
-
-Mencatat koreksi pH yang benar-benar sudah dilakukan. Catatan terbaru mengaktifkan periode tunggu 14 hari pada safety gate ([fuzzy-logic.md](../backend/fuzzy-logic.md#safety-gate-koreksi-ph)).
-
-```json
-{
-  "type": "LIME",
-  "method": "INCORPORATION",
-  "doseGram": 2.86,
-  "phBefore": 5.4,
-  "appliedAt": "2026-10-10T08:00:00Z"
-}
-```
-
-- `type`: `LIME` | `SULFUR`; `method`: `INCORPORATION` | `TOP_DRESSING`.
-- `doseGram` > 0 (dosis aktual); `phBefore` 0-14; `appliedAt` opsional (default sekarang, tidak boleh di masa depan).
-
-**Response `201`:** `data.correction`. **Error:** `400`, `404`.
-
-## `GET /api/devices/:id/corrections`
-
-Riwayat koreksi device (terbaru dulu, maks 100) pada `data.corrections`.

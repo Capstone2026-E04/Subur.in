@@ -109,7 +109,6 @@ Koreksi hanya `READY` bila semua terpenuhi; jika tidak `DEFERRED` dengan daftar 
 
 - `WaterAction` bukan `STOP`.
 - Minimal 2 pembacaan konsisten (`consistentReadings`; subscriber MQTT menghitungnya via Redis `sensor:ph_out_of_range:<deviceCode>` untuk pH di luar batas +/- 0,25; default `Infinity` untuk simulasi).
-- Tidak dalam masa tunggu 7 hari setelah koreksi (dari `correction_logs` bila `deviceId` diberikan; dicatat lewat `POST /api/devices/:id/corrections`).
 - pH di batas ukur probe (<= 3,5 atau >= 8,0): `NEEDS_CONFIRMATION`.
 
 Bila koreksi tidak `READY`, `limeDosageGram`/`sulfurDosageGram` bernilai 0; estimasi mentahnya tetap ada di `_debug.limeDetail` / `_debug.sulfurDetail`.
@@ -117,7 +116,6 @@ Bila koreksi tidak `READY`, `limeDosageGram`/`sulfurDosageGram` bernilai 0; esti
 ## Batasan
 
 - Kalibrasi ADC -> VWC (kubik) belum tervalidasi pada polybag (ADC saat CC = 950 belum konsisten dengan theta_CC = 0,3298). Rekomendasi air dari VWC sensor belum boleh dianggap operasional sebelum ADC saat CC diukur ulang.
-- Alur masa pantau pH (median harian, dua hari berurutan, status PANTAU/REKOMENDASI/MASA REAKSI/EVALUASI/ESKALASI) belum diimplementasikan di backend; yang ada baru masa tunggu 7 hari dan syarat dua pembacaan konsisten.
 - Dosis gram belum tervalidasi secara agronomis.
 
 ## Cara mencoba

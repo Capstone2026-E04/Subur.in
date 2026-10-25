@@ -5,7 +5,6 @@ export type SuperadminResource =
   | "devices"
   | "plants"
   | "recommendations"
-  | "corrections"
   | "sensor-logs"
   | "notifications";
 

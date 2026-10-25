@@ -11,7 +11,7 @@ Subur.in adalah platform pemantauan dan rekomendasi tanaman pintar berbasis IoT.
 | Perangkat IoT | ESP32/ESP8266 (eksternal) | Membaca pH/kelembaban tanah, mempublikasikan telemetri melalui MQTT |
 | MQTT broker | EMQX Cloud (terkelola) | Transport antara perangkat dan backend |
 | Backend API | Node.js, Express, Prisma | Auth, CRUD device/plant, mesin rekomendasi fuzzy, SSE, cron job |
-| Database | PostgreSQL (Supabase) | Users, devices, plants, recommendation log, correction log, raw sensor log (dipartisi) |
+| Database | PostgreSQL (Supabase) | Users, devices, plants, recommendation log, raw sensor log (dipartisi) |
 | Cache | Redis (self-hosted, client ioredis) | Pembacaan sensor terbaru per device, throttling, lock dedupe, buffer pesan MQTT untuk ekspor CSV |
 | Notifikasi | Telegram Bot API | Kanal push untuk peringatan device, berdampingan dengan SSE in-app + riwayat notifikasi |
 | Frontend | Next.js 16 (App Router), NextAuth v5 | Dashboard untuk pemantauan, manajemen device, rekomendasi |

@@ -5,6 +5,7 @@ Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk ri
 ## 2026-10-25
 
 - **feat(chart):** Grafik pH dan kelembapan punya pilihan rentang waktu ("Dari" dan "Sampai"). `GET /api/sensors/:deviceId/history` menerima `from`/`to` (ISO), maksimal 500 data per rentang.
+- **refactor!(correction):** Fitur pencatatan koreksi pH dihapus: tabel `correction_logs` (migrasi `013_drop_correction_logs.sql`), `GET/POST /api/devices/:id/corrections`, pemantau pH, masa tunggu 7 hari pada safety gate, panel koreksi, dan tab superadmin "Koreksi pH". Safety gate dan estimasi dosis tetap ada.
 
 ## 2026-10-24
 

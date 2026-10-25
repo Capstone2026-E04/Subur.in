@@ -57,8 +57,6 @@ export default function RecommendationSummaryCard({
     recommendation.waterAction === "NONE" &&
     recommendation.phAction === "NONE" &&
     recommendation.phCorrection.status === "NONE" &&
-    (!recommendation.phMonitor ||
-      recommendation.phMonitor.status === "PANTAU") &&
     recommendation.decisionSource !== "safety_override" &&
     treatments.length === 0;
   const title = isOptimal

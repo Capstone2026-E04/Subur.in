@@ -2,19 +2,9 @@ const {
   PH_SENSOR_MIN,
   PH_SENSOR_MAX,
   MIN_CONSISTENT_READINGS,
-  WAIT_DAYS,
 } = require("../config/treatment_constants");
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function checkPhCorrection({
-  phAction,
-  waterAction,
-  ph,
-  consistentReadings,
-  lastCorrectionAt,
-  now = new Date(),
-}) {
+function checkPhCorrection({ phAction, waterAction, ph, consistentReadings }) {
   if (phAction === "NONE") return { status: "NONE", reasons: [] };
 
   const reasons = [];
@@ -30,14 +20,6 @@ function checkPhCorrection({
   if (consistentReadings < MIN_CONSISTENT_READINGS) {
     reasons.push(
       `Butuh minimal ${MIN_CONSISTENT_READINGS} pembacaan konsisten.`,
-    );
-  }
-  if (
-    lastCorrectionAt &&
-    now - new Date(lastCorrectionAt) < WAIT_DAYS * DAY_MS
-  ) {
-    reasons.push(
-      `Masih dalam periode tunggu ${WAIT_DAYS} hari setelah koreksi.`,
     );
   }
 

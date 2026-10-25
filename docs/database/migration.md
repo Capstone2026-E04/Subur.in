@@ -34,7 +34,7 @@ Urutan penerapan:
 
 3. `003_device_surrogate_key.sql`: mengubah `devices.id` menjadi UUID surrogate key dan memindahkan kode alat lama ke `devices.device_code`, termasuk semua FK `device_id`. **Wajib dijalankan sebelum deploy backend versi baru**, karena `db push` tidak dapat melakukannya tanpa menghapus data. Baris `raw_sensor_logs` yatim ikut dihapus. Rollback: `rollback/003_device_surrogate_key.sql` bersama rollback deploy backend.
 
-4. `004_correction_logs.sql`: RLS dan CHECK (`dose_gram > 0`, `ph_before` 0-14) untuk `correction_logs`. Jalankan setelah `prisma db push` membuat tabelnya.
+4. `004_correction_logs.sql`: dihapus bersama fitur pencatatan koreksi pH; tabelnya dibuang oleh `013_drop_correction_logs.sql`.
 5. `005_drop_polybags.sql`: menghapus `devices.polybag_id` serta tabel `polybags` dan `polybag_types` (preset polybag kini konstanta kode).
 6. `006_indexes_fk_enum.sql`: indeks `created_at`, FK `raw_sensor_logs.device_id`, dan `notifications.type` menjadi enum `notification_type`. **Jalankan sebelum deploy backend versi baru.**
 7. `007_user_role.sql`: enum `user_role` dan kolom `users.role` (`NOT NULL`, default `USER`). **Jalankan sebelum deploy.** Role `SUPERADMIN` hanya diberikan manual lewat Supabase ([ADR-010](../decisions/adr-010-superadmin-role.md)). Rollback: `rollback/007_user_role.sql`.
@@ -44,8 +44,9 @@ Urutan penerapan:
 
 10. `010_record_id_text_and_rejected_records.sql`: `raw_sensor_logs.record_id` menjadi `text`, kolom `moisture_type` (default `legacy_index`), dan tabel `rejected_sensor_records` (payload asli record yang gagal validasi, unik `(device_id, record_id)`). **Jalankan sebelum deploy.** Rollback: `rollback/010_record_id_text_and_rejected_records.sql` (gagal bila ada `record_id` non-angka; hapus barisnya dulu).
 11. `011_sensor_record_receipts.sql`: tabel `sensor_record_receipts` (PK `(device_id, record_id)`, tidak dipartisi) untuk dedup record antrean ESP32 walau `measured_at` null. **Jalankan sebelum deploy.** Rollback: `rollback/011_sensor_record_receipts.sql`.
+12. `013_drop_correction_logs.sql`: membuang tabel `correction_logs` beserta enum `correction_type`/`correction_method` (data koreksi hilang permanen). Aman dijalankan ulang; rollback membuat ulang tabel kosong.
 
-File 001, 002, 004, 007, 008, 009, 010, dan 011 aman dijalankan ulang; 003, 005, dan 006 hanya dijalankan sekali. Backend versi baru yang membaca `role` atau `password_hash` akan gagal pada `GET /api/users/me` bila 007 atau 008 belum diterapkan; penyimpanan record dengan `record_id` gagal bila 009, 010, atau 011 belum diterapkan.
+File 001, 002, 007, 008, 009, 010, dan 011 aman dijalankan ulang; 003, 005, dan 006 hanya dijalankan sekali. Backend versi baru yang membaca `role` atau `password_hash` akan gagal pada `GET /api/users/me` bila 007 atau 008 belum diterapkan; penyimpanan record dengan `record_id` gagal bila 009, 010, atau 011 belum diterapkan.
 
 **Aturan index:** semua index wajib dideklarasikan dengan `@@index` (nama eksplisit lewat `map:`) di `schema.prisma`. Index yang hanya dibuat lewat SQL akan dihapus oleh `prisma db push` berikutnya. CHECK constraint dan RLS tidak disentuh `db push`.
 

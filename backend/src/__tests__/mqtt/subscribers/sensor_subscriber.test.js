@@ -26,9 +26,6 @@ jest.mock("../../../ai/services/water_schedule.service", () => ({
   recordMoisture: jest.fn(),
   claimWaterDecision: jest.fn(),
 }));
-jest.mock("../../../ai/services/ph_monitor.service", () => ({
-  getPhMonitor: jest.fn(),
-}));
 jest.mock("../../../database/connections/redis", () => ({
   getRedisClient: jest.fn(),
 }));
@@ -57,7 +54,6 @@ const {
   recordMoisture,
   claimWaterDecision,
 } = require("../../../ai/services/water_schedule.service");
-const { getPhMonitor } = require("../../../ai/services/ph_monitor.service");
 const { getRedisClient } = require("../../../database/connections/redis");
 const { notifyDevice } = require("../../../services/notification.service");
 const {
@@ -122,7 +118,6 @@ describe("handleSensorMessage", () => {
       lastMoisture = m;
     });
     claimWaterDecision.mockImplementation(async () => lastMoisture);
-    getPhMonitor.mockResolvedValue({ status: "PANTAU", allowDose: false });
     shouldSaveToDatabase.mockResolvedValue(true);
   });
 
@@ -266,17 +261,6 @@ describe("handleSensorMessage", () => {
       await send({ ph: 6.5, moisture: 80 });
 
       expect(saveRawSensorLog).toHaveBeenCalled();
-    });
-
-    it("passes the device id to the recommendation for correction history", async () => {
-      await send({ ph: 6.5, soil_vwc_pct: 80 });
-
-      expect(generateRecommendation).toHaveBeenCalledWith(
-        expect.objectContaining({
-          plantIdOrName: "plant-1",
-          deviceId: "device-1",
-        }),
-      );
     });
   });
 
@@ -504,7 +488,7 @@ describe("handleSensorMessage", () => {
       expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
     });
 
-    it("decides on the median of the recent window and passes the pH monitor", async () => {
+    it("decides on the median of the recent window", async () => {
       claimWaterDecision.mockResolvedValue(42);
 
       await send({ ph: 6.5, soil_vwc_pct: 50 });
@@ -512,7 +496,6 @@ describe("handleSensorMessage", () => {
       expect(generateRecommendation).toHaveBeenCalledWith(
         expect.objectContaining({
           moistureValue: 42,
-          phMonitor: { status: "PANTAU", allowDose: false },
         }),
       );
       expect(prisma.recommendationLog.create).toHaveBeenCalledWith({

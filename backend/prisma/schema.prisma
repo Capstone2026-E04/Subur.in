@@ -45,7 +45,6 @@ model Device {
 
   recommendations RecommendationLog[]
   notifications   Notification[]
-  corrections     CorrectionLog[]
   rawSensorLogs   RawSensorLog[]
   rejectedSensorRecords RejectedSensorRecord[]
   sensorRecordReceipts SensorRecordReceipt[]
@@ -81,23 +80,6 @@ model RecommendationLog {
   @@index([createdAt], map: "idx_recommendation_logs_created_at")
 
   @@map("recommendation_logs")
-}
-
-model CorrectionLog {
-  id        String           @id @default(uuid()) @db.Uuid
-  deviceId  String           @map("device_id") @db.Uuid
-  type      CorrectionType
-  method    CorrectionMethod
-  doseGram  Float            @map("dose_gram")
-  phBefore  Float            @map("ph_before")
-  appliedAt DateTime         @default(now()) @db.Timestamptz(6) @map("applied_at")
-  createdAt DateTime         @default(now()) @db.Timestamptz(6) @map("created_at")
-
-  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-
-  @@index([deviceId, appliedAt(sort: Desc)], map: "idx_correction_logs_device_applied")
-
-  @@map("correction_logs")
 }
 
 model RawSensorLog {
@@ -160,20 +142,6 @@ model Plant {
   devices Device[]
 
   @@map("plants")
-}
-
-enum CorrectionType {
-  LIME
-  SULFUR
-
-  @@map("correction_type")
-}
-
-enum CorrectionMethod {
-  INCORPORATION
-  TOP_DRESSING
-
-  @@map("correction_method")
 }
 
 enum NotificationType {

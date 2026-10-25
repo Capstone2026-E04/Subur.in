@@ -174,53 +174,6 @@ export const TABS: Tab[] = [
     ],
   },
   {
-    key: "corrections",
-    label: "Koreksi pH",
-    searchPlaceholder: "Cari perangkat",
-    filterByDevice: true,
-    filters: [
-      {
-        key: "type",
-        label: "Jenis",
-        options: [
-          { value: "LIME", label: "LIME" },
-          { value: "SULFUR", label: "SULFUR" },
-        ],
-      },
-      {
-        key: "method",
-        label: "Metode",
-        options: [
-          { value: "INCORPORATION", label: "INCORPORATION" },
-          { value: "TOP_DRESSING", label: "TOP_DRESSING" },
-        ],
-      },
-    ],
-    columns: [
-      {
-        header: "Diterapkan",
-        path: "appliedAt",
-        format: "date",
-        sortable: true,
-      },
-      { header: "Perangkat", path: "device.label", sortable: true },
-      { header: "Jenis", path: "type", sortable: true },
-      { header: "Metode", path: "method", sortable: true },
-      {
-        header: "Dosis (g)",
-        path: "doseGram",
-        format: "number",
-        sortable: true,
-      },
-      {
-        header: "pH Sebelum",
-        path: "phBefore",
-        format: "number",
-        sortable: true,
-      },
-    ],
-  },
-  {
     key: "sensor-logs",
     label: "Log Sensor",
     searchPlaceholder: "Cari perangkat",

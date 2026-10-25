@@ -92,26 +92,6 @@ const RESOURCES = {
     },
     include: DEVICE_SUMMARY,
   },
-  corrections: {
-    model: "correctionLog",
-    dateField: "appliedAt",
-    defaultSort: { field: "appliedAt", order: "desc" },
-    sortable: [
-      "appliedAt",
-      "device.label",
-      "type",
-      "method",
-      "doseGram",
-      "phBefore",
-    ],
-    search: ["device.label"],
-    filters: {
-      ...DEVICE_FILTER,
-      type: { type: "enum", values: ["LIME", "SULFUR"] },
-      method: { type: "enum", values: ["INCORPORATION", "TOP_DRESSING"] },
-    },
-    include: DEVICE_SUMMARY,
-  },
   "sensor-logs": {
     model: "rawSensorLog",
     dateField: "timestamp",

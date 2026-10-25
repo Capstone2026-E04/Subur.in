@@ -31,8 +31,8 @@ src/__tests__/
 │   │   ├── safety_gate.test.js      Step 11: safety gate koreksi pH
 │   │   └── recommendation.test.js   Step 8 dan 11: hasil end-to-end lewat service
 │   └── services/
-│       └── recommendation.service.test.js   riwayat koreksi, konfigurasi prototipe, validasi input
-├── controllers/                     auth, correction, device, superadmin, user
+│       └── recommendation.service.test.js   konfigurasi prototipe, validasi input
+├── controllers/                     auth, device, superadmin, user
 ├── middlewares/                     superadmin
 ├── utils/                           password
 ├── cron/                            database_cleanup_cron
@@ -50,7 +50,7 @@ Folder `ai/c501/` berisi test yang angkanya disalin langsung dari dokumen peranc
 | `membership.test.js` | Contoh perhitungan NMI (A-D) dan pH (5.1-5.4); derajat keanggotaan 0-1, jumlah tiga himpunan selalu 1, KERING dan BASAH tidak aktif bersamaan |
 | `inference.test.js` | Rule aktif pada contoh 6.1, 6.2, 6.4, 6.5; kategori akhir pada tabel Step 6-7 termasuk tie break; 9 rule, antecedent unik, C1-C9 terwakili, selalu ada rule dengan firing strength >= 0,5 |
 | `dosage.test.js` | Air 120 / 160 mL, Vneed 100 mL, maksimum 360 / 320 mL; dolomit 2,86 g dan batas 4,7 g; sulfur dibatasi 1,2 g |
-| `safety_gate.test.js` | Ambang pH min - 0,5 dan max + 0,5, media basah, minimal 2 pembacaan, periode tunggu 14 hari, batas ukur probe 3,5 dan 8,0 |
+| `safety_gate.test.js` | Ambang pH min - 0,5 dan max + 0,5, media basah, minimal 2 pembacaan, batas ukur probe 3,5 dan 8,0 |
 | `recommendation.test.js` | Keputusan air (contoh C dan D) dan lima baris tabel pemeriksaan sistem Step 11 |
 
 Bila dokumen C501 direvisi, ubah angka di file ini terlebih dahulu, lalu sesuaikan kode agar test lulus.
@@ -58,7 +58,7 @@ Bila dokumen C501 direvisi, ubah angka di file ini terlebih dahulu, lalu sesuaik
 ## Konvensi menulis test
 
 - **Arrange-Act-Assert** dipisah baris kosong; tidak memakai komentar penanda.
-- **Satu perilaku per test.** Nama test menyebut perilaku dan kondisinya, misalnya `defers the correction when the last logged correction is 3 days old`. Nama test berbahasa Inggris.
+- **Satu perilaku per test.** Nama test menyebut perilaku dan kondisinya, misalnya `defers the correction while the media is wet`. Nama test berbahasa Inggris.
 - **Tanpa komentar** pada file test; keterangan sumber ditaruh di nama `describe`.
 - **Deterministik.** Waktu dikirim lewat parameter (`now`) atau dihitung relatif, tidak bergantung urutan test.
 - **Mock I/O, bukan logika.** Fungsi murni (mesin fuzzy, kalkulator, safety gate) dipanggil langsung tanpa mock.
@@ -71,7 +71,6 @@ Prisma:
 ```js
 jest.mock("../../database/connections/prisma_client", () => ({
   device: { findFirst: jest.fn() },
-  correctionLog: { create: jest.fn(), findMany: jest.fn() },
 }));
 ```
 
@@ -102,5 +101,5 @@ Setelah mengubah kode, sebuah cara cepat memeriksa test benar-benar menjaga peri
 ## Batasan saat ini
 
 - Belum ada test integrasi (Supertest ke database uji) dan belum ada workflow CI yang menjalankan `npm test`.
-- Cakupan kode sekitar 62% pernyataan (`npx jest --coverage`); logika inti (`ai/`, subscriber MQTT, controller koreksi) menjadi prioritas, sedangkan route, auth, dan sebagian controller lain belum diuji.
+- Cakupan kode sekitar 62% pernyataan (`npx jest --coverage`); logika inti (`ai/`, subscriber MQTT) menjadi prioritas, sedangkan route, auth, dan sebagian controller lain belum diuji.
 - Frontend belum memiliki test.

@@ -7,11 +7,9 @@ const {
 
 jest.mock("../../../database/connections/prisma_client", () => ({
   plant: { findUnique: jest.fn(), findFirst: jest.fn() },
-  correctionLog: { findFirst: jest.fn() },
 }));
 
 const PLANT_ID = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const plantFixture = {
   id: PLANT_ID,
@@ -35,25 +33,9 @@ const acidicDryRequest = (overrides) =>
 describe("generateRecommendation", () => {
   beforeEach(() => {
     prisma.plant.findUnique.mockResolvedValue(plantFixture);
-    prisma.correctionLog.findFirst.mockResolvedValue(null);
   });
 
-  describe("correction history", () => {
-    it("withholds the lime dose until the pH monitor allows it", async () => {
-      const held = await generateRecommendation(
-        acidicDryRequest({ phMonitor: { status: "PANTAU", allowDose: false } }),
-      );
-      const allowed = await generateRecommendation(
-        acidicDryRequest({
-          phMonitor: { status: "REKOMENDASI", allowDose: true },
-        }),
-      );
-
-      expect(held.limeDosageGram).toBe(0);
-      expect(held.phMonitor.status).toBe("PANTAU");
-      expect(allowed.limeDosageGram).toBeGreaterThan(0);
-    });
-
+  describe("safety gate", () => {
     it("defers lime but keeps the water estimate with fewer than two consistent readings", async () => {
       const input = acidicDryRequest({ consistentReadings: 1 });
 
@@ -62,45 +44,6 @@ describe("generateRecommendation", () => {
       expect(result.categoryCode).toBe("C5");
       expect(result.limeDosageGram).toBe(0);
       expect(result.waterVolumeLiter).toBeGreaterThan(0);
-    });
-
-    it("defers the correction when the last logged correction is 3 days old", async () => {
-      prisma.correctionLog.findFirst.mockResolvedValue({
-        appliedAt: new Date(Date.now() - 3 * DAY_MS),
-      });
-
-      const result = await generateRecommendation(
-        acidicDryRequest({ deviceId: "device-1" }),
-      );
-
-      expect(result.phCorrection.status).toBe("DEFERRED");
-      expect(result.limeDosageGram).toBe(0);
-    });
-
-    it("marks the correction ready when the device has no logged correction", async () => {
-      const input = acidicDryRequest({ deviceId: "device-1" });
-
-      const result = await generateRecommendation(input);
-
-      expect(result.phCorrection.status).toBe("READY");
-    });
-
-    it("looks up the last correction of the given device", async () => {
-      const input = acidicDryRequest({ deviceId: "device-1" });
-
-      await generateRecommendation(input);
-
-      expect(prisma.correctionLog.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { deviceId: "device-1" } }),
-      );
-    });
-
-    it("skips the correction lookup when no device is given", async () => {
-      const input = acidicDryRequest();
-
-      await generateRecommendation(input);
-
-      expect(prisma.correctionLog.findFirst).not.toHaveBeenCalled();
     });
   });
 

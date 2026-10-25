@@ -10,7 +10,6 @@ const { PLANTS } = require("./fixtures");
 
 jest.mock("../../../database/connections/prisma_client", () => ({
   plant: { findUnique: jest.fn() },
-  correctionLog: { findFirst: jest.fn() },
 }));
 
 const PLANT_ID = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";

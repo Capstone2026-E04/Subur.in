@@ -65,7 +65,6 @@ UI manajemen device, semuanya didukung oleh [`useDevices`](../../frontend/src/ho
 |---|---|
 | `PhCorrectionStatus.tsx` | Banner status safety gate koreksi pH (`READY`, `DEFERRED`, `NEEDS_CONFIRMATION`) beserta alasannya; tidak dirender bila `NONE` |
 | `ApplicationGuide.tsx` | Panduan penerapan air (`#panduan-air`) dan koreksi pH (`#panduan-ph`) berdasarkan rekomendasi aktif; kartu ringkasan di dashboard menautkan ke anchor ini dan halaman men-scroll ke sana |
-| `CorrectionPanel.tsx` | Form pencatatan koreksi dolomit/sulfur (`POST /api/devices/:id/corrections`), status periode tunggu 14 hari, dan riwayat koreksi (`GET`) |
 
 ## Konvensi
 

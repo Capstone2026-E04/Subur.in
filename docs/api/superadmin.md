@@ -28,7 +28,6 @@ Jumlah baris untuk setiap tabel yang dapat dilihat.
       "devices": 1,
       "plants": 3,
       "recommendations": 142,
-      "corrections": 0,
       "sensor-logs": 102,
       "notifications": 6
     }
@@ -92,7 +91,6 @@ Daftar data tabel dengan paginasi, urutan, pencarian, dan filter. `:resource` ha
 | `devices` | `devices` (+ pemilik dan tanaman) | `createdAt` turun |
 | `plants` | `plants` | `name` naik |
 | `recommendations` | `recommendation_logs` | `createdAt` turun |
-| `corrections` | `correction_logs` | `appliedAt` turun |
 | `sensor-logs` | `raw_sensor_logs` | `timestamp` turun |
 | `notifications` | `notifications` | `createdAt` turun |
 
@@ -119,7 +117,6 @@ Semua parameter harus berupa string tunggal; parameter berulang (array) ditolak 
 | `devices` | `label`, `deviceCode`, `user.email`, `plant.name`, `status`, `sensorInterval`, `lastSeenAt`, `createdAt` | `label`, `deviceCode`, `user.name`, `user.email`, `plant.name` | `status` (`ACTIVE`/`INACTIVE`/`OFFLINE`) |
 | `plants` | `name`, `minPh`, `maxPh`, `phTarget`, `createdAt` | `name`, `scientificName` | - |
 | `recommendations` | `createdAt`, `device.label`, `phValue`, `moistureValue`, `categoryCode`, `waterVolumeLiter`, `limeDosageGram`, `sulfurDosageGram` | `actionText`, `device.label` | `deviceId`, `reduceWatering`, `isDev` |
-| `corrections` | `appliedAt`, `device.label`, `type`, `method`, `doseGram`, `phBefore` | `device.label` | `deviceId`, `type` (`LIME`/`SULFUR`), `method` (`INCORPORATION`/`TOP_DRESSING`) |
 | `sensor-logs` | `timestamp`, `device.label`, `ph`, `moisture` | `device.label` | `deviceId`, `isDev` |
 | `notifications` | `createdAt`, `device.label`, `title`, `type`, `isRead` | `title`, `message`, `device.label` | `deviceId`, `type` (`warning`/`success`/`info`), `isRead` |
 

@@ -2,14 +2,12 @@
 
 const { checkPhCorrection } = require("../../../ai/core/safety_gate");
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const limeInput = {
   phAction: "LIME",
   waterAction: "IRRIGATE",
   ph: 5.4,
   consistentReadings: 2,
-  lastCorrectionAt: null,
 };
 
 const sulfurInput = { ...limeInput, phAction: "SULFUR", ph: 7.6 };
@@ -30,30 +28,6 @@ describe("checkPhCorrection (C501 Step 11 section 4)", () => {
     const result = checkPhCorrection({ ...limeInput, consistentReadings: 1 });
 
     expect(result.status).toBe("DEFERRED");
-  });
-
-  it("defers the correction 6 days after the previous one", () => {
-    const now = new Date("2026-10-20T00:00:00Z");
-
-    const result = checkPhCorrection({
-      ...limeInput,
-      now,
-      lastCorrectionAt: new Date(now - 6 * DAY_MS),
-    });
-
-    expect(result.status).toBe("DEFERRED");
-  });
-
-  it("is ready again 7 days after the previous correction", () => {
-    const now = new Date("2026-10-20T00:00:00Z");
-
-    const result = checkPhCorrection({
-      ...limeInput,
-      now,
-      lastCorrectionAt: new Date(now - 7 * DAY_MS),
-    });
-
-    expect(result.status).toBe("READY");
   });
 
   it("asks for confirmation at the lower probe limit of pH 3.5", () => {

@@ -20,7 +20,6 @@ const {
   generateRecommendation,
 } = require("../../ai/services/recommendation.service");
 const { adcToVwc } = require("../../ai/core/vwc_calibration");
-const { getPhMonitor } = require("../../ai/services/ph_monitor.service");
 const {
   recordMoisture,
   claimWaterDecision,
@@ -244,9 +243,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
           phValue: ph,
           moistureValue: decisionMoisture,
           plantIdOrName: device.plantId,
-          deviceId: device.id,
           safetyOverride,
-          phMonitor: await getPhMonitor(device.id, device.plant),
         });
 
         await prisma.recommendationLog.create({

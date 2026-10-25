@@ -14,7 +14,7 @@ Aplikasi frontend client (web monitoring) untuk proyek **Subur.in** (Platform Mo
 ## Fitur utama
 
 - **Dashboard responsif:** monitoring sensor real-time (pH, kelembapan sebagai % CC dengan VWC pendamping, suhu) lewat SSE, serta grafik tren dengan rentang 3, 7, 14, dan 30 hari.
-- **Rekomendasi perawatan:** hasil fuzzy logic dari backend (dosis air, kapur, sulfur), panduan aplikasi, dan panel koreksi pH.
+- **Rekomendasi perawatan:** hasil fuzzy logic dari backend (dosis air, kapur, sulfur) dan panduan aplikasi.
 - **Manajemen perangkat dan tanaman:** hubungkan, ubah, dan hapus perangkat; pilih perangkat aktif di seluruh dashboard.
 - **Notifikasi dan Telegram:** daftar notifikasi serta penghubungan akun ke bot Telegram dari halaman pengaturan.
 - **Panel superadmin dan dev mode:** halaman khusus role tertentu, disaring lewat `visibleNavItems(role)`.

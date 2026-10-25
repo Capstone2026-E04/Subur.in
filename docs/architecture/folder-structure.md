@@ -45,7 +45,7 @@ Subur.in/
 │       ├── utils/               # response.js (sendSuccess/sendError), password.js (hash scrypt dan validasi password)
 │       ├── __tests__/           # Test Jest tersentralisasi, mencerminkan struktur src/ (lihat backend/testing.md)
 │       │   ├── ai/                  # c501/ (test berbasis dokumen C501), services/ - mencerminkan src/ai/
-│       │   ├── controllers/         # auth, correction, device, superadmin, user
+│       │   ├── controllers/         # auth, device, superadmin, user
 │       │   ├── middlewares/         # superadmin.middleware
 │       │   ├── utils/               # password
 │       │   ├── cron/ · mqtt/subscribers/ · services/

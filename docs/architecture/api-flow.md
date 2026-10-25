@@ -178,8 +178,8 @@ sequenceDiagram
     alt umur data > 2 x sensorInterval
         Controller-->>Client: 200 { data: null }
     end
-    Controller->>Engine: generateRecommendation({ph, moisture, plantId, deviceId})
-    Engine->>Postgres: load Plant + koreksi terakhir (CorrectionLog)
+    Controller->>Engine: generateRecommendation({ph, moisture, plantId})
+    Engine->>Postgres: load Plant
     Engine->>Engine: runInference (fuzzify -> rules -> MIN-MAX -> aksi)
     Engine->>Engine: calculate water/lime/sulfur dosage
     Engine-->>Controller: recommendation

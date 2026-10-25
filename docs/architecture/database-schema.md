@@ -10,7 +10,6 @@ PostgreSQL (dihosting di Supabase), diakses melalui Prisma. Sumber skema: [`back
 | `Device`            | Unit sensor IoT terdaftar, dimiliki oleh seorang user, terhubung ke sebuah plant    |
 | `Plant`             | Data referensi spesies tanaman (rentang/target toleransi pH)                                 |
 | `RecommendationLog` | Satu hasil rekomendasi fuzzy logic, terkait dengan sebuah device                             |
-| `CorrectionLog`     | Catatan koreksi pH (kapur/sulfur) yang diterapkan user pada sebuah device                    |
 | `RawSensorLog`      | Telemetri pH/kelembaban mentah, dipartisi per bulan untuk retensi/pembersihan                |
 | `Notification`      | Peringatan yang ditujukan ke user, terikat pada device (misalnya data sensor tidak valid)    |
 
@@ -23,7 +22,6 @@ erDiagram
     DEVICE ||--o{ RECOMMENDATION_LOG : produces
     DEVICE ||--o{ RAW_SENSOR_LOG : produces
     DEVICE ||--o{ NOTIFICATION : triggers
-    DEVICE ||--o{ CORRECTION_LOG : records
 
     USER {
         uuid id PK
@@ -69,15 +67,6 @@ erDiagram
         float sulfur_dosage_gram
         bool reduce_watering
         bool is_dev
-    }
-    CORRECTION_LOG {
-        uuid id PK
-        uuid device_id FK
-        enum type
-        enum method
-        float dose_gram
-        float ph_before
-        timestamptz applied_at
     }
     RAW_SENSOR_LOG {
         int id PK

@@ -158,8 +158,7 @@ export default function Home() {
               Koreksi ditunda saat media basah
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-amber-900">
-              Dolomit dan sulfur tidak disarankan ketika media basah, dan baru
-              muncul lagi 7 hari setelah koreksi terakhir.
+              Dolomit dan sulfur tidak disarankan ketika media basah.
             </p>
           </div>
 
