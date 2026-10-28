@@ -1,30 +1,20 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MdOutlineDeviceHub, MdAdd } from "react-icons/md";
 import { useDevices } from "@/hooks/useDevices";
 import { usePlants } from "@/hooks/usePlants";
 import { useSensorRealtime } from "@/hooks/useSensorRealtime";
-import {
-  fetchDeviceRecommendationResult,
-  fetchSensorHistory,
-} from "@/services/deviceService";
+import { fetchDeviceRecommendationResult } from "@/services/deviceService";
 import { useSelectedDeviceStore } from "@/stores/selectedDeviceStore";
 import RecommendationSummaryCard from "@/components/dashboard/RecommendationSummaryCard";
 import PhLevelCard from "@/components/dashboard/PhLevelCard";
 import MoistureLevelCard from "@/components/dashboard/MoistureLevelCard";
 import SensorTrendCard from "@/components/dashboard/SensorTrendCard";
 import { DEFAULT_PH_RANGE } from "@/components/dashboard/sensorStatus";
-import type {
-  RegisteredDevice,
-  DeviceRecommendation,
-  SensorHistoryItem,
-} from "@/types/device";
+import type { RegisteredDevice, DeviceRecommendation } from "@/types/device";
 import { Card } from "@/components/ui/card";
-
-const HISTORY_LIMIT = 500;
-const HISTORY_HOURS = 720;
 
 function DashboardSkeleton() {
   return (
@@ -133,7 +123,6 @@ export default function DashboardPage() {
   const [recommendationError, setRecommendationError] = useState<string | null>(
     null,
   );
-  const [history, setHistory] = useState<SensorHistoryItem[]>([]);
 
   useEffect(() => {
     loadDevices();
@@ -189,38 +178,6 @@ export default function DashboardPage() {
     }
   }, [lastUpdated, loadRecommendation]);
 
-  useEffect(() => {
-    if (!token || !selectedDevice?.id) return;
-    let cancelled = false;
-    fetchSensorHistory(token, selectedDevice.id, HISTORY_LIMIT, HISTORY_HOURS)
-      .then((data) => {
-        if (!cancelled) setHistory(data);
-      })
-      .catch(() => {
-        if (!cancelled) setHistory([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [token, selectedDevice?.id]);
-
-  const trendHistory = useMemo(() => {
-    if (!selectedDevice || ph === null || moisture === null || !lastUpdated) {
-      return history;
-    }
-    if (history.some((item) => item.timestamp === lastUpdated)) return history;
-    return [
-      ...history,
-      {
-        id: -1,
-        deviceId: selectedDevice.id,
-        timestamp: lastUpdated,
-        ph,
-        moisture,
-      },
-    ];
-  }, [history, selectedDevice, ph, moisture, lastUpdated]);
-
   if (isLoading) {
     return <DashboardSkeleton />;
   }
@@ -268,13 +225,15 @@ export default function DashboardPage() {
         <SensorTrendCard
           title="Tren Kelembapan Tanah"
           metric="moisture"
-          history={trendHistory}
+          deviceId={selectedDevice.id}
+          token={token}
           color="#237844"
         />
         <SensorTrendCard
           title="Tingkat pH Tanah"
           metric="ph"
-          history={trendHistory}
+          deviceId={selectedDevice.id}
+          token={token}
           color="#2f6f3a"
         />
       </div>

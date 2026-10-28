@@ -5,6 +5,7 @@ import type {
   ClaimDevicePayload,
   UpdateDevicePayload,
   SensorHistoryItem,
+  SensorTrendPoint,
   DeviceRecommendation,
   RecommendationLogItem,
 } from "@/types/device";
@@ -146,6 +147,30 @@ export async function fetchSensorHistory(
   const json = await handleResponse<{
     success: boolean;
     data: SensorHistoryItem[];
+  }>(res);
+  return json.data ?? [];
+}
+
+export async function fetchSensorTrend(
+  token: string,
+  deviceId: string,
+  range: { from: Date; to: Date; bucketSeconds: number },
+): Promise<SensorTrendPoint[]> {
+  const params = new URLSearchParams({
+    from: range.from.toISOString(),
+    to: range.to.toISOString(),
+    bucketSeconds: String(range.bucketSeconds),
+  });
+  const res = await fetch(
+    `${API_BASE}/api/sensors/${deviceId}/history?${params}`,
+    {
+      headers: headers(token),
+      cache: "no-store",
+    },
+  );
+  const json = await handleResponse<{
+    success: boolean;
+    data: SensorTrendPoint[];
   }>(res);
   return json.data ?? [];
 }

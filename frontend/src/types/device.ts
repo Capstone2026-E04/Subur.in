@@ -62,6 +62,12 @@ export interface SensorHistoryItem {
   moisture: number;
 }
 
+export interface SensorTrendPoint {
+  timestamp: string;
+  ph: number;
+  moisture: number;
+}
+
 export type WaterAction = "STOP" | "NONE" | "IRRIGATE";
 export type PhAction = "NONE" | "LIME" | "SULFUR";
 export type PhCorrectionStatus =
