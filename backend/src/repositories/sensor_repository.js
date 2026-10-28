@@ -101,6 +101,29 @@ async function getSensorHistorySince(deviceId, sinceDate, untilDate, take) {
   return logs;
 }
 
+const WIB_OFFSET_SECONDS = 7 * 3600;
+
+async function getSensorHistoryBuckets(deviceId, from, to, bucketSeconds) {
+  const rows = await prisma.$queryRaw`
+    SELECT
+      floor((extract(epoch FROM "timestamp") + ${WIB_OFFSET_SECONDS}::float8) / ${bucketSeconds}::float8)::float8 AS bucket,
+      avg(ph) AS ph,
+      avg(moisture) AS moisture
+    FROM raw_sensor_logs
+    WHERE device_id = ${deviceId}::uuid
+      AND "timestamp" >= ${from}
+      AND "timestamp" <= ${to}
+    GROUP BY 1
+    ORDER BY 1`;
+  return rows.map((row) => ({
+    timestamp: new Date(
+      (row.bucket * bucketSeconds - WIB_OFFSET_SECONDS) * 1000,
+    ).toISOString(),
+    ph: Number(row.ph),
+    moisture: Number(row.moisture),
+  }));
+}
+
 module.exports = {
   findDeviceById,
   saveRawSensorLog,
@@ -110,4 +133,5 @@ module.exports = {
   getLatestSensorLog,
   getSensorHistory,
   getSensorHistorySince,
+  getSensorHistoryBuckets,
 };

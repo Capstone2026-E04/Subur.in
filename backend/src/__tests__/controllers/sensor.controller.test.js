@@ -7,13 +7,21 @@ jest.mock("../../sse/sse_manager", () => ({}));
 jest.mock("../../repositories/sensor_redis_repository", () => ({
   getSensorExport: jest.fn(),
 }));
-jest.mock("../../repositories/sensor_repository", () => ({}));
+jest.mock("../../repositories/sensor_repository", () => ({
+  getSensorHistoryBuckets: jest.fn(),
+}));
 
 const prisma = require("../../database/connections/prisma_client");
 const {
   getSensorExport,
 } = require("../../repositories/sensor_redis_repository");
-const { exportSensorCsv } = require("../../controllers/sensor.controller");
+const {
+  getSensorHistoryBuckets,
+} = require("../../repositories/sensor_repository");
+const {
+  exportSensorCsv,
+  getSensorHistory,
+} = require("../../controllers/sensor.controller");
 
 const makeRes = () => {
   const res = {};
@@ -84,5 +92,65 @@ describe("exportSensorCsv", () => {
     await exportSensorCsv(req({ from: "bukan-tanggal" }), res);
 
     expect(res.status).toHaveBeenCalledWith(400);
+  });
+});
+
+describe("getSensorHistory bucketSeconds", () => {
+  const from = "2026-10-28T00:00:00.000Z";
+  const to = "2026-10-29T00:00:00.000Z";
+  const statusOf = (res) => res.status.mock.calls[0][0];
+
+  it("rejects bucketSeconds without from and to", async () => {
+    const res = makeRes();
+
+    await getSensorHistory(req({ bucketSeconds: "3600" }), res, jest.fn());
+
+    expect(statusOf(res)).toBe(400);
+    expect(getSensorHistoryBuckets).not.toHaveBeenCalled();
+  });
+
+  it("rejects a bucket smaller than 60 seconds", async () => {
+    const res = makeRes();
+
+    await getSensorHistory(
+      req({ from, to, bucketSeconds: "30" }),
+      res,
+      jest.fn(),
+    );
+
+    expect(statusOf(res)).toBe(400);
+  });
+
+  it("rejects a range that would produce more than 1000 buckets", async () => {
+    const res = makeRes();
+
+    await getSensorHistory(
+      req({ from, to, bucketSeconds: "60" }),
+      res,
+      jest.fn(),
+    );
+
+    expect(statusOf(res)).toBe(400);
+  });
+
+  it("returns the averaged buckets for a valid range", async () => {
+    const buckets = [{ timestamp: from, ph: 6.4, moisture: 55 }];
+    getSensorHistoryBuckets.mockResolvedValue(buckets);
+    const res = makeRes();
+
+    await getSensorHistory(
+      req({ from, to, bucketSeconds: "3600" }),
+      res,
+      jest.fn(),
+    );
+
+    expect(getSensorHistoryBuckets).toHaveBeenCalledWith(
+      ID,
+      new Date(from),
+      new Date(to),
+      3600,
+    );
+    expect(statusOf(res)).toBe(200);
+    expect(res.json.mock.calls[0][0].data).toEqual(buckets);
   });
 });

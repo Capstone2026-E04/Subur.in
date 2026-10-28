@@ -10,6 +10,7 @@ const {
   getLatestSensorLog,
   getSensorHistory,
   getSensorHistorySince,
+  getSensorHistoryBuckets,
 } = require("../repositories/sensor_repository");
 const { sendSuccess, sendError } = require("../utils/response");
 
@@ -172,6 +173,9 @@ exports.exportSensorCsv = async (req, res, next) => {
   }
 };
 
+const MIN_BUCKET_SECONDS = 60;
+const MAX_BUCKETS = 1000;
+
 exports.getSensorHistory = async (req, res, next) => {
   const { deviceId } = req.params;
   const limit = Math.min(Math.max(parseInt(req.query.limit) || 30, 1), 500);
@@ -188,13 +192,37 @@ exports.getSensorHistory = async (req, res, next) => {
   if (from && to && from > to) {
     return sendError(res, 400, 'Parameter "from" tidak boleh setelah "to".');
   }
-  // ponytail: rentang dibatasi 500 data pertama; tambah downsampling jika perlu rentang panjang
+  const bucketSeconds = parseInt(req.query.bucketSeconds) || 0;
+  if (bucketSeconds) {
+    if (!from || !to) {
+      return sendError(
+        res,
+        400,
+        'Parameter "bucketSeconds" memerlukan "from" dan "to".',
+      );
+    }
+    if (
+      bucketSeconds < MIN_BUCKET_SECONDS ||
+      (to - from) / 1000 / bucketSeconds > MAX_BUCKETS
+    ) {
+      return sendError(
+        res,
+        400,
+        `Parameter "bucketSeconds" minimal ${MIN_BUCKET_SECONDS} dan menghasilkan paling banyak ${MAX_BUCKETS} bucket.`,
+      );
+    }
+  }
   const fetchHistory = () =>
-    from || to
-      ? getSensorHistorySince(deviceId, from ?? new Date(0), to, 500)
-      : hours > 0
-        ? getSensorHistorySince(deviceId, new Date(Date.now() - hours * 3600e3))
-        : getSensorHistory(deviceId, limit);
+    bucketSeconds
+      ? getSensorHistoryBuckets(deviceId, from, to, bucketSeconds)
+      : from || to
+        ? getSensorHistorySince(deviceId, from ?? new Date(0), to, 500)
+        : hours > 0
+          ? getSensorHistorySince(
+              deviceId,
+              new Date(Date.now() - hours * 3600e3),
+            )
+          : getSensorHistory(deviceId, limit);
 
   const retries = 3;
   const delay = 250;
