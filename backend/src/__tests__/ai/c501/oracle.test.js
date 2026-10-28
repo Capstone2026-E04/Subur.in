@@ -14,8 +14,11 @@ jest.mock("../../../database/connections/prisma_client", () => ({
 
 const PLANT_ID = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 
-const recommend = (phValue, theta, extra = {}) => {
-  prisma.plant.findUnique.mockResolvedValue({ id: PLANT_ID, ...PLANTS.bayam });
+const recommend = (phValue, theta, extra = {}, plantKey = "bayam") => {
+  prisma.plant.findUnique.mockResolvedValue({
+    id: PLANT_ID,
+    ...PLANTS[plantKey],
+  });
   return generateRecommendation({
     phValue,
     moistureValue: theta * 100,
@@ -50,10 +53,11 @@ describe("centroid values (Bagian 4.9)", () => {
 describe("software oracle (Bagian 4.11)", () => {
   it.each([
     [0.1, 6.5, "C2", 0.2, 0, 0],
-    [0.2, 6.5, "C2", 0.1144, 0, 0],
-    [0.22, 6.5, "C2", 0.0744, 0, 0],
-    [0.2208, 6.5, "C1", 0, 0, 0],
-    [0.221, 6.5, "C1", 0, 0, 0],
+    [0.2, 6.5, "C2", 0.1607, 0, 0],
+    [0.22, 6.5, "C2", 0.1207, 0, 0],
+    [0.2208, 6.5, "C2", 0.1191, 0, 0],
+    [0.231, 6.5, "C1", 0, 0, 0],
+    [0.221, 6.5, "C2", 0.1187, 0, 0],
     [0.25, 6.5, "C1", 0, 0, 0],
     [0.3298, 6.5, "C1", 0, 0, 0],
     [0.1, 5.5, "C5", 0.2, 2.6, 0],
@@ -95,4 +99,31 @@ describe("software oracle (Bagian 4.11)", () => {
       expect(r.limeDosageGram + r.sulfurDosageGram).toBe(0);
     },
   );
+});
+
+describe("per-plant water thresholds", () => {
+  it.each([
+    ["bayam", 0.2305, "C2"],
+    ["bayam", 0.2315, "C1"],
+    ["selada", 0.214, "C2"],
+    ["selada", 0.215, "C1"],
+    ["pakcoy", 0.1975, "C2"],
+    ["pakcoy", 0.1985, "C1"],
+  ])("%s at theta %s -> %s", async (plantKey, theta, category) => {
+    const r = await recommend(6.5, theta, {}, plantKey);
+
+    expect(r.categoryCode).toBe(category);
+    if (category === "C2") expect(r.waterVolumeLiter).toBeGreaterThan(0);
+    else expect(r.waterVolumeLiter).toBe(0);
+  });
+
+  it.each([
+    ["bayam", 0.2, 0.1607],
+    ["selada", 0.2, 0.1277],
+    ["pakcoy", 0.19, 0.1476],
+  ])("%s at theta %s irrigates %s L", async (plantKey, theta, liter) => {
+    const r = await recommend(6.5, theta, {}, plantKey);
+
+    expect(r.waterVolumeLiter).toBeCloseTo(liter, 3);
+  });
 });

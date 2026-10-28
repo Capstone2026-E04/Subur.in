@@ -83,6 +83,7 @@ async function generateRecommendation({
     minPh,
     maxPh,
     override: Boolean(safetyOverride),
+    moistureParams,
   });
   const interpretation = interpretCategory(inference.categoryCode);
   const { waterAction, phAction } = inference;
@@ -99,7 +100,11 @@ async function generateRecommendation({
 
   const waterDetail =
     waterAction === "IRRIGATE"
-      ? calculateWaterVolume(theta, POLYBAG.volumeLiter)
+      ? calculateWaterVolume(
+          theta,
+          moistureParams.thetaFill,
+          POLYBAG.volumeLiter,
+        )
       : null;
   const limeDetail =
     phAction === "LIME"
