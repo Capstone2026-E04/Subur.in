@@ -22,8 +22,8 @@ Menampilkan semua spesies tanaman, diurutkan berdasarkan nama secara ascending.
       "minPh": 6.0,
       "maxPh": 7.0,
       "phTarget": 6.5,
-      "nmiTrigger": 22.07,
-      "nmiTarget": 27.48,
+      "nmiTrigger": 23.09,
+      "nmiTarget": 28.03,
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z"
     }
@@ -31,4 +31,4 @@ Menampilkan semua spesies tanaman, diurutkan berdasarkan nama secara ascending.
 }
 ```
 
-`nmiTrigger`/`nmiTarget` berasal dari `src/ai/config/plant_moisture.js` (bukan kolom database) dan bernilai `null` untuk tanaman yang belum punya parameter kelembapan (persen VWC). `minPh`/`maxPh`/`phTarget` langsung digunakan sebagai input mesin rekomendasi fuzzy, lihat [architecture/system-design.md](../architecture/system-design.md#why-fuzzy-logic). Data seed (`Bayam`, `Pakcoy`, `Selada`) berada di [`backend/prisma/seed.js`](../../backend/prisma/seed.js).
+`nmiTrigger`/`nmiTarget` berasal dari `src/ai/config/plant_moisture.js` (bukan kolom database) dan bernilai `null` untuk tanaman yang belum punya parameter kelembapan (persen VWC). Nilainya berbeda per tanaman: Bayam 23,09 / 28,03, Selada 21,44 / 26,38, Pakcoy 19,79 / 26,38 (trigger / target). `minPh`/`maxPh`/`phTarget` langsung digunakan sebagai input mesin rekomendasi fuzzy, lihat [architecture/system-design.md](../architecture/system-design.md#why-fuzzy-logic). Data seed (`Bayam`, `Pakcoy`, `Selada`) berada di [`backend/prisma/seed.js`](../../backend/prisma/seed.js).

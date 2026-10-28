@@ -8,7 +8,7 @@ Merekomendasikan perlakuan irigasi/kapur/belerang dari pembacaan sensor pH dan k
 
 ## Keputusan
 Mengimplementasikan sistem inferensi fuzzy Mamdani di `src/ai`:
-- **Membership function** ([`ai/core/membership.js`](../../backend/src/ai/core/membership.js)): pH (`ASAM/OPTIMAL/BASA`, dari `Plant.minPh/maxPh`) dan NMI (`KERING/OPTIMAL/BASAH`, dari trigger per tanaman di [`ai/config/plant_moisture.js`](../../backend/src/ai/config/plant_moisture.js)).
+- **Membership function** ([`ai/core/membership.js`](../../backend/src/ai/core/membership.js)): pH (`ASAM/OPTIMAL/BASA`, dari `Plant.minPh/maxPh`) dan kelembapan (`KERING/LEMBAP/JENUH`; titik `a` dan `b` per tanaman di [`ai/config/plant_moisture.js`](../../backend/src/ai/config/plant_moisture.js)).
 - **Rule base** ([`ai/core/rules.js`](../../backend/src/ai/core/rules.js)): 3x3 = 9 rule yang memetakan ke kategori `C1`-`C9` (`WaterAction` x `pHAction`).
 - **Inference engine** ([`ai/core/engine.js`](../../backend/src/ai/core/engine.js)): MIN-MAX dengan pemilihan aksi diskret per dimensi dan tie-break berprioritas, tanpa defuzzifikasi centroid.
 - **Safety gate** ([`ai/core/safety_gate.js`](../../backend/src/ai/core/safety_gate.js)): menentukan apakah koreksi pH boleh ditampilkan, ditunda, atau perlu konfirmasi.
@@ -19,6 +19,6 @@ Spesifikasi lengkap ada di [fuzzy-logic.md](../backend/fuzzy-logic.md). Rancanga
 
 ## Konsekuensi
 - Rule bersifat deklaratif dan tersentralisasi dalam satu file, membuat logika rekomendasi mudah diaudit dan diuji secara independen dari concern web/database mana pun (`src/ai` tidak memiliki import Express/Prisma di intinya, hanya layer orkestrasi `services/recommendation.service.js` bagian luar yang menyentuh Prisma).
-- Menambahkan tanaman baru memerlukan data `minPh`/`maxPh`/`phTarget` di seed dan entri trigger/target NMI di `config/plant_moisture.js` (tanpa rule atau kode inferensi baru).
+- Menambahkan tanaman baru memerlukan data `minPh`/`maxPh`/`phTarget` di seed dan entri trigger, target, `a`, dan `b` (fraksi `theta_CC`) di `config/plant_moisture.js` (tanpa rule atau kode inferensi baru).
 - Kategori adalah label diskret, sehingga tidak ada aproksimasi numerik atau parameter `Y_STEP`; keputusan seri diselesaikan lewat urutan prioritas yang deterministik.
 - `POST /api/recommendations/simulate` ada khusus agar engine ini bisa diuji dan divalidasi dengan input sembarang tanpa perlu device atau riwayat tersimpan yang nyata, sejalan dengan unit test Jest di `src/__tests__/ai/`.

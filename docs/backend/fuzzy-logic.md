@@ -18,7 +18,7 @@ Fuzzy hanya menentukan **jenis** tindakan. Besaran air/dolomit/sulfur dihitung k
 | `core/engine.js`                     | MIN-MAX, centroid dua sumbu, ambang aksi, override      |
 | `core/safety_gate.js`                | Pemeriksaan koreksi pH                                  |
 | `dosage/*`                           | Kalkulator air, dolomit, sulfur                         |
-| `config/plant_moisture.js`           | Pemicu/target kelembapan (persen VWC) untuk tampilan    |
+| `config/plant_moisture.js`           | Parameter kelembapan per tanaman (trigger, target, a, b) |
 | `config/treatment_constants.js`      | Semua konstanta desain                                  |
 | `services/recommendation.service.js` | Orkestrasi + akses database                             |
 
@@ -30,13 +30,21 @@ Fuzzy hanya menentukan **jenis** tindakan. Besaran air/dolomit/sulfur dihitung k
 
 ## Parameter
 
-Acuan kelembapan adalah container capacity polybag 2 L: `theta_CC = 0,3298` m3/m3 (659,6 mL / 2.000 mL). Semua tanaman memakai fraksi `theta_CC` yang sama; yang berbeda per tanaman hanya rentang pH (tabel `plants`).
+Acuan kelembapan adalah container capacity polybag 2 L: `theta_CC = 0,3298` m3/m3 (659,6 mL / 2.000 mL). Rentang pH tiap tanaman ada di tabel `plants`, sedangkan parameter kelembapan ada di `config/plant_moisture.js` sebagai fraksi `theta_CC`.
 
 | Tanaman              | pH min | pH max | pH target |
 | -------------------- | -----: | -----: | --------: |
 | Selada               |    6,0 |    6,7 |       6,5 |
 | Bayam (_Amaranthus_) |    6,0 |    7,0 |       6,5 |
 | Pakcoy               |    6,0 |    7,5 |       6,8 |
+
+| Tanaman | trigger | target | a      | b      | theta trigger | theta target | theta a | theta b |
+| ------- | ------: | -----: | -----: | -----: | ------------: | -----------: | ------: | ------: |
+| Bayam   |    0,70 |   0,85 |  0,531 |  0,864 |        0,2309 |       0,2803 |  0,1751 |  0,2849 |
+| Selada  |    0,65 |   0,80 |  0,481 |  0,814 |        0,2144 |       0,2638 |  0,1586 |  0,2685 |
+| Pakcoy  |    0,60 |   0,80 |  0,431 |  0,764 |        0,1979 |       0,2638 |  0,1421 |  0,2520 |
+
+Kolom pertama sampai keempat adalah fraksi `theta_CC`; kolom `theta` adalah hasil perkaliannya (m3/m3). `trigger` dan `target` juga dikirim sebagai persen VWC lewat `GET /api/plants` (`nmiTrigger`/`nmiTarget`); `target` dipakai sebagai batas isi kalkulator air.
 
 Tanaman lain ditolak `422`. Angka kelembapan adalah parameter desain, bukan optimum agronomi teruji.
 
@@ -46,7 +54,7 @@ Tanaman lain ditolak `422`. Angka kelembapan adalah parameter desain, bukan opti
 
 **pH** (`ASAM`, `OPTIMAL`, `BASA`; transisi 0,5 satuan di luar [min, max]) tidak berubah.
 
-**Kelembapan** (`KERING`, `LEMBAP`, `JENUH`) dengan titik `a = 1/2`, `b = 5/6`, `d = 7/6`, `e = 4/3` kali `theta_CC` (0,1649; 0,2748; 0,3848; 0,4397):
+**Kelembapan** (`KERING`, `LEMBAP`, `JENUH`) dengan titik `a` dan `b` per tanaman (tabel di atas) serta `d = 7/6` dan `e = 4/3` kali `theta_CC` (0,3848; 0,4397) yang sama untuk semua tanaman. Tanpa parameter tanaman, `a` dan `b` kembali ke nilai bawaan `1/2` dan `5/6` kali `theta_CC` (0,1649; 0,2748):
 
 - `KERING`: 1 untuk theta <= a, turun linear ke 0 di b.
 - `LEMBAP`: naik a..b, 1 pada b..d, turun d..e.
@@ -85,7 +93,7 @@ Setiap kategori = `WaterAction` x `pHAction`:
 5. `y* >= 0,12` menjadi aksi positif, `y* <= -0,12` aksi negatif, selain itu `NONE` (ambang desain; pembandingan memakai toleransi 1e-9).
 6. `fuzzyIndex` pada response = kekuatan aturan tertinggi yang mendukung aksi terpilih, diambil yang terlemah dari kedua sumbu (0-1).
 
-Akibatnya pemicu siram jatuh di theta ~0,2207 (66,9% `theta_CC`) dan sumbu pH menyala LIME pada pH <= 5,75 dan SULFUR pada pH >= 7,25 (bayam).
+Akibatnya pemicu siram jatuh di theta ~0,2309 untuk bayam (70% `theta_CC`), ~0,2144 untuk selada (65%), dan ~0,1979 untuk pakcoy (60%), dan sumbu pH menyala LIME pada pH <= 5,75 dan SULFUR pada pH >= 7,25 (bayam).
 
 ## Override pengaman
 
@@ -97,7 +105,7 @@ Rumus mengikuti Bagian 4.8-4.9 dokumen C501 untuk media **2 L** (preset polybag 
 
 | Kalkulator | Rumus                                         | Batas                                                                                                  |
 | ---------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Air        | `Vneed = max(0, (0,2748 - theta) x 2.000)` mL | `min(Vneed, 0,10 x 2.000)` = maks. 200 mL per siram; hanya bila `WaterAction = IRRIGATE`, selain itu 0 |
+| Air        | `Vneed = max(0, (theta target tanaman - theta) x 2.000)` mL | `min(Vneed, 0,10 x 2.000)` = maks. 200 mL per siram; hanya bila `WaterAction = IRRIGATE`, selain itu 0 |
 | Dolomit    | `1,3 x V x max(0, pH target - pH)` g          | 1,4 g/L = 2,8 g per 2 L                                                                                |
 | Sulfur     | `0,6 x V x max(0, pH - pH target)` g          | 1,2 g/L = 2,4 g per 2 L                                                                                |
 

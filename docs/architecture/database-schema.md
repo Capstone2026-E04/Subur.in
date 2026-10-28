@@ -114,6 +114,7 @@ Semua index dideklarasikan dengan `@@index` di `schema.prisma` (wajib, karena `p
 | `raw_sensor_logs`    | `idx_raw_sensor_logs_device_timestamp (device_id, timestamp DESC)`, unik `uq_raw_sensor_logs_device_record (device_id, record_id, timestamp)` |
 | `sensor_record_receipts` | PK `(device_id, record_id)` |
 | `rejected_sensor_records` | unik `uq_rejected_sensor_records_device_record (device_id, record_id)` |
+| `plants`             | unik `uq_plants_name_normalized (lower(btrim(name)))`, dibuat lewat `014_plants_constraints.sql` (tidak dimodelkan Prisma) |
 | `devices`            | `idx_devices_user_id`, `idx_devices_plant_id` |
 | `notifications`      | `idx_notifications_device_created (device_id, created_at DESC)` |
 | `recommendation_logs`| `idx_recommendation_logs_device_created (device_id, created_at DESC)` |

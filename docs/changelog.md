@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-10-29
+
+- **feat(ai)!:** Parameter kelembapan kini per tanaman (`config/plant_moisture.js`: trigger, target, `a`, `b` sebagai fraksi `theta_CC`). Titik `a` dan `b` menggeser batas zona KERING/LEMBAP, dan target per tanaman menjadi batas isi kalkulator air, sehingga ambang siram dan volume air berbeda untuk bayam, selada, dan pakcoy. `THETA_FILL` dan `THETA_TRIGGER_DISPLAY` dihapus; `PH_ACTION_MARGIN` yang tidak terpakai juga dihapus. `nmiTrigger`/`nmiTarget` di `GET /api/plants` ikut berubah. Lihat [backend/fuzzy-logic.md](backend/fuzzy-logic.md).
+- **feat(database):** Migrasi `014_plants_constraints.sql` menambah index unik `uq_plants_name_normalized` dan CHECK `chk_plants_ph_target_between` pada `plants`.
+
 ## 2026-10-25
 
 - **feat(chart):** Grafik pH dan kelembapan punya pilihan rentang waktu ("Dari" dan "Sampai"). `GET /api/sensors/:deviceId/history` menerima `from`/`to` (ISO), maksimal 500 data per rentang.
