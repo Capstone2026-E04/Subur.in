@@ -48,6 +48,9 @@ Mengembalikan pembacaan historis terbaru dari Postgres, paling relevan untuk kep
 | Param | Tipe | Default | Deskripsi |
 |---|---|---|---|
 | `limit` | integer | `30` | Jumlah pembacaan terbaru yang dikembalikan (dibatasi 1-500) |
+| `hours` | number | - | Ambil pembacaan dari sekian jam terakhir (maks. 720) |
+| `from`, `to` | tanggal ISO | - | Batas rentang (inklusif); tanpa `bucketSeconds` dibatasi 500 data pertama pada rentang itu |
+| `bucketSeconds` | integer | - | Agregasi di server: rata-rata `ph` dan `moisture` per bucket sepanjang `bucketSeconds` detik. Wajib bersama `from` dan `to`, minimal `60`, dan rentang tidak boleh menghasilkan lebih dari 1000 bucket (`400` bila dilanggar). Batas bucket harian mengikuti WIB (UTC+7) |
 
 **Response sukses `200`:**
 ```json
@@ -58,6 +61,8 @@ Mengembalikan pembacaan historis terbaru dari Postgres, paling relevan untuk kep
   ]
 }
 ```
+
+Dengan `bucketSeconds`, respons berisi bucket yang punya data saja dalam bentuk `{ "timestamp": "<awal bucket, ISO>", "ph": 6.1, "moisture": 42.3 }`, urut menaik, tanpa `id` dan `deviceId`; bucket kosong tidak dikembalikan.
 
 Melakukan retry query hingga 3 kali (dengan jeda 250ms) sebelum mengembalikan `500` jika terus gagal.
 

@@ -25,7 +25,7 @@ Widget khusus dashboard, sebagian besar digerakkan oleh [`navConfig.ts`](../../f
 | `RecommendationSummaryCard.tsx` | Kartu "Rekomendasi Hari Ini": judul aksi, teks rekomendasi, dan tile treatment (air, kapur, sulfur) yang hanya muncul bila dosisnya > 0; tile menautkan ke `ApplicationGuide`, dan waktu pembaruan terakhir; menangani status memuat dan belum ada data |
 | `PhLevelCard.tsx` | Bar gradasi pH 0-14 dengan penanda nilai dan lencana klasifikasi (`classifyPh`) |
 | `MoistureLevelCard.tsx` | Gauge setengah lingkaran kelembapan dengan jarum dan lencana klasifikasi (`classifyNmi`) |
-| `SensorTrendCard.tsx` | Grafik garis rata-rata (pH atau kelembapan) dari riwayat sensor dengan dua dropdown: granularitas (per menit, 10 menit, jam, hari) dan jumlah data terakhir (5, 10, 20, 30; default 10), serta tooltip nilai; pembacaan realtime ikut ditambahkan oleh halaman |
+| `SensorTrendCard.tsx` | Grafik area rata-rata (pH atau kelembapan) dengan pemilih tanggal dan pukul "Mulai" serta "Akhir". Granularitas (menit, 10 menit, jam, hari) dipilih otomatis dari panjang rentang (maksimal 72 titik; rentang lama berarti lebih kasar), dan rata-rata dihitung di server lewat `bucketSeconds`. Secara bawaan menampilkan 1 jam terakhir dan menyegarkan diri tiap 30 detik; mengubah rentang menghentikan penyegaran, tombol "Terbaru" mengembalikannya |
 | `sensorStatus.ts` | `classifyPh`, `classifyNmi`, `TONES`, `formatTimestamp`, dan rentang pH bawaan; dipakai kartu-kartu di atas |
 | `SensorGaugeCard.tsx` | Gauge melingkar untuk satu nilai sensor; saat ini hanya dipakai pratinjau landing page (`HeroPreview`) |
 | `SensorHistoryChart.tsx` | Time series berbasis Recharts untuk riwayat sensor (`GET /api/sensors/:id/history`) |

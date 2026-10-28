@@ -4,6 +4,8 @@ Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk ri
 
 ## 2026-10-29
 
+- **feat(dashboard):** Grafik tren pH dan kelembapan memakai pemilih tanggal dan pukul "Mulai" serta "Akhir" sebagai ganti dropdown granularitas dan "n terakhir". Granularitas ditentukan otomatis dari panjang rentang (maks. 72 titik). `GET /api/sensors/:deviceId/history` menerima `bucketSeconds` (dengan `from` dan `to`) untuk rata-rata per bucket di server, sehingga rentang panjang tidak terpotong 500 data. Lihat [api/sensors.md](api/sensors.md).
+
 - **feat(ai)!:** Parameter kelembapan kini per tanaman (`config/plant_moisture.js`: trigger, target, `a`, `b` sebagai fraksi `theta_CC`). Titik `a` dan `b` menggeser batas zona KERING/LEMBAP, dan target per tanaman menjadi batas isi kalkulator air, sehingga ambang siram dan volume air berbeda untuk bayam, selada, dan pakcoy. `THETA_FILL` dan `THETA_TRIGGER_DISPLAY` dihapus; `PH_ACTION_MARGIN` yang tidak terpakai juga dihapus. `nmiTrigger`/`nmiTarget` di `GET /api/plants` ikut berubah. Lihat [backend/fuzzy-logic.md](backend/fuzzy-logic.md).
 - **feat(database):** Migrasi `014_plants_constraints.sql` menambah index unik `uq_plants_name_normalized` dan CHECK `chk_plants_ph_target_between` pada `plants`.
 
