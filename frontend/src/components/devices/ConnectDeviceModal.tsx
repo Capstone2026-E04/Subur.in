@@ -61,11 +61,13 @@ export default function ConnectDeviceModal({
   const [sensorInterval, setSensorInterval] = useState(60);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [installationConfirmed, setInstallationConfirmed] = useState(false);
 
   const [prevIsOpen, setPrevIsOpen] = useState(false);
 
   if (isOpen && !prevIsOpen) {
     setPrevIsOpen(true);
+    setInstallationConfirmed(false);
     setSelectedDeviceId("");
     setLabel("");
     setSelectedPlantId("");
@@ -90,7 +92,7 @@ export default function ConnectDeviceModal({
   }, [token]);
 
   useEffect(() => {
-    if (!isOpen || !token) return;
+    if (!isOpen || !token || !installationConfirmed) return;
 
     const timer = setTimeout(() => {
       scan();
@@ -101,12 +103,16 @@ export default function ConnectDeviceModal({
       .catch(() => {});
 
     return () => clearTimeout(timer);
-  }, [isOpen, token, scan]);
+  }, [isOpen, token, scan, installationConfirmed]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
 
+    if (!installationConfirmed) {
+      setFormError("Konfirmasi pemasangan perangkat terlebih dahulu.");
+      return;
+    }
     if (!selectedDeviceId) {
       setFormError("Pilih alat yang akan dihubungkan.");
       return;
@@ -158,26 +164,26 @@ export default function ConnectDeviceModal({
 
           <motion.div
             key="modal"
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-20 pb-4 sm:items-center sm:p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+              className="relative flex max-h-[calc(100dvh-6rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-h-[calc(100dvh-2rem)]"
               initial={{ scale: 0.95, y: 16 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 16 }}
               transition={{ type: "spring", stiffness: 300, damping: 28 }}
             >
-              <div className="flex shrink-0 items-center justify-between border-b border-black/6 bg-neutral-50 px-6 py-4">
+              <div className="flex shrink-0 items-center justify-between border-b border-black/6 bg-neutral-50 px-4 py-4 sm:px-6">
                 <div className="flex items-center gap-2.5">
                   <div className="bg-primary/10 flex h-9 w-9 items-center justify-center rounded-xl">
                     <MdOutlineWifi size={18} className="text-primary" />
                   </div>
                   <div>
                     <h2 className="text-primary text-sm leading-tight font-bold">
-                      Hubungkan Alat Baru
+                      Tambah Perangkat
                     </h2>
                     <p className="text-xs text-neutral-400">
                       Klaim device ESP32 yang terdeteksi di jaringan
@@ -194,255 +200,326 @@ export default function ConnectDeviceModal({
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 <form
                   id="connect-device-form"
                   onSubmit={handleSubmit}
-                  className="flex flex-col gap-5 p-6"
+                  className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6"
                 >
-                  <fieldset className="overflow-hidden rounded-xl border border-black/6">
-                    <legend className="sr-only">Pilih Alat</legend>
-                    <div className="flex items-center justify-between border-b border-black/5 bg-neutral-50/80 px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <MdOutlineDeviceHub
-                          size={15}
-                          className="text-primary"
-                        />
-                        <span className="text-xs font-bold text-neutral-700">
-                          Langkah 1 — Pilih Alat yang Terdeteksi
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        id="rescan-devices-btn"
-                        onClick={scan}
-                        disabled={scanStatus === "scanning"}
-                        className="text-primary hover:bg-primary/8 flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50"
-                      >
-                        <MdRefresh
-                          size={13}
-                          className={
-                            scanStatus === "scanning" ? "animate-spin" : ""
-                          }
-                        />
-                        {scanStatus === "scanning"
-                          ? "Memindai…"
-                          : "Pindai Ulang"}
-                      </button>
-                    </div>
-
-                    <div className="p-4">
-                      {scanStatus === "scanning" && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="flex flex-col items-center gap-3 py-6"
-                        >
-                          <div className="relative flex h-12 w-12 items-center justify-center">
-                            <motion.div
-                              className="bg-primary/20 absolute h-12 w-12 rounded-full"
-                              animate={{
-                                scale: [1, 1.6, 1],
-                                opacity: [0.6, 0, 0.6],
-                              }}
-                              transition={{ duration: 1.5, repeat: Infinity }}
+                  <section className="bg-primary/5 space-y-3 rounded-xl p-4 text-sm">
+                    <h3 className="text-primary font-bold">
+                      Sebelum menambahkan perangkat
+                    </h3>
+                    <ol className="list-decimal space-y-2 pl-5 text-neutral-600">
+                      <li>
+                        Siapkan pot atau polybag dengan drainase baik, berisi
+                        media tanam dan tanaman yang akan dipantau.
+                      </li>
+                      <li>
+                        Pasang probe sensor pada media tanam sesuai petunjuk
+                        alat. Jaga modul elektronik dan sambungan tetap kering.
+                      </li>
+                      <li>
+                        Nyalakan perangkat dan hubungkan ke WiFi. Tunggu hingga
+                        perangkat terdeteksi.
+                      </li>
+                      <li>
+                        Pilih perangkat, beri nama lokasi, lalu pilih jenis
+                        tanaman yang sesuai.
+                      </li>
+                    </ol>
+                    <label className="text-primary flex cursor-pointer items-start gap-3 font-medium">
+                      <input
+                        type="checkbox"
+                        checked={installationConfirmed}
+                        onChange={(event) =>
+                          setInstallationConfirmed(event.target.checked)
+                        }
+                        className="accent-primary mt-1 h-4 w-4 shrink-0"
+                        required
+                      />
+                      Saya sudah memasang perangkat sesuai petunjuk di atas.
+                    </label>
+                  </section>
+                  {installationConfirmed && (
+                    <>
+                      <fieldset className="overflow-hidden rounded-xl border border-black/6">
+                        <legend className="sr-only">Pilih Alat</legend>
+                        <div className="flex items-center justify-between gap-2 border-b border-black/5 bg-neutral-50/80 px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <MdOutlineDeviceHub
+                              size={15}
+                              className="text-primary"
                             />
-                            <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
-                              <MdOutlineWifi
-                                size={18}
-                                className="text-primary"
-                              />
-                            </div>
+                            <span className="text-xs font-bold text-neutral-700">
+                              Langkah 1 — Pilih Alat yang Terdeteksi
+                            </span>
                           </div>
-                          <p className="text-xs font-medium text-neutral-500">
-                            Memindai alat di jaringan…
-                          </p>
-                        </motion.div>
-                      )}
-
-                      {scanStatus === "done" && discovered.length === 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex flex-col items-center gap-3 py-6 text-center"
-                        >
-                          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-500">
-                            <MdSignalWifiOff size={20} />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-neutral-700">
-                              Tidak ada alat baru terdeteksi
-                            </p>
-                            <p className="mt-1 max-w-xs text-xs text-neutral-400">
-                              Pastikan alat ESP32 Anda sudah terhubung ke WiFi
-                              dan menyala, lalu klik Pindai Ulang.
-                            </p>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {scanStatus === "error" && (
-                        <div className="flex items-start gap-2 rounded-xl bg-rose-50 px-4 py-3 text-xs text-rose-700">
-                          <MdLinkOff size={14} className="mt-0.5 shrink-0" />
-                          <span>
-                            {scanError ?? "Gagal menghubungi server."}
-                          </span>
-                        </div>
-                      )}
-
-                      {scanStatus === "done" && discovered.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="flex flex-col gap-2"
-                        >
-                          <p className="text-xs font-semibold text-emerald-700">
-                            ✓ {discovered.length} alat terdeteksi
-                          </p>
-                          <select
-                            id="select-discovered-device"
-                            value={selectedDeviceId}
-                            onChange={(e) =>
-                              setSelectedDeviceId(e.target.value)
-                            }
-                            className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
+                          <button
+                            type="button"
+                            id="rescan-devices-btn"
+                            onClick={scan}
+                            disabled={scanStatus === "scanning"}
+                            className="text-primary hover:bg-primary/8 flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50"
                           >
-                            <option value="">— Pilih alat —</option>
-                            {discovered.map((d) => (
-                              <option key={d.deviceCode} value={d.deviceCode}>
-                                {d.deviceCode} ·{" "}
-                                {formatDiscoveredAge(d.timestamp)}
-                              </option>
-                            ))}
-                          </select>
+                            <MdRefresh
+                              size={13}
+                              className={
+                                scanStatus === "scanning" ? "animate-spin" : ""
+                              }
+                            />
+                            {scanStatus === "scanning"
+                              ? "Memindai…"
+                              : "Pindai Ulang"}
+                          </button>
+                        </div>
 
-                          {selectedDeviceInfo && (
+                        <div className="p-4">
+                          {scanStatus === "scanning" && (
                             <motion.div
-                              key={selectedDeviceId}
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              className="flex gap-3 rounded-xl border border-emerald-200/60 bg-emerald-50/70 px-3 py-2.5"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="flex flex-col items-center gap-3 py-6"
                             >
-                              <MdOutlineDeviceHub
-                                size={16}
-                                className="mt-0.5 shrink-0 text-emerald-600"
-                              />
-                              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                                <span className="text-xs text-neutral-600">
-                                  <span className="font-medium text-neutral-800">
-                                    pH:
-                                  </span>{" "}
-                                  {selectedDeviceInfo.ph.toFixed(1)}
-                                </span>
-                                <span className="text-xs text-neutral-600">
-                                  <span className="font-medium text-neutral-800">
-                                    Kelembapan:
-                                  </span>{" "}
-                                  {selectedDeviceInfo.moisture}
-                                </span>
-                                <span className="text-xs text-neutral-400">
-                                  {formatDiscoveredAge(
-                                    selectedDeviceInfo.timestamp,
-                                  )}
-                                </span>
+                              <div className="relative flex h-12 w-12 items-center justify-center">
+                                <motion.div
+                                  className="bg-primary/20 absolute h-12 w-12 rounded-full"
+                                  animate={{
+                                    scale: [1, 1.6, 1],
+                                    opacity: [0.6, 0, 0.6],
+                                  }}
+                                  transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                  }}
+                                />
+                                <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
+                                  <MdOutlineWifi
+                                    size={18}
+                                    className="text-primary"
+                                  />
+                                </div>
+                              </div>
+                              <p className="text-xs font-medium text-neutral-500">
+                                Memindai alat di jaringan…
+                              </p>
+                            </motion.div>
+                          )}
+
+                          {scanStatus === "done" && discovered.length === 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="flex flex-col items-center gap-3 py-6 text-center"
+                            >
+                              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-500">
+                                <MdSignalWifiOff size={20} />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-neutral-700">
+                                  Tidak ada alat baru terdeteksi
+                                </p>
+                                <p className="mt-1 max-w-xs text-xs text-neutral-400">
+                                  Pastikan alat ESP32 Anda sudah terhubung ke
+                                  WiFi dan menyala, lalu klik Pindai Ulang.
+                                </p>
                               </div>
                             </motion.div>
                           )}
-                        </motion.div>
-                      )}
-                    </div>
-                  </fieldset>
 
-                  <fieldset className="overflow-hidden rounded-xl border border-black/6">
-                    <legend className="sr-only">Detail Alat</legend>
-                    <div className="border-b border-black/5 bg-neutral-50/80 px-4 py-3">
-                      <span className="text-xs font-bold text-neutral-700">
-                        Langkah 2 — Lengkapi Detail Alat
-                      </span>
-                    </div>
+                          {scanStatus === "error" && (
+                            <div className="flex items-start gap-2 rounded-xl bg-rose-50 px-4 py-3 text-xs text-rose-700">
+                              <MdLinkOff
+                                size={14}
+                                className="mt-0.5 shrink-0"
+                              />
+                              <span>
+                                {scanError ?? "Gagal menghubungi server."}
+                              </span>
+                            </div>
+                          )}
 
-                    <div className="flex flex-col gap-4 p-4">
-                      <div className="flex flex-col gap-1.5">
-                        <label
-                          htmlFor="device-label-input"
-                          className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
-                        >
-                          <MdOutlineLabel size={13} />
-                          Nama / Label Alat
-                        </label>
-                        <input
-                          id="device-label-input"
-                          type="text"
-                          value={label}
-                          onChange={(e) => setLabel(e.target.value)}
-                          placeholder="cth. Bayam Halaman Depan"
-                          maxLength={80}
-                          className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition placeholder:text-neutral-300 focus:ring-2 focus:outline-none"
-                        />
-                      </div>
+                          {scanStatus === "done" && discovered.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="flex flex-col gap-2"
+                            >
+                              <p className="text-xs font-semibold text-emerald-700">
+                                ✓ {discovered.length} alat terdeteksi
+                              </p>
+                              <select
+                                id="select-discovered-device"
+                                value={selectedDeviceId}
+                                onChange={(e) =>
+                                  setSelectedDeviceId(e.target.value)
+                                }
+                                className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
+                              >
+                                <option value="">— Pilih alat —</option>
+                                {discovered.map((d) => (
+                                  <option
+                                    key={d.deviceCode}
+                                    value={d.deviceCode}
+                                  >
+                                    {d.deviceCode} ·{" "}
+                                    {formatDiscoveredAge(d.timestamp)}
+                                  </option>
+                                ))}
+                              </select>
 
-                      <div className="flex flex-col gap-1.5">
-                        <label
-                          htmlFor="select-plant"
-                          className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
-                        >
-                          <MdOutlineSpa size={13} />
-                          Tanaman
-                        </label>
-                        <select
-                          id="select-plant"
-                          value={selectedPlantId}
-                          onChange={(e) => setSelectedPlantId(e.target.value)}
-                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
-                        >
-                          <option value="">— Pilih tanaman —</option>
-                          {plants.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name}
-                            </option>
-                          ))}
-                        </select>
-                        {plants.length === 0 && (
-                          <p className="text-xs text-neutral-400">
-                            Belum ada data tanaman. Tambahkan tanaman terlebih
-                            dahulu.
-                          </p>
-                        )}
-                      </div>
+                              {selectedDeviceInfo && (
+                                <motion.div
+                                  key={selectedDeviceId}
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  className="flex gap-3 rounded-xl border border-emerald-200/60 bg-emerald-50/70 px-3 py-2.5"
+                                >
+                                  <MdOutlineDeviceHub
+                                    size={16}
+                                    className="mt-0.5 shrink-0 text-emerald-600"
+                                  />
+                                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                    <span className="text-xs text-neutral-600">
+                                      <span className="font-medium text-neutral-800">
+                                        pH:
+                                      </span>{" "}
+                                      {selectedDeviceInfo.ph.toFixed(1)}
+                                    </span>
+                                    <span className="text-xs text-neutral-600">
+                                      <span className="font-medium text-neutral-800">
+                                        Kelembapan:
+                                      </span>{" "}
+                                      {selectedDeviceInfo.moisture}
+                                    </span>
+                                    <span className="text-xs text-neutral-400">
+                                      {formatDiscoveredAge(
+                                        selectedDeviceInfo.timestamp,
+                                      )}
+                                    </span>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </motion.div>
+                          )}
+                        </div>
+                      </fieldset>
 
-                      <div className="flex flex-col gap-1.5">
-                        <label
-                          htmlFor="select-interval"
-                          className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
-                        >
-                          <MdAccessTime size={13} className="text-amber-500" />
-                          Interval Pengambilan Data
-                        </label>
-                        <select
-                          id="select-interval"
-                          value={sensorInterval}
-                          onChange={(e) =>
-                            setSensorInterval(Number(e.target.value))
-                          }
-                          className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
-                        >
-                          <option value={1}>1 Menit</option>
-                          <option value={5}>5 Menit</option>
-                          <option value={10}>10 Menit</option>
-                          <option value={30}>30 Menit</option>
-                          <option value={60}>1 Jam</option>
-                          <option value={240}>4 Jam</option>
-                          <option value={360}>6 Jam</option>
-                          <option value={720}>12 Jam</option>
-                        </select>
-                        <p className="text-[10px] leading-normal text-neutral-400">
-                          Tentukan seberapa sering alat membaca & mengirim data
-                          sensor.
-                        </p>
-                      </div>
-                    </div>
-                  </fieldset>
+                      <fieldset className="overflow-hidden rounded-xl border border-black/6">
+                        <legend className="sr-only">Detail Alat</legend>
+                        <div className="border-b border-black/5 bg-neutral-50/80 px-4 py-3">
+                          <span className="text-xs font-bold text-neutral-700">
+                            Langkah 2 — Lengkapi Detail Alat
+                          </span>
+                        </div>
 
+                        <div className="flex flex-col gap-4 p-4">
+                          <div className="flex flex-col gap-1.5">
+                            <label
+                              htmlFor="manual-node-id"
+                              className="text-xs font-semibold text-neutral-600"
+                            >
+                              ID node / perangkat
+                            </label>
+                            <input
+                              id="manual-node-id"
+                              value={selectedDeviceId}
+                              onChange={(e) =>
+                                setSelectedDeviceId(e.target.value.trim())
+                              }
+                              maxLength={50}
+                              placeholder="Masukkan ID node atau pilih alat yang terdeteksi"
+                              required
+                              className="focus:border-primary w-full rounded-xl border border-black/10 px-3 py-2.5 text-sm outline-none"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label
+                              htmlFor="device-label-input"
+                              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
+                            >
+                              <MdOutlineLabel size={13} />
+                              Nama / Label Alat
+                            </label>
+                            <input
+                              id="device-label-input"
+                              type="text"
+                              value={label}
+                              onChange={(e) => setLabel(e.target.value)}
+                              placeholder="cth. Bayam Halaman Depan"
+                              maxLength={80}
+                              className="focus:border-primary focus:ring-primary/20 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition placeholder:text-neutral-300 focus:ring-2 focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1.5">
+                            <label
+                              htmlFor="select-plant"
+                              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
+                            >
+                              <MdOutlineSpa size={13} />
+                              Tanaman
+                            </label>
+                            <select
+                              id="select-plant"
+                              value={selectedPlantId}
+                              onChange={(e) =>
+                                setSelectedPlantId(e.target.value)
+                              }
+                              className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
+                            >
+                              <option value="">— Pilih tanaman —</option>
+                              {plants.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.name}
+                                </option>
+                              ))}
+                            </select>
+                            {plants.length === 0 && (
+                              <p className="text-xs text-neutral-400">
+                                Belum ada data tanaman. Tambahkan tanaman
+                                terlebih dahulu.
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col gap-1.5">
+                            <label
+                              htmlFor="select-interval"
+                              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
+                            >
+                              <MdAccessTime
+                                size={13}
+                                className="text-amber-500"
+                              />
+                              Interval Pengambilan Data
+                            </label>
+                            <select
+                              id="select-interval"
+                              value={sensorInterval}
+                              onChange={(e) =>
+                                setSensorInterval(Number(e.target.value))
+                              }
+                              className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-neutral-700 transition focus:ring-2 focus:outline-none"
+                            >
+                              <option value={1}>1 Menit</option>
+                              <option value={5}>5 Menit</option>
+                              <option value={10}>10 Menit</option>
+                              <option value={30}>30 Menit</option>
+                              <option value={60}>1 Jam</option>
+                              <option value={240}>4 Jam</option>
+                              <option value={360}>6 Jam</option>
+                              <option value={720}>12 Jam</option>
+                            </select>
+                            <p className="text-[10px] leading-normal text-neutral-400">
+                              Tentukan seberapa sering alat membaca & mengirim
+                              data sensor.
+                            </p>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </>
+                  )}
                   <AnimatePresence>
                     {formError && (
                       <motion.p
@@ -458,7 +535,7 @@ export default function ConnectDeviceModal({
                 </form>
               </div>
 
-              <div className="flex shrink-0 items-center justify-end gap-3 border-t border-black/6 bg-neutral-50/50 px-6 py-4">
+              <div className="flex shrink-0 items-center justify-end gap-3 border-t border-black/6 bg-neutral-50/50 px-4 py-4 sm:px-6">
                 <button
                   type="button"
                   id="cancel-connect-btn"
@@ -471,7 +548,11 @@ export default function ConnectDeviceModal({
                   type="submit"
                   form="connect-device-form"
                   id="submit-connect-btn"
-                  disabled={isSubmitting || scanStatus === "scanning"}
+                  disabled={
+                    !installationConfirmed ||
+                    isSubmitting ||
+                    scanStatus === "scanning"
+                  }
                   className="bg-primary hover:bg-primary-light flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? (
@@ -490,7 +571,7 @@ export default function ConnectDeviceModal({
                   ) : (
                     <>
                       <MdOutlineDeviceHub size={15} />
-                      Hubungkan Sekarang
+                      Simpan Perangkat
                     </>
                   )}
                 </button>

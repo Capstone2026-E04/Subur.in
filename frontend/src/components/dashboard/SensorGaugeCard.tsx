@@ -61,7 +61,7 @@ function CircularGauge({
       width={140}
       height={140}
       viewBox="0 0 140 140"
-      className="overflow-visible"
+      className="h-auto w-full max-w-[140px] overflow-visible"
     >
       <defs>
         <filter
@@ -151,7 +151,7 @@ export default function SensorGaugeCard({
   }
 
   return (
-    <Card className="relative items-center gap-4 overflow-hidden rounded-2xl p-6 transition-shadow duration-300 hover:shadow-md">
+    <Card className="relative min-w-0 items-center gap-3 overflow-hidden rounded-2xl p-3 transition-shadow duration-300 hover:shadow-md sm:gap-4 sm:p-6">
       {flashKey > 0 && (
         <motion.div
           key={flashKey}
@@ -163,12 +163,14 @@ export default function SensorGaugeCard({
         />
       )}
 
-      <div className="flex items-center gap-2 self-start">
+      <div className="flex min-w-0 items-center gap-1.5 self-start sm:gap-2">
         <span className="text-primary/70">{icon}</span>
-        <span className="text-sm font-semibold text-neutral-600">{label}</span>
+        <span className="text-xs font-semibold text-neutral-600 sm:text-sm">
+          {label}
+        </span>
       </div>
 
-      <div className="relative flex items-center justify-center">
+      <div className="relative flex w-full max-w-[112px] items-center justify-center sm:max-w-[140px]">
         <CircularGauge
           pct={pct}
           strokeColor={colors.stroke}

@@ -2,10 +2,9 @@
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdOutlineSpa, MdRefresh, MdOutlineInbox } from "react-icons/md";
+import { MdOutlineSpa, MdOutlineInbox } from "react-icons/md";
 import { usePlants } from "@/hooks/usePlants";
 import { Card } from "@/components/ui/card";
-import PageHeader from "@/components/dashboard/PageHeader";
 
 function PlantSkeletonCard() {
   return (
@@ -34,26 +33,7 @@ export default function PlantsPage() {
   }, [loadPlants]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      <PageHeader
-        title="Katalog Tanaman"
-        description={
-          isLoading
-            ? "Memuat daftar tanaman…"
-            : `${plants.length} jenis tanaman didukung di Subur.in`
-        }
-      >
-        <button
-          id="refresh-plants-btn"
-          onClick={loadPlants}
-          disabled={isLoading}
-          aria-label="Segarkan katalog tanaman"
-          className="hover:text-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-neutral-500 shadow-sm transition-colors hover:bg-neutral-50 disabled:opacity-50"
-        >
-          <MdRefresh size={17} className={isLoading ? "animate-spin" : ""} />
-        </button>
-      </PageHeader>
-
+    <div className="mx-auto w-full max-w-6xl space-y-4 sm:space-y-6">
       <AnimatePresence>
         {error && (
           <motion.div
@@ -102,76 +82,89 @@ export default function PlantsPage() {
       ) : (
         <motion.div layout className="grid grid-cols-1 gap-4">
           <AnimatePresence mode="popLayout">
-            {plants.map((plant) => (
-              <motion.div
-                key={plant.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="group bg-card border-border relative flex overflow-hidden rounded-2xl border shadow-xs transition-shadow duration-300 hover:shadow-md"
-              >
-                <div className="bg-primary/40 group-hover:bg-primary w-1.5 shrink-0 transition-all duration-300" />
+            {[...plants]
+              .sort((a, b) => {
+                const order = ["bayam", "selada", "pakcoy"];
+                const rank = (name: string) => {
+                  const index = order.indexOf(name.toLowerCase());
+                  return index < 0 ? order.length : index;
+                };
+                return rank(a.name) - rank(b.name);
+              })
+              .map((plant) => (
+                <motion.div
+                  key={plant.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="group bg-card border-border relative flex overflow-hidden rounded-2xl border shadow-xs transition-shadow duration-300 hover:shadow-md"
+                >
+                  <div className="bg-primary/40 group-hover:bg-primary w-1.5 shrink-0 transition-all duration-300" />
 
-                <div className="flex flex-1 flex-col justify-between gap-4 p-5 md:flex-row md:items-center">
-                  <div className="flex min-w-0 shrink-0 items-center gap-3 md:max-w-xs">
-                    <div className="bg-primary/8 text-primary group-hover:bg-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-300 group-hover:text-white">
-                      <MdOutlineSpa size={22} />
+                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 p-4 md:gap-4 md:p-5">
+                    <div className="flex min-w-0 shrink-0 items-center gap-3 md:max-w-xs">
+                      <div className="bg-primary/8 text-primary group-hover:bg-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-300 group-hover:text-white">
+                        <MdOutlineSpa size={22} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="group-hover:text-primary truncate text-sm leading-tight font-bold text-neutral-800 transition-colors">
+                          {plant.name}
+                        </p>
+                        {plant.scientificName && (
+                          <p className="mt-1 truncate text-xs text-neutral-400 italic">
+                            {plant.scientificName}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="group-hover:text-primary truncate text-sm leading-tight font-bold text-neutral-800 transition-colors">
-                        {plant.name}
-                      </p>
-                      {plant.scientificName && (
-                        <p className="mt-1 truncate text-xs text-neutral-400 italic">
-                          {plant.scientificName}
+
+                    <div className="min-w-0 flex-1">
+                      {plant.description ? (
+                        <p className="text-xs leading-relaxed font-normal text-neutral-500">
+                          {plant.description}
+                        </p>
+                      ) : (
+                        <p className="text-xs leading-relaxed text-neutral-400 italic">
+                          Tidak ada deskripsi untuk tanaman ini.
                         </p>
                       )}
-                    </div>
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    {plant.description ? (
-                      <p className="text-xs leading-relaxed font-normal text-neutral-500 md:line-clamp-2">
-                        {plant.description}
+                      <p className="mt-2 text-xs leading-relaxed text-neutral-500">
+                        Gunakan media tanam dengan drainase baik. Pantau
+                        kelembapan dan pH sesuai preset berikut.
                       </p>
-                    ) : (
-                      <p className="text-xs leading-relaxed text-neutral-400 italic">
-                        Tidak ada deskripsi untuk tanaman ini.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="border-border flex shrink-0 items-center gap-3 border-t pt-3 md:border-t-0 md:pt-0">
-                    <div className="flex min-w-[100px] flex-col items-center rounded-xl border border-sky-100 bg-sky-50 px-3 py-2">
-                      <span className="text-[9px] font-bold tracking-wider text-sky-600 uppercase">
-                        Kelembapan (VWC %)
-                      </span>
-                      <span className="mt-0.5 text-xs font-bold text-neutral-700">
-                        {plant.vwcTrigger !== null
-                          ? `Trigger ${plant.vwcTrigger}`
-                          : "-"}
-                      </span>
-                      <span className="mt-0.5 text-[9px] font-semibold text-sky-700/80">
-                        Tgt: {plant.vwcTarget ?? "-"}
-                      </span>
                     </div>
 
-                    <div className="flex min-w-[100px] flex-col items-center rounded-xl border border-amber-100 bg-amber-50 px-3 py-2">
-                      <span className="text-[9px] font-bold tracking-wider text-amber-600 uppercase">
-                        pH Tanah
-                      </span>
-                      <span className="mt-0.5 text-xs font-bold text-neutral-700">
-                        {plant.minPh.toFixed(1)} - {plant.maxPh.toFixed(1)}
-                      </span>
-                      <span className="mt-0.5 text-[9px] font-semibold text-amber-700/80">
-                        Tgt: {plant.phTarget.toFixed(1)}
-                      </span>
+                    <div className="border-border grid grid-cols-2 items-center gap-2 border-t pt-3 md:flex md:shrink-0 md:gap-3">
+                      <div className="flex min-w-0 flex-1 flex-col items-center rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 md:min-w-[100px] md:flex-none">
+                        <span className="text-[9px] font-bold tracking-wider text-sky-600 uppercase">
+                          Kelembapan (VWC %)
+                        </span>
+                        <span className="mt-0.5 text-xs font-bold text-neutral-700">
+                          {plant.vwcTrigger !== null
+                            ? `Trigger ${plant.vwcTrigger}`
+                            : "-"}
+                        </span>
+                        <span className="mt-0.5 text-[9px] font-semibold text-sky-700/80">
+                          Tgt: {plant.vwcTarget ?? "-"}
+                        </span>
+                      </div>
+
+                      <div className="flex min-w-0 flex-1 flex-col items-center rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 md:min-w-[100px] md:flex-none">
+                        <span className="text-[9px] font-bold tracking-wider text-amber-600 uppercase">
+                          pH Tanah
+                        </span>
+                        <span className="mt-0.5 text-xs font-bold text-neutral-700">
+                          {plant.minPh.toFixed(1)} - {plant.maxPh.toFixed(1)}
+                        </span>
+                        <span className="mt-0.5 text-[9px] font-semibold text-amber-700/80">
+                          Tgt: {plant.phTarget.toFixed(1)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
           </AnimatePresence>
         </motion.div>
       )}

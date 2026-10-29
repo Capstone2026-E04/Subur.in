@@ -1,596 +1,153 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import {
-  MdWaterDrop,
-  MdOutlineSpa,
-  MdRefresh,
-  MdOutlineTimeline,
-  MdWarningAmber,
-  MdOutlineArrowDropDown,
-} from "react-icons/md";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useDevices } from "@/hooks/useDevices";
-import { fetchSensorHistory } from "@/services/deviceService";
-import type { SensorHistoryItem } from "@/types/device";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
-import { Card, CardHeader } from "@/components/ui/card";
-import PageHeader from "@/components/dashboard/PageHeader";
-
-type ChartViewMode = "both" | "ph" | "moisture";
-
-function PageSkeleton() {
-  return (
-    <div className="mx-auto max-w-4xl animate-pulse space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 border-b border-black/5 pb-4 sm:flex-row sm:items-center">
-        <div className="space-y-2">
-          <div className="h-6 w-48 animate-pulse rounded bg-neutral-200"></div>
-          <div className="h-4 w-64 animate-pulse rounded bg-neutral-100"></div>
-        </div>
-        <div className="h-10 w-60 animate-pulse rounded bg-neutral-200"></div>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="h-32 animate-pulse rounded-3xl bg-neutral-200"></div>
-        <div className="h-32 animate-pulse rounded-3xl bg-neutral-200"></div>
-      </div>
-      <div className="h-96 animate-pulse rounded-3xl bg-neutral-200"></div>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <Card className="mx-auto my-8 max-w-xl items-center justify-center rounded-3xl border-dashed p-8 py-20 text-center">
-      <div className="bg-primary/8 text-primary mb-6 flex h-20 w-20 animate-bounce items-center justify-center rounded-2xl">
-        <MdOutlineTimeline size={40} />
-      </div>
-      <h3 className="text-lg font-bold text-neutral-800">
-        Belum Ada Alat Terdaftar
-      </h3>
-      <p className="mt-2 max-w-sm text-sm leading-relaxed text-neutral-500">
-        Silakan hubungkan perangkat Anda terlebih dahulu pada tab
-        &quot;Perangkat&quot; untuk melihat analitik dan visualisasi data sensor
-        real-time.
-      </p>
-    </Card>
-  );
-}
-
-function formatChartTime(dateStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return dateStr;
-  }
-}
-
-type Aggregation = "raw" | "30s" | "1m" | "5m" | "15m" | "30m" | "1h";
-
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: {
-    name?: string;
-    value: number;
-    color?: string;
-    stroke?: string;
-  }[];
-  label?: string;
-}
-
-function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
-  if (active && payload && payload.length) {
-    return (
-      <div className="rounded-2xl border border-black/8 bg-white/95 p-3.5 shadow-xl backdrop-blur-sm">
-        <p className="mb-2 text-xs font-bold text-neutral-400">{label}</p>
-        <div className="space-y-1.5">
-          {payload.map((p) => (
-            <div key={p.name} className="flex items-center gap-2">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: p.stroke || p.color }}
-              />
-              <span className="text-xs font-semibold text-neutral-600">
-                {p.name}:
-              </span>
-              <span className="text-xs font-bold text-neutral-800">
-                {p.value.toFixed(p.name === "pH" ? 2 : 1)}
-                {p.name === "pH" ? "" : "%"}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  return null;
-}
+import { useSelectedDeviceStore } from "@/stores/selectedDeviceStore";
+import { fetchRecommendationHistory } from "@/services/deviceService";
+import type { RecommendationLogItem } from "@/types/device";
+import { categoryLabel } from "@/components/recommendations/categoryLabel";
+import SensorTrendCard from "@/components/dashboard/SensorTrendCard";
+import { Card } from "@/components/ui/card";
 
 export default function AnalyticsPage() {
-  const { devices, isLoading, token, loadDevices } = useDevices();
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
-  const [history, setHistory] = useState<SensorHistoryItem[]>([]);
-  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-  const [limit, setLimit] = useState(50);
-  const [viewMode, setViewMode] = useState<ChartViewMode>("both");
-  const [aggregation, setAggregation] = useState<Aggregation>("raw");
-  const [isMounted, setIsMounted] = useState(false);
+  const { devices, token, isLoading, loadDevices } = useDevices();
+  const { selectedDeviceId } = useSelectedDeviceStore();
+  const device =
+    devices.find((item) => item.id === selectedDeviceId) ?? devices[0];
+  const [logs, setLogs] = useState<RecommendationLogItem[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDevices();
-    setIsMounted(true);
   }, [loadDevices]);
-
-  const selectedDevice =
-    devices.find((d) => d.id === selectedDeviceId) || devices[0] || null;
-
-  const loadHistory = useCallback(async () => {
-    if (!token || !selectedDevice?.id) return;
-    setIsHistoryLoading(true);
+  const loadVersion = useRef(0);
+  const invalidateLoad = useCallback(() => {
+    loadVersion.current++;
+  }, []);
+  const loadLogs = useCallback(async () => {
+    const version = ++loadVersion.current;
+    if (!token || !device?.id) return;
+    setLoading(true);
     setError(null);
+    setLogs([]);
     try {
-      const data = await fetchSensorHistory(token, selectedDevice.id, limit);
-      const sorted = [...data].sort(
-        (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-      );
-      setHistory(sorted);
+      const result = await fetchRecommendationHistory(token, device.id);
+      if (version === loadVersion.current) setLogs(result);
     } catch (err) {
+      if (version !== loadVersion.current) return;
       setError(
-        err instanceof Error ? err.message : "Gagal memuat riwayat sensor.",
+        err instanceof Error
+          ? err.message
+          : "Gagal memuat riwayat rekomendasi.",
       );
-      setHistory([]);
     } finally {
-      setIsHistoryLoading(false);
+      if (version === loadVersion.current) setLoading(false);
     }
-  }, [token, selectedDevice?.id, limit]);
-
+  }, [token, device?.id]);
   useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+    loadLogs();
+    return invalidateLoad;
+  }, [loadLogs, invalidateLoad]);
 
-  const aggregateHistory = useCallback(
-    (data: SensorHistoryItem[]) => {
-      if (aggregation === "raw" || data.length === 0) return data;
-
-      const msMap: Record<string, number> = {
-        "30s": 30 * 1000,
-        "1m": 1 * 60 * 1000,
-        "5m": 5 * 60 * 1000,
-        "15m": 15 * 60 * 1000,
-        "30m": 30 * 60 * 1000,
-        "1h": 60 * 60 * 1000,
-      };
-      const ms = msMap[aggregation] || 60 * 1000;
-      const grouped: Record<
-        string,
-        { sumPh: number; sumMoisture: number; count: number; timestamp: string }
-      > = {};
-
-      data.forEach((item) => {
-        if (!item.timestamp) return;
-        const time = new Date(item.timestamp).getTime();
-        if (isNaN(time)) return;
-
-        const roundedTime = Math.round(time / ms) * ms;
-        if (isNaN(roundedTime)) return;
-        const key = new Date(roundedTime).toISOString();
-
-        if (!grouped[key]) {
-          grouped[key] = { sumPh: 0, sumMoisture: 0, count: 0, timestamp: key };
-        }
-        grouped[key].sumPh += item.ph;
-        grouped[key].sumMoisture += item.moisture;
-        grouped[key].count += 1;
-      });
-
-      return Object.values(grouped)
-        .map((g, index) => ({
-          id: index,
-          deviceId: data[0].deviceId,
-          timestamp: g.timestamp,
-          ph: g.sumPh / g.count,
-          moisture: g.sumMoisture / g.count,
-        }))
-        .sort(
-          (a, b) =>
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-        );
-    },
-    [aggregation],
-  );
-
-  if (isLoading) {
-    return <PageSkeleton />;
-  }
-
-  if (devices.length === 0) {
-    return <EmptyState />;
-  }
-
-  if (!selectedDevice) {
+  if (isLoading)
     return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <p className="text-sm font-semibold text-neutral-500">
-          Memuat perangkat...
-        </p>
-      </div>
+      <div
+        className="h-64 animate-pulse rounded-3xl bg-neutral-100"
+        aria-label="Memuat riwayat"
+      />
     );
-  }
-
-  const displayData = aggregateHistory(history);
-
-  const validPhValues = displayData
-    .map((h) => h.ph)
-    .filter((val) => typeof val === "number" && !isNaN(val));
-  const validMoistureValues = displayData
-    .map((h) => h.moisture)
-    .filter((val) => typeof val === "number" && !isNaN(val));
-
-  const avgPh = validPhValues.length
-    ? validPhValues.reduce((a, b) => a + b, 0) / validPhValues.length
-    : 0;
-  const minPh = validPhValues.length ? Math.min(...validPhValues) : 0;
-  const maxPh = validPhValues.length ? Math.max(...validPhValues) : 0;
-
-  const avgMoisture = validMoistureValues.length
-    ? validMoistureValues.reduce((a, b) => a + b, 0) /
-      validMoistureValues.length
-    : 0;
-  const minMoisture = validMoistureValues.length
-    ? Math.min(...validMoistureValues)
-    : 0;
-  const maxMoisture = validMoistureValues.length
-    ? Math.max(...validMoistureValues)
-    : 0;
-
-  const intervalMinutes = selectedDevice.sensorInterval ?? 60;
-  const totalMinutes = displayData.length * intervalMinutes;
-  let durationText = "";
-  if (totalMinutes < 60) {
-    durationText = `${totalMinutes} menit terakhir`;
-  } else {
-    const hours = (totalMinutes / 60).toFixed(1);
-    durationText = `${hours} jam terakhir`;
-  }
-
-  const formattedData = displayData.map((item) => ({
-    ...item,
-    timeLabel: formatChartTime(item.timestamp),
-  }));
+  if (!device)
+    return (
+      <Card className="p-6 text-center">
+        Hubungkan perangkat terlebih dahulu untuk melihat riwayat tanaman.
+      </Card>
+    );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 pb-12">
-      <PageHeader
-        title="Analitik Kebun"
-        description="Pantau tren pH dan kelembapan tanah dari waktu ke waktu."
-      >
-        <div className="relative shrink-0">
-          <label className="sr-only" htmlFor="analytics-device-selector">
-            Pilih Alat
-          </label>
-          <select
-            id="analytics-device-selector"
-            value={selectedDevice.id}
-            onChange={(e) => setSelectedDeviceId(e.target.value)}
-            className="focus:border-primary focus:ring-primary/20 w-full cursor-pointer appearance-none rounded-xl border border-black/10 bg-white py-2.5 pr-10 pl-4 text-sm font-bold text-neutral-700 shadow-sm transition focus:ring-2 focus:outline-none sm:w-64"
+    <div className="mx-auto w-full max-w-6xl space-y-4 sm:space-y-6">
+      <SensorTrendCard
+        title="Grafik Nilai Kelembapan"
+        metric="moisture"
+        deviceId={device.id}
+        token={token}
+        color="#237844"
+      />
+      <SensorTrendCard
+        title="Grafik Nilai pH"
+        metric="ph"
+        deviceId={device.id}
+        token={token}
+        color="#2f6f3a"
+      />
+      <Card className="p-4 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-lg font-bold">Riwayat Rekomendasi</h1>
+          <button
+            type="button"
+            onClick={loadLogs}
+            disabled={loading}
+            className="text-primary min-h-11 cursor-pointer text-sm font-semibold disabled:opacity-50"
           >
-            {devices.map((device) => (
-              <option key={device.id} value={device.id}>
-                {device.label} ({device.plant?.name ?? "Tanaman"})
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-500">
-            <MdOutlineArrowDropDown size={20} />
-          </div>
+            Muat ulang
+          </button>
         </div>
-      </PageHeader>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Card className="flex-row items-center justify-between gap-4 p-5">
-          <div className="min-w-0 space-y-1.5">
-            <p className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
-              Rata-rata Kelembapan
-            </p>
-            <p className="text-[10px] leading-none font-medium text-neutral-400">
-              Dihitung dari data {durationText}
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-neutral-800">
-                {avgMoisture > 0 ? avgMoisture.toFixed(1) : "--"}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 text-[10px] font-semibold text-neutral-400">
-              <span>
-                Min:{" "}
-                <strong className="text-neutral-600">
-                  {minMoisture > 0 ? minMoisture.toFixed(0) : "--"}
-                </strong>
-              </span>
-              <span className="h-1 w-1 rounded-full bg-neutral-300" />
-              <span>
-                Max:{" "}
-                <strong className="text-neutral-600">
-                  {maxMoisture > 0 ? maxMoisture.toFixed(0) : "--"}
-                </strong>
-              </span>
-            </div>
-          </div>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-500 shadow-inner">
-            <MdWaterDrop size={24} />
-          </div>
-        </Card>
-
-        <Card className="flex-row items-center justify-between gap-4 p-5">
-          <div className="min-w-0 space-y-1.5">
-            <p className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
-              Rata-rata pH Tanah
-            </p>
-            <p className="text-[10px] leading-none font-medium text-neutral-400">
-              Dihitung dari data {durationText}
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-neutral-800">
-                {avgPh > 0 ? avgPh.toFixed(2) : "--"}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 text-[10px] font-semibold text-neutral-400">
-              <span>
-                Min:{" "}
-                <strong className="text-neutral-600">
-                  {minPh > 0 ? minPh.toFixed(1) : "--"}
-                </strong>
-              </span>
-              <span className="h-1 w-1 rounded-full bg-neutral-300" />
-              <span>
-                Max:{" "}
-                <strong className="text-neutral-600">
-                  {maxPh > 0 ? maxPh.toFixed(1) : "--"}
-                </strong>
-              </span>
-            </div>
-          </div>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-500 shadow-inner">
-            <MdOutlineSpa size={24} />
-          </div>
-        </Card>
-      </div>
-
-      <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/60 shrink-0 flex-wrap gap-4 py-4">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-primary/10 flex h-9 w-9 items-center justify-center rounded-xl">
-              <MdOutlineTimeline size={20} className="text-primary" />
-            </div>
-            <div>
-              <h3 className="text-primary text-sm leading-tight font-bold">
-                Tren Parameter Lingkungan
-              </h3>
-              <p className="text-xs font-medium text-neutral-400">
-                Riwayat telemetri pH dan Kelembapan secara real-time
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex rounded-xl border border-black/5 bg-neutral-100 p-0.5 text-xs font-bold">
-              {[
-                { id: "both", label: "Semua" },
-                { id: "ph", label: "pH" },
-                { id: "moisture", label: "Lembap" },
-              ].map((m) => {
-                const isActive = viewMode === m.id;
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setViewMode(m.id as ChartViewMode)}
-                    className={`cursor-pointer rounded-lg px-3 py-1.5 transition ${
-                      isActive
-                        ? "text-primary bg-white shadow-sm"
-                        : "text-neutral-500 hover:text-neutral-700"
-                    }`}
-                  >
-                    <span>{m.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <select
-              id="analytics-limit-select"
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-600 shadow-sm focus:ring-1 focus:outline-none"
-            >
-              <option value={10}>10 data</option>
-              <option value={30}>30 data</option>
-              <option value={50}>50 data</option>
-              <option value={100}>100 data</option>
-              <option value={200}>200 data</option>
-              <option value={500}>500 data</option>
-            </select>
-
-            <select
-              id="analytics-aggregation-select"
-              value={aggregation}
-              onChange={(e) => setAggregation(e.target.value as Aggregation)}
-              className="focus:ring-primary cursor-pointer rounded-xl border border-black/10 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-600 shadow-sm focus:ring-1 focus:outline-none"
-            >
-              <option value="raw">Mentah (Semua)</option>
-              <option value="30s">Tiap 30 Detik</option>
-              <option value="1m">Tiap 1 Menit</option>
-              <option value="5m">Tiap 5 Menit</option>
-              <option value="15m">Tiap 15 Menit</option>
-              <option value="30m">Tiap 30 Menit</option>
-              <option value="1h">Tiap 1 Jam</option>
-            </select>
-
-            <button
-              id="refresh-analytics-btn"
-              onClick={loadHistory}
-              disabled={isHistoryLoading}
-              className="hover:text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-black/8 bg-white text-neutral-500 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50"
-              aria-label="Segarkan riwayat sensor"
-            >
-              <MdRefresh
-                size={16}
-                className={isHistoryLoading ? "animate-spin" : ""}
-              />
-            </button>
-          </div>
-        </CardHeader>
-
-        <div className="relative min-h-[360px] flex-1 p-5">
-          {isHistoryLoading && history.length === 0 ? (
-            <div className="absolute inset-0 z-10 flex animate-pulse items-center justify-center bg-white/75">
-              <div className="flex flex-col items-center gap-2">
-                <div className="border-primary/20 border-t-primary h-8 w-8 animate-spin rounded-full border-2" />
-                <p className="text-xs font-semibold text-neutral-400">
-                  Memuat analisis data...
-                </p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
-                <MdWarningAmber size={24} />
-              </div>
-              <p className="text-sm font-bold text-rose-600">⚠ {error}</p>
-              <button
-                onClick={loadHistory}
-                className="text-primary mt-3 cursor-pointer text-xs font-bold hover:underline"
-              >
-                Coba Segarkan Kembali
-              </button>
-            </div>
-          ) : history.length === 0 ? (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-black/5 bg-neutral-50 text-neutral-400">
-                <MdOutlineTimeline size={24} />
-              </div>
-              <p className="text-sm font-bold text-neutral-700">
-                Belum Ada Riwayat Data
-              </p>
-              <p className="mt-1 max-w-sm text-xs leading-relaxed text-neutral-400">
-                Nyalakan perangkat <strong>{selectedDevice.label}</strong> Anda
-                untuk mulai merekam riwayat pembacaan sensor.
-              </p>
-            </div>
-          ) : null}
-
-          {isMounted && history.length > 0 && (
-            <div className="h-[320px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={formattedData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+        <p className="mb-4 text-sm text-neutral-500">
+          Catatan perawatan untuk {device.label}.
+        </p>
+        {loading ? (
+          <p role="status" className="py-6 text-sm text-neutral-500">
+            Memuat riwayat...
+          </p>
+        ) : error ? (
+          <p role="alert" className="py-6 text-sm text-red-600">
+            {error}
+          </p>
+        ) : logs.length === 0 ? (
+          <p className="py-6 text-sm text-neutral-500">
+            Belum ada riwayat rekomendasi untuk perangkat ini.
+          </p>
+        ) : (
+          <ol className="divide-y divide-neutral-200">
+            {logs.map((log) => (
+              <li key={log.id} className="space-y-2 py-4">
+                <time
+                  dateTime={log.createdAt}
+                  className="text-xs text-neutral-500"
                 >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f1f5f9"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="timeLabel"
-                    stroke="#94a3b8"
-                    fontSize={10}
-                    tickLine={false}
-                    axisLine={false}
-                    dy={10}
-                  />
-
-                  {(viewMode === "ph" || viewMode === "both") && (
-                    <YAxis
-                      yAxisId="ph-axis"
-                      domain={[0, 14]}
-                      stroke="#94a3b8"
-                      fontSize={10}
-                      tickLine={false}
-                      axisLine={false}
-                      dx={-10}
-                    />
+                  {new Date(log.createdAt).toLocaleString("id-ID")}
+                </time>
+                <p className="text-primary text-xs font-semibold">
+                  {categoryLabel(log.categoryCode)}
+                </p>
+                <p className="text-sm font-medium break-words">
+                  {log.actionText}
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-500">
+                  <span>pH: {log.phValue}</span>
+                  <span>Kelembapan: {log.moistureValue}% VWC</span>
+                  <span>Air: {log.waterVolumeLiter} L</span>
+                  {log.limeDosageGram > 0 && (
+                    <span>Dolomit: {log.limeDosageGram} g</span>
                   )}
-
-                  {viewMode === "moisture" ? (
-                    <YAxis
-                      yAxisId="moisture-axis"
-                      domain={[0, 100]}
-                      stroke="#94a3b8"
-                      fontSize={10}
-                      tickLine={false}
-                      axisLine={false}
-                      dx={-10}
-                    />
-                  ) : viewMode === "both" ? (
-                    <YAxis
-                      yAxisId="moisture-axis"
-                      orientation="right"
-                      domain={[0, 100]}
-                      stroke="#94a3b8"
-                      fontSize={10}
-                      tickLine={false}
-                      axisLine={false}
-                      dx={10}
-                    />
-                  ) : null}
-
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend
-                    verticalAlign="top"
-                    height={36}
-                    iconType="circle"
-                    iconSize={8}
-                    wrapperStyle={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#475569",
-                    }}
-                  />
-
-                  {(viewMode === "ph" || viewMode === "both") && (
-                    <Line
-                      yAxisId="ph-axis"
-                      type="monotone"
-                      dataKey="ph"
-                      name="pH"
-                      stroke="#059669"
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{ r: 5, strokeWidth: 0 }}
-                    />
+                  {log.sulfurDosageGram > 0 && (
+                    <span>Sulfur: {log.sulfurDosageGram} g</span>
                   )}
-
-                  {(viewMode === "moisture" || viewMode === "both") && (
-                    <Line
-                      yAxisId="moisture-axis"
-                      type="monotone"
-                      dataKey="moisture"
-                      name="Kelembapan"
-                      stroke="#0284c7"
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{ r: 5, strokeWidth: 0 }}
-                    />
-                  )}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
+                </div>
+                <p className="text-xs text-neutral-500">
+                  Catatan:{" "}
+                  {log.reduceWatering
+                    ? "Hentikan penyiraman sementara."
+                    : "Ikuti takaran dan pantau kondisi media sebelum perawatan berikutnya."}
+                </p>
+                <p className="text-xs text-neutral-400">
+                  {log.isDev ? "Data pengujian Developer Mode. " : ""}Status
+                  pelaksanaan perawatan belum dicatat.
+                </p>
+              </li>
+            ))}
+          </ol>
+        )}
       </Card>
     </div>
   );

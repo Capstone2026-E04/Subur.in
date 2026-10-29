@@ -37,19 +37,20 @@ export const NAV_ITEMS: NavItem[] = [
     icon: MdAutoAwesome,
   },
   {
+    label: "Riwayat",
+    href: "/dashboard/analytics",
+    icon: MdBarChart,
+  },
+  {
     label: "Tanaman",
     href: "/dashboard/plants",
     icon: MdOutlineSpa,
   },
   {
-    label: "Analitik",
-    href: "/dashboard/analytics",
-    icon: MdBarChart,
-  },
-  {
     label: "Notifikasi",
     href: "/dashboard/notifications",
     icon: MdNotifications,
+    hidden: true,
   },
   {
     label: "Pengaturan",
@@ -60,12 +61,14 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Dev Mode",
     href: "/dashboard/dev-mode",
     icon: MdDeveloperMode,
+    hidden: true,
   },
   {
     label: "Superadmin",
     href: "/dashboard/superadmin",
     icon: MdAdminPanelSettings,
     superadminOnly: true,
+    hidden: true,
   },
   {
     label: "Profil",

@@ -99,7 +99,7 @@ export default function ApplicationGuide({
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card id="panduan-air" className="scroll-mt-6 overflow-hidden">
         <CardHeader className="py-4">
           <h3 className="flex items-center gap-2 text-sm font-bold text-sky-800">
@@ -153,9 +153,35 @@ export default function ApplicationGuide({
         </CardHeader>
         <CardContent className="space-y-4 text-xs leading-relaxed text-neutral-600">
           <p>
-            Panduan berdasarkan C501 bagian 4.8–4.9. Angka dosis dan keputusan
-            perawatan tetap mengikuti hasil backend.
+            Periksa bahan, estimasi takaran, dan status koreksi sebelum
+            memberikan perawatan.
           </p>
+          {recommendation ? (
+            <div className="bg-primary/5 text-primary rounded-xl p-4">
+              <p className="font-semibold">
+                {recommendation.phAction === "LIME"
+                  ? "Dolomit untuk menaikkan pH"
+                  : recommendation.phAction === "SULFUR"
+                    ? "Sulfur elemental untuk menurunkan pH"
+                    : "Tidak ada bahan koreksi pH yang direkomendasikan"}
+              </p>
+              {recommendation.phAction !== "NONE" && (
+                <p className="mt-2">
+                  Estimasi takaran:{" "}
+                  {(recommendation.phAction === "LIME"
+                    ? recommendation.limeDosageGram
+                    : recommendation.sulfurDosageGram
+                  ).toLocaleString("id-ID", { maximumFractionDigits: 1 })}{" "}
+                  gram. Ikuti status koreksi sebelum menggunakan bahan.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p>
+              Bahan dan takaran ditampilkan setelah rekomendasi perangkat
+              tersedia.
+            </p>
+          )}
           <section className="rounded-xl border border-neutral-200 p-4">
             <h4 className="text-sm font-semibold text-neutral-800">
               Sebelum tanam: persiapan media

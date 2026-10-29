@@ -31,7 +31,7 @@ export default function MobileNavigation({ role }: { role?: string }) {
         aria-haspopup="dialog"
         aria-controls={dialogId}
         onClick={() => dialogRef.current?.showModal()}
-        className="text-primary hover:bg-primary/5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl transition-colors"
+        className="hover:bg-primary/5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-neutral-900 transition-colors"
       >
         <MdMenu size={26} />
       </button>
@@ -44,7 +44,7 @@ export default function MobileNavigation({ role }: { role?: string }) {
         }}
         className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none border-0 bg-transparent p-0 text-white backdrop:bg-black/50"
       >
-        <div className="bg-primary flex h-full w-[min(20rem,85vw)] flex-col px-4 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-xl">
+        <div className="bg-primary flex h-full w-full flex-col px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-xl">
           <div className="flex shrink-0 items-center justify-between gap-3 px-2">
             <Link
               href="/dashboard"
@@ -72,7 +72,7 @@ export default function MobileNavigation({ role }: { role?: string }) {
           </div>
           <nav
             aria-label="Navigasi mobile"
-            className="mt-6 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain"
+            className="mt-6 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain"
           >
             {items.map((item) => {
               const Icon = item.icon;
@@ -82,7 +82,7 @@ export default function MobileNavigation({ role }: { role?: string }) {
                   href={item.href}
                   onClick={() => dialogRef.current?.close()}
                   aria-current={pathname === item.href ? "page" : undefined}
-                  className={`flex min-h-12 shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${pathname === item.href ? "bg-white/15 text-white" : "text-white/80 hover:bg-white/10"}`}
+                  className={`flex min-h-12 shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors ${pathname === item.href ? "bg-white/15 text-white" : "text-white/80 hover:bg-white/10"}`}
                 >
                   <Icon size={24} /> {item.label}
                 </Link>
@@ -95,7 +95,7 @@ export default function MobileNavigation({ role }: { role?: string }) {
               dialogRef.current?.close();
               signOut({ callbackUrl: "/login" });
             }}
-            className="mt-4 flex min-h-12 shrink-0 cursor-pointer items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium hover:bg-white/10"
+            className="mt-4 flex min-h-12 shrink-0 cursor-pointer items-center gap-3 rounded-xl bg-red-800 px-4 py-3 text-sm font-medium hover:bg-red-700"
           >
             <MdOutlineLogout size={24} /> Keluar
           </button>

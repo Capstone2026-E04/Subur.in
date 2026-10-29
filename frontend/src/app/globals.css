@@ -68,3 +68,17 @@ table,
     scroll-behavior: auto !important;
   }
 }
+
+html,
+body {
+  min-height: 100%;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

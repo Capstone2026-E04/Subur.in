@@ -29,6 +29,11 @@ export function useSensorRealtime(
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("connecting");
 
+  const activeDeviceRef = useRef(deviceId);
+  useEffect(() => {
+    activeDeviceRef.current = deviceId;
+  }, [deviceId]);
+  const [dataDeviceId, setDataDeviceId] = useState(deviceId);
   const esRef = useRef<EventSource | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef(true);
@@ -42,7 +47,13 @@ export function useSensorRealtime(
       });
       if (!res.ok) return;
       const json = await res.json();
-      if (json?.success && json?.data && isMountedRef.current) {
+      if (
+        json?.success &&
+        json?.data &&
+        isMountedRef.current &&
+        activeDeviceRef.current === deviceId
+      ) {
+        setDataDeviceId(deviceId);
         const { ph: p, moisture: m, timestamp } = json.data;
         if (p !== undefined) setPh(p);
         if (m !== undefined) setMoisture(m);
@@ -72,7 +83,7 @@ export function useSensorRealtime(
     };
 
     es.onmessage = (event) => {
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current || activeDeviceRef.current !== deviceId) return;
       try {
         const payload = JSON.parse(event.data);
 
@@ -81,6 +92,8 @@ export function useSensorRealtime(
           return;
         }
 
+        if (payload?.ph !== undefined || payload?.moisture !== undefined)
+          setDataDeviceId(deviceId);
         if (payload?.ph !== undefined) setPh(payload.ph);
         if (payload?.moisture !== undefined) setMoisture(payload.moisture);
         if (payload?.moistureType) setMoistureType(payload.moistureType);
@@ -130,5 +143,11 @@ export function useSensorRealtime(
     };
   }, [fetchLatest, openStream]);
 
-  return { ph, moisture, moistureType, lastUpdated, connectionStatus };
+  return {
+    ph: dataDeviceId === deviceId ? ph : null,
+    moisture: dataDeviceId === deviceId ? moisture : null,
+    moistureType,
+    lastUpdated: dataDeviceId === deviceId ? lastUpdated : null,
+    connectionStatus,
+  };
 }

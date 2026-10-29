@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { MdOutlineDeviceHub, MdAdd } from "react-icons/md";
 import { useDevices } from "@/hooks/useDevices";
@@ -18,10 +18,13 @@ import { Card } from "@/components/ui/card";
 
 function DashboardSkeleton() {
   return (
-    <div className="w-full animate-pulse space-y-6">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[2.1fr_1fr_1fr]">
+    <div className="w-full animate-pulse space-y-4 sm:space-y-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-60 rounded-3xl bg-neutral-200"></div>
+          <div
+            key={i}
+            className={`${i === 0 ? "col-span-2 h-40" : "h-56"} rounded-2xl bg-neutral-200 sm:rounded-3xl`}
+          ></div>
         ))}
       </div>
       <div className="grid grid-cols-1 gap-4 sm:gap-5">
@@ -142,19 +145,29 @@ export default function DashboardPage() {
     token,
   );
 
+  const loadVersion = useRef(0);
+  const invalidateLoad = useCallback(() => {
+    loadVersion.current++;
+  }, []);
   const loadRecommendation = useCallback(
     async (silent = false) => {
+      const version = ++loadVersion.current;
       if (!token || !selectedDevice?.id) return;
-      if (!silent) setIsRecLoading(true);
+      if (!silent) {
+        setRecommendation(null);
+        setIsRecLoading(true);
+      }
       try {
         const result = await fetchDeviceRecommendationResult(
           token,
           selectedDevice.id,
         );
+        if (version !== loadVersion.current) return;
         setRecommendation(result.data);
         setRecommendationMessage(result.message);
         setRecommendationError(null);
       } catch (error) {
+        if (version !== loadVersion.current) return;
         setRecommendation(null);
         setRecommendationMessage("");
         setRecommendationError(
@@ -163,7 +176,7 @@ export default function DashboardPage() {
             : "Terjadi kesalahan saat memuat rekomendasi.",
         );
       } finally {
-        if (!silent) setIsRecLoading(false);
+        if (version === loadVersion.current) setIsRecLoading(false);
       }
     },
     [token, selectedDevice?.id],
@@ -171,7 +184,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadRecommendation(false);
-  }, [selectedDevice?.id, loadRecommendation]);
+    return invalidateLoad;
+  }, [selectedDevice?.id, loadRecommendation, invalidateLoad]);
   useEffect(() => {
     if (lastUpdated) {
       loadRecommendation(true);
@@ -221,7 +235,7 @@ export default function DashboardPage() {
         <PhLevelCard value={currentPh} range={phRange} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5">
         <SensorTrendCard
           title="Tren Kelembapan Tanah"
           metric="moisture"
