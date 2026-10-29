@@ -71,24 +71,24 @@ export default function DevicesPage() {
   const activeCount = devices.filter((d) => d.status === "ACTIVE").length;
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
-      <Card className="rounded-3xl p-6 sm:p-8">
+    <div className="mx-auto w-full max-w-5xl space-y-4 sm:space-y-6">
+      <Card className="rounded-3xl p-4 sm:p-8">
         <div
           data-reveal
-          className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"
+          className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4"
         >
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+            <h1 className="text-base font-bold tracking-tight text-neutral-900 sm:text-2xl">
               Daftar Perangkat
             </h1>
-            <p className="mt-1 text-base text-neutral-800">
+            <p className="mt-1 text-xs leading-relaxed text-neutral-800 sm:text-base">
               Pantau status dan kelola perangkat pemantau tanaman Anda.
             </p>
           </div>
           <button
             id="open-connect-modal-btn"
             onClick={() => setIsConnectOpen(true)}
-            className="bg-primary hover:bg-primary-light flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-colors"
+            className="bg-primary hover:bg-primary-light flex shrink-0 cursor-pointer items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold text-white transition-colors sm:gap-2 sm:px-5 sm:py-3 sm:text-sm"
           >
             <MdAdd size={18} />
             Tambah Perangkat
@@ -115,7 +115,7 @@ export default function DevicesPage() {
           )}
         </AnimatePresence>
 
-        <div className="mt-10">
+        <div className="mt-5 sm:mt-10">
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
@@ -142,11 +142,34 @@ export default function DevicesPage() {
         </div>
 
         {!isLoading && devices.length > 0 && (
-          <p className="mt-4 text-sm text-neutral-800">
+          <p className="mt-4 text-[10px] text-neutral-800 sm:text-sm">
             Total {devices.length} perangkat · {activeCount} aktif ·{" "}
             {devices.length - activeCount} tidak aktif
           </p>
         )}
+      </Card>
+
+      <Card className="space-y-3 p-4 sm:p-8">
+        <h2 className="text-xl font-bold text-neutral-900">
+          Cara Koneksi Perangkat
+        </h2>
+        <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-neutral-600">
+          <li>
+            Pasang sensor pada media tanam dalam pot atau polybag. Jaga modul
+            elektronik tetap kering.
+          </li>
+          <li>
+            Nyalakan perangkat dan hubungkan ke WiFi sesuai petunjuk alat.
+          </li>
+          <li>
+            Tekan Tambah Perangkat, konfirmasi pemasangan, lalu pilih alat yang
+            terdeteksi.
+          </li>
+          <li>
+            Isi nama perangkat dan jenis tanaman, lalu simpan. Data sensor akan
+            tampil pada Ringkasan.
+          </li>
+        </ol>
       </Card>
 
       <ConnectDeviceModal

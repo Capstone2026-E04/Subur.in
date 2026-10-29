@@ -15,7 +15,7 @@ const CardContext = React.createContext<CardContextType>({
 const useCardContext = () => React.useContext(CardContext);
 
 const cardVariants = cva(
-  "flex flex-col items-stretch text-card-foreground rounded-3xl",
+  "flex min-w-0 flex-col items-stretch text-card-foreground rounded-3xl",
   {
     variants: {
       variant: {

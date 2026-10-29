@@ -93,6 +93,8 @@ export default function SensorTrendCard({
   const gradientId = useId().replace(/:/g, "");
   const spanRef = useRef(DEFAULT_SPAN_MS);
   const [live, setLive] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const filterId = useId();
   const [from, setFrom] = useState(() =>
     toInputValue(Date.now() - DEFAULT_SPAN_MS),
   );
@@ -179,7 +181,7 @@ export default function SensorTrendCard({
   const formatValue = (v: number) =>
     metric === "ph" ? v.toFixed(1) : `${Math.round(v)}%`;
   const inputClass =
-    "rounded-xl border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-600 focus:outline-none";
+    "min-w-0 w-full rounded-xl border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-600 focus:outline-none";
 
   return (
     <Card className="min-w-0 rounded-2xl border-white p-3 shadow-sm sm:rounded-3xl sm:p-6">
@@ -187,8 +189,20 @@ export default function SensorTrendCard({
         <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-neutral-900 sm:text-lg">
           <MdBarChart size={24} className="text-primary shrink-0" /> {title}
         </h3>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-1 text-xs font-semibold text-neutral-500">
+        <button
+          type="button"
+          aria-expanded={showFilters}
+          aria-controls={filterId}
+          onClick={() => setShowFilters(!showFilters)}
+          className="text-primary shrink-0 rounded-lg border border-neutral-200 px-2 py-1 text-xs font-medium"
+        >
+          Periode
+        </button>
+        <div
+          id={filterId}
+          className={`${showFilters ? "grid" : "hidden"} w-full min-w-0 grid-cols-1 gap-2 min-[400px]:grid-cols-2`}
+        >
+          <label className="flex min-w-0 flex-col items-start gap-1 text-xs font-semibold text-neutral-500 sm:flex-row sm:items-center">
             Mulai
             <input
               type="datetime-local"
@@ -198,7 +212,7 @@ export default function SensorTrendCard({
               className={inputClass}
             />
           </label>
-          <label className="flex items-center gap-1 text-xs font-semibold text-neutral-500">
+          <label className="flex min-w-0 flex-col items-start gap-1 text-xs font-semibold text-neutral-500 sm:flex-row sm:items-center">
             Akhir
             <input
               type="datetime-local"
@@ -228,7 +242,7 @@ export default function SensorTrendCard({
         <p className="mt-1 text-xs font-semibold text-rose-600">{error}</p>
       )}
 
-      <div className="mt-3 h-48 w-full sm:h-60">
+      <div className="mt-3 h-40 w-full sm:h-60">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}

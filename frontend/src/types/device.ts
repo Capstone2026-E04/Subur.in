@@ -97,6 +97,7 @@ export interface DeviceRecommendation {
 }
 
 export interface RecommendationLogItem {
+  isDev?: boolean;
   id: string;
   deviceId: string;
   phValue: number;

@@ -30,7 +30,7 @@ const labelMap: Record<string, string> = {
   devices: "Perangkat",
   recommendations: "Rekomendasi",
   plants: "Tanaman",
-  analytics: "Analitik",
+  analytics: "Riwayat",
   notifications: "Notifikasi",
   settings: "Pengaturan",
   profile: "Profil",
@@ -115,46 +115,80 @@ export default function Topbar({ user, role }: TopbarProps) {
     devices.find((device) => device.id === selectedDeviceId) ?? devices[0];
   const plantName = selectedDevice?.plant?.name;
 
-  const deviceSelector = (id: string) =>
-    devices.length > 0 && (
-      <div className="relative min-w-0">
-        <MdOutlineSpa
-          size={23}
-          className="text-primary-light pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-        />
-        <label className="sr-only" htmlFor={id}>
-          Pilih perangkat
-        </label>
-        <select
-          id={id}
-          value={selectedDevice?.id ?? ""}
-          onChange={(event) => setSelectedDeviceId(event.target.value)}
-          className="text-primary focus:ring-primary/10 h-11 w-full cursor-pointer appearance-none truncate rounded-xl border border-neutral-200 bg-white py-2 pr-9 pl-11 text-sm font-medium focus:ring-2 focus:outline-none md:w-44"
-        >
-          {devices.map((device) => (
-            <option key={device.id} value={device.id}>
-              {device.plant?.name ?? device.label} / {device.label}
-            </option>
-          ))}
-        </select>
-        <MdKeyboardArrowDown
-          size={20}
-          className="text-primary pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
-        />
-      </div>
-    );
+  const deviceSelector = (id: string) => (
+    <div className="relative min-w-0">
+      <MdOutlineSpa
+        size={23}
+        className="text-primary-light pointer-events-none absolute top-1/2 left-3 hidden -translate-y-1/2 md:block"
+      />
+      <span
+        aria-hidden
+        className={`pointer-events-none absolute top-1/2 left-3 h-2 w-2 -translate-y-1/2 rounded-full md:hidden ${selectedDevice?.status === "ACTIVE" ? "bg-green-600" : "bg-red-500"}`}
+      />
+      <label className="sr-only" htmlFor={id}>
+        Pilih perangkat
+      </label>
+      <select
+        id={id}
+        disabled={devices.length === 0}
+        value={selectedDevice?.id ?? ""}
+        onChange={(event) => setSelectedDeviceId(event.target.value)}
+        className="text-primary focus:ring-primary/10 h-9 w-full cursor-pointer appearance-none truncate rounded-full border border-neutral-200 bg-white py-2 pr-8 pl-7 text-xs font-medium focus:ring-2 focus:outline-none md:h-11 md:w-44 md:rounded-xl md:pl-11 md:text-sm"
+      >
+        {devices.length === 0 && <option value="">Belum ada perangkat</option>}
+        {devices.map((device) => (
+          <option key={device.id} value={device.id}>
+            {id === "mobile-device-selector"
+              ? device.label
+              : `${device.plant?.name ?? device.label} / ${device.label}`}
+          </option>
+        ))}
+      </select>
+      <MdKeyboardArrowDown
+        size={20}
+        className="text-primary pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
+      />
+    </div>
+  );
 
   return (
-    <header className="shrink-0 bg-white px-4 pt-4 pb-3 sm:px-6 md:py-5 lg:px-7">
+    <header className="z-20 shrink-0 border-b border-neutral-200 bg-white px-4 py-2 sm:px-6 md:py-5 lg:px-7">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-1 md:hidden">
-          <MobileNavigation role={role} />
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Image src="/logo/logo-suburin.svg" alt="" width={32} height={32} />
-            <span className="text-xl font-bold tracking-tight text-neutral-900">
-              Subur.in
-            </span>
+        <div className="flex min-w-0 flex-1 items-center gap-2 md:hidden">
+          <Link href="/dashboard" aria-label="Ringkasan" className="shrink-0">
+            <Image
+              src="/logo/logo-suburin.svg"
+              alt="Subur.in"
+              width={32}
+              height={32}
+            />
           </Link>
+          <div className="w-44 max-w-44 min-w-0 flex-1">
+            {deviceSelector("mobile-device-selector")}
+          </div>
+          <div className="ml-auto flex shrink-0 items-center gap-0.5">
+            <Link
+              href="/dashboard/notifications"
+              aria-label={
+                unreadCount > 0
+                  ? `Notifikasi, ${unreadCount} belum dibaca`
+                  : "Notifikasi"
+              }
+              aria-current={
+                pathname === "/dashboard/notifications" ? "page" : undefined
+              }
+              className="hover:bg-primary/5 relative flex h-11 w-11 items-center justify-center rounded-xl text-neutral-900 transition-colors"
+            >
+              <MdNotifications size={24} aria-hidden />
+              {unreadCount > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500"
+                />
+              )}
+            </Link>
+            <MobileNavigation role={role} />
+          </div>
         </div>
         <div className="hidden min-w-0 md:block">
           <h1 className="truncate text-2xl font-bold tracking-tight text-neutral-900">
@@ -170,7 +204,7 @@ export default function Topbar({ user, role }: TopbarProps) {
             Pantau kondisi tanamanmu hari ini.
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+        <div className="hidden shrink-0 items-center gap-2 sm:gap-4 md:flex">
           <div className="hidden md:block">
             {deviceSelector("desktop-device-selector")}
           </div>
@@ -213,21 +247,6 @@ export default function Topbar({ user, role }: TopbarProps) {
             <MdKeyboardArrowDown size={18} className="hidden xl:block" />
           </Link>
         </div>
-      </div>
-      <div className="mt-4 md:hidden">
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-          {pathname === "/dashboard"
-            ? `Halo, ${plantName ?? user?.name?.split(" ")[0] ?? "Pekebun"}`
-            : breadcrumbs[breadcrumbs.length - 1]?.label}{" "}
-          <MdOutlineSpa
-            aria-hidden
-            className="text-primary-light inline-block"
-          />
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Pantau kondisi tanamanmu hari ini.
-        </p>
-        <div className="mt-3">{deviceSelector("mobile-device-selector")}</div>
       </div>
     </header>
   );

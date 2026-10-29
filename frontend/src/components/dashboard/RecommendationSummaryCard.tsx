@@ -76,7 +76,7 @@ export default function RecommendationSummaryCard({
         alt=""
         width={440}
         height={440}
-        className="pointer-events-none absolute right-0 bottom-0 -z-10 h-full w-40 object-contain object-bottom opacity-10 lg:w-[38%] lg:opacity-95"
+        className="pointer-events-none absolute right-0 bottom-0 -z-10 h-full w-32 object-contain object-bottom opacity-25 sm:w-44 sm:opacity-35 lg:w-[38%] lg:opacity-95"
       />
       <div>
         <p className="text-primary flex items-center gap-2 text-[10px] font-bold tracking-[0.16em] sm:text-xs sm:tracking-[0.2em]">
@@ -109,7 +109,7 @@ export default function RecommendationSummaryCard({
               {recommendation.actionText}
             </p>
             {treatments.length > 0 ? (
-              <div className="mt-5 grid gap-px overflow-hidden rounded-2xl bg-neutral-100 sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:bg-transparent">
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {treatments.map((item) => (
                   <Link
                     key={item.title}
@@ -119,7 +119,7 @@ export default function RecommendationSummaryCard({
                         ? "/dashboard/recommendations#panduan-air"
                         : "/dashboard/recommendations#panduan-ph"
                     }
-                    className={`flex min-w-0 items-center gap-3 bg-white/95 p-3 transition-shadow hover:shadow-md sm:rounded-2xl sm:p-4 ${item.water ? "sm:col-start-1" : "sm:col-start-2"}`}
+                    className={`flex min-w-0 items-center gap-3 rounded-2xl bg-white/95 p-3 shadow-sm transition-shadow hover:shadow-md sm:p-4 ${item.water ? "sm:col-start-1" : "sm:col-start-2"}`}
                   >
                     <span
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full sm:h-12 sm:w-12 ${item.water ? "bg-sky-100 text-sky-500" : "bg-[#f4eee5] text-[#826040]"}`}
@@ -130,7 +130,7 @@ export default function RecommendationSummaryCard({
                         <MdTerrain size={29} />
                       )}
                     </span>
-                    <div className="flex min-w-0 flex-1 items-center justify-between gap-2 sm:block">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs text-neutral-600 sm:text-sm">
                         {item.title}
                       </p>
