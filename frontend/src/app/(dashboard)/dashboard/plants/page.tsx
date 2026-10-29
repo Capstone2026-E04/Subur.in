@@ -148,12 +148,12 @@ export default function PlantsPage() {
                         Kelembapan (VWC %)
                       </span>
                       <span className="mt-0.5 text-xs font-bold text-neutral-700">
-                        {plant.nmiTrigger !== null
-                          ? `Trigger ${plant.nmiTrigger}`
+                        {plant.vwcTrigger !== null
+                          ? `Trigger ${plant.vwcTrigger}`
                           : "-"}
                       </span>
                       <span className="mt-0.5 text-[9px] font-semibold text-sky-700/80">
-                        Tgt: {plant.nmiTarget ?? "-"}
+                        Tgt: {plant.vwcTarget ?? "-"}
                       </span>
                     </div>
 

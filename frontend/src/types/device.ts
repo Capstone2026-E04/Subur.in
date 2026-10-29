@@ -34,8 +34,8 @@ export interface Plant {
   minPh: number;
   maxPh: number;
   phTarget: number;
-  nmiTrigger: number | null;
-  nmiTarget: number | null;
+  vwcTrigger: number | null;
+  vwcTarget: number | null;
   createdAt: string;
   updatedAt: string;
 }

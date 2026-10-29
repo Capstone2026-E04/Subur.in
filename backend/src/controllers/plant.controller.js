@@ -9,11 +9,11 @@ exports.getAllPlants = async (req, res, next) => {
     });
 
     const data = plants.map((plant) => {
-      const nmi = PLANT_MOISTURE[plant.name.trim().toLowerCase()];
+      const moisture = PLANT_MOISTURE[plant.name.trim().toLowerCase()];
       return {
         ...plant,
-        nmiTrigger: nmi?.trigger ?? null,
-        nmiTarget: nmi?.target ?? null,
+        vwcTrigger: moisture?.trigger ?? null,
+        vwcTarget: moisture?.target ?? null,
       };
     });
 

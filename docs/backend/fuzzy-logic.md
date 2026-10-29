@@ -44,7 +44,7 @@ Acuan kelembapan adalah container capacity polybag 2 L: `theta_CC = 0,3298` m3/m
 | Selada  |    0,65 |   0,80 |  0,481 |  0,814 |        0,2144 |       0,2638 |  0,1586 |  0,2685 |
 | Pakcoy  |    0,60 |   0,80 |  0,431 |  0,764 |        0,1979 |       0,2638 |  0,1421 |  0,2520 |
 
-Kolom pertama sampai keempat adalah fraksi `theta_CC`; kolom `theta` adalah hasil perkaliannya (m3/m3). `trigger` dan `target` juga dikirim sebagai persen VWC lewat `GET /api/plants` (`nmiTrigger`/`nmiTarget`); `target` dipakai sebagai batas isi kalkulator air.
+Kolom pertama sampai keempat adalah fraksi `theta_CC`; kolom `theta` adalah hasil perkaliannya (m3/m3). `trigger` dan `target` juga dikirim sebagai persen VWC lewat `GET /api/plants` (`vwcTrigger`/`vwcTarget`); `target` dipakai sebagai batas isi kalkulator air.
 
 Tanaman lain ditolak `422`. Angka kelembapan adalah parameter desain, bukan optimum agronomi teruji.
 

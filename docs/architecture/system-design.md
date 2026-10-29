@@ -48,7 +48,7 @@ flowchart LR
 
 ## Mengapa fuzzy logic
 
-pH media dan kelembapan (NMI) berinteraksi secara non-linear dengan kesehatan tanaman. Satu ambang batas tegas per variabel akan melewatkan kondisi gabungan (misalnya "sedikit asam dan cukup kering" memerlukan respons berbeda dibanding "sangat asam dan sangat kering"). Sistem inferensi fuzzy Mamdani memungkinkan rule base ([`src/ai/core/rules.js`](../../backend/src/ai/core/rules.js)) mengekspresikan kombinasi ini secara deklaratif, dan hasil inferensi MIN-MAX (WaterAction x pHAction) menentukan salah satu dari 9 kategori aksi yang diinterpretasikan di [`src/ai/utils/interpreter.js`](../../backend/src/ai/utils/interpreter.js). Lihat [ADR-004](../decisions/adr-004-fuzzy-logic-engine.md).
+pH media dan kelembapan (VWC) berinteraksi secara non-linear dengan kesehatan tanaman. Satu ambang batas tegas per variabel akan melewatkan kondisi gabungan (misalnya "sedikit asam dan cukup kering" memerlukan respons berbeda dibanding "sangat asam dan sangat kering"). Sistem inferensi fuzzy Mamdani memungkinkan rule base ([`src/ai/core/rules.js`](../../backend/src/ai/core/rules.js)) mengekspresikan kombinasi ini secara deklaratif, dan hasil inferensi MIN-MAX (WaterAction x pHAction) menentukan salah satu dari 9 kategori aksi yang diinterpretasikan di [`src/ai/utils/interpreter.js`](../../backend/src/ai/utils/interpreter.js). Lihat [ADR-004](../decisions/adr-004-fuzzy-logic-engine.md).
 
 ## Dokumen terkait
 

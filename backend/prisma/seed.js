@@ -33,7 +33,7 @@ async function main() {
       name: "Selada",
       scientificName: "Lactuca sativa",
       description:
-        "Sayuran daun yang sangat sensitif terhadap cekaman kekeringan. Memerlukan kelembapan media terjaga di atas trigger NMI.",
+        "Sayuran daun yang sangat sensitif terhadap cekaman kekeringan. Memerlukan kelembapan media terjaga di atas trigger VWC.",
       minPh: 6.0,
       maxPh: 6.7,
       phTarget: 6.5,

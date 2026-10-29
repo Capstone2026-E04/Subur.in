@@ -51,9 +51,9 @@ export const TONES = {
 export type Tone = keyof typeof TONES;
 
 const PH_MARGIN = 0.5;
-const NMI_MARGIN = 5;
-const NMI_WET_START = 90;
-const NMI_WET_STOP = 95;
+const VWC_MARGIN = 5;
+const VWC_WET_START = 90;
+const VWC_WET_STOP = 95;
 
 export const DEFAULT_PH_RANGE = { min: 6, max: 7 };
 
@@ -97,16 +97,16 @@ export function toVwcDisplay(vwcPercent: number) {
   };
 }
 
-export function classifyNmi(nmi: number, trigger: number | null) {
+export function classifyVwc(vwc: number, trigger: number | null) {
   if (trigger === null)
     return { label: "Tanpa parameter", tone: "sky" as Tone };
-  if (nmi <= trigger - NMI_MARGIN)
+  if (vwc <= trigger - VWC_MARGIN)
     return { label: "Kering", tone: "red" as Tone };
-  if (nmi < trigger + NMI_MARGIN) {
+  if (vwc < trigger + VWC_MARGIN) {
     return { label: "Mendekati kering", tone: "amber" as Tone };
   }
-  if (nmi <= NMI_WET_START) return { label: "Optimal", tone: "sky" as Tone };
-  if (nmi < NMI_WET_STOP) {
+  if (vwc <= VWC_WET_START) return { label: "Optimal", tone: "sky" as Tone };
+  if (vwc < VWC_WET_STOP) {
     return { label: "Mendekati basah", tone: "violet" as Tone };
   }
   return { label: "Basah", tone: "violet" as Tone };

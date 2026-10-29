@@ -1,10 +1,10 @@
 import { MdWaterDrop } from "react-icons/md";
 import { Card } from "@/components/ui/card";
-import { TONES, classifyNmi, toVwcDisplay } from "./sensorStatus";
+import { TONES, classifyVwc, toVwcDisplay } from "./sensorStatus";
 
 interface MoistureLevelCardProps {
   value: number | null;
-  nmiTrigger: number | null;
+  vwcTrigger: number | null;
   moistureType?: "legacy_index" | "vwc_percent";
 }
 
@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function MoistureLevelCard({
   value,
-  nmiTrigger,
+  vwcTrigger,
   moistureType = "legacy_index",
 }: MoistureLevelCardProps) {
   const vwc =
@@ -31,7 +31,7 @@ export default function MoistureLevelCard({
       ? toVwcDisplay(value)
       : null;
   const status =
-    vwc ?? (value === null ? null : classifyNmi(value, nmiTrigger));
+    vwc ?? (value === null ? null : classifyVwc(value, vwcTrigger));
   const tone = status ? TONES[status.tone] : null;
   const displayValue = vwc ? vwc.mainPercent : value;
   const position = Math.min(Math.max(vwc?.gaugeFill ?? value ?? 0, 2), 98);

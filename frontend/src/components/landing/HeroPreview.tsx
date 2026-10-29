@@ -12,7 +12,7 @@ const PH_TONE = {
   badgeBg: "bg-orange-100",
 };
 
-const NMI_TONE = {
+const VWC_TONE = {
   stroke: "#ef4444",
   glow: "#ef4444",
   text: "text-red-500",
@@ -45,7 +45,7 @@ export default function HeroPreview() {
           unit="%"
           min={0}
           max={100}
-          getColor={() => NMI_TONE}
+          getColor={() => VWC_TONE}
           getClassification={() => "Kering"}
           icon={<MdOutlineWaterDrop size={18} />}
           decimals={0}

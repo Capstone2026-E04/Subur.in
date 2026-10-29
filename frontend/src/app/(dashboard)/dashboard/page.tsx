@@ -216,7 +216,7 @@ export default function DashboardPage() {
         <MoistureLevelCard
           value={currentMoisture}
           moistureType={moistureType}
-          nmiTrigger={devicePlant?.nmiTrigger ?? null}
+          vwcTrigger={devicePlant?.vwcTrigger ?? null}
         />
         <PhLevelCard value={currentPh} range={phRange} />
       </div>

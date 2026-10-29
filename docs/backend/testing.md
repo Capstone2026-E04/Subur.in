@@ -25,7 +25,7 @@ src/__tests__/
 ├── ai/
 │   ├── c501/                        test berbasis dokumen perancangan C501 (lihat di bawah)
 │   │   ├── fixtures.js              parameter tanaman bersama (bukan test)
-│   │   ├── membership.test.js       Step 3-4: fungsi keanggotaan NMI dan pH
+│   │   ├── membership.test.js       Step 3-4: fungsi keanggotaan VWC dan pH
 │   │   ├── inference.test.js        Step 5-7: aktivasi rule, kategori final, konsistensi rule base
 │   │   ├── dosage.test.js           Step 8-10: kalkulator air, dolomit, sulfur
 │   │   ├── safety_gate.test.js      Step 11: safety gate koreksi pH
@@ -47,7 +47,7 @@ Folder `ai/c501/` berisi test yang angkanya disalin langsung dari dokumen peranc
 
 | File | Yang diverifikasi |
 |------|-------------------|
-| `membership.test.js` | Contoh perhitungan NMI (A-D) dan pH (5.1-5.4); derajat keanggotaan 0-1, jumlah tiga himpunan selalu 1, KERING dan BASAH tidak aktif bersamaan |
+| `membership.test.js` | Contoh perhitungan VWC (A-D) dan pH (5.1-5.4); derajat keanggotaan 0-1, jumlah tiga himpunan selalu 1, KERING dan BASAH tidak aktif bersamaan |
 | `inference.test.js` | Rule aktif pada contoh 6.1, 6.2, 6.4, 6.5; kategori akhir pada tabel Step 6-7 termasuk tie break; 9 rule, antecedent unik, C1-C9 terwakili, selalu ada rule dengan firing strength >= 0,5 |
 | `dosage.test.js` | Air 120 / 160 mL, Vneed 100 mL, maksimum 360 / 320 mL; dolomit 2,86 g dan batas 4,7 g; sulfur dibatasi 1,2 g |
 | `safety_gate.test.js` | Ambang pH min - 0,5 dan max + 0,5, media basah, minimal 2 pembacaan, batas ukur probe 3,5 dan 8,0 |
