@@ -69,9 +69,7 @@ export default function ApplicationGuide({
         stopFollowing();
     };
 
-    const container = document
-      .getElementById("panduan-air")
-      ?.closest("main");
+    const container = document.getElementById("panduan-air")?.closest("main");
     const observer = new ResizeObserver(scheduleScroll);
     if (container) {
       observer.observe(container);
