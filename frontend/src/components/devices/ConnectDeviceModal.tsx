@@ -212,8 +212,9 @@ export default function ConnectDeviceModal({
                     </h3>
                     <ol className="list-decimal space-y-2 pl-5 text-neutral-600">
                       <li>
-                        Siapkan pot atau polybag dengan drainase baik, berisi
-                        media tanam dan tanaman yang akan dipantau.
+                        Siapkan pot atau polybag berdiameter 25 cm dengan
+                        drainase baik, berisi media tanam 2 liter dan tanaman
+                        yang akan dipantau.
                       </li>
                       <li>
                         Pasang probe sensor pada media tanam sesuai petunjuk
