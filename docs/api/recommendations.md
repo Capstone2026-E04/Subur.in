@@ -34,7 +34,7 @@ Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyent
     "moistureValue": 40,
     "fuzzyIndex": 1,
     "categoryCode": "C5",
-    "actionText": "pH media terlalu asam dan media kering. Pertimbangkan dolomit, lalu siram sesuai estimasi volume.",
+    "actionText": "pH terlalu asam dan media kering. Beri dolomit, lalu siram sesuai estimasi volume.",
     "waterAction": "IRRIGATE",
     "phAction": "LIME",
     "phCorrection": { "status": "READY", "reasons": [] },
