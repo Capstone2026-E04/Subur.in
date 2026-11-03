@@ -138,7 +138,7 @@ export default function PlantsPage() {
                     <div className="border-border grid grid-cols-2 items-center gap-2 border-t pt-3 md:flex md:shrink-0 md:gap-3">
                       <div className="flex min-w-0 flex-1 flex-col items-center rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 md:min-w-[100px] md:flex-none">
                         <span className="text-[9px] font-bold tracking-wider text-sky-600 uppercase">
-                          Kelembapan (VWC %)
+                          Kelembapan (%)
                         </span>
                         <span className="mt-0.5 text-xs font-bold text-neutral-700">
                           {plant.vwcTrigger !== null

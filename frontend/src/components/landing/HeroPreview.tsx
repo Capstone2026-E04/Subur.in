@@ -24,7 +24,7 @@ export default function HeroPreview() {
   return (
     <div className="shadow-primary/10 w-full max-w-md rounded-2xl border border-black/8 bg-white p-4 shadow-xl">
       <p className="px-1 pb-3 text-xs font-semibold text-neutral-600">
-        Contoh data: pH 5,4, VWC 10%
+        Contoh data: pH 5,4, kelembapan 10%
       </p>
 
       <div className="grid grid-cols-2 gap-3">
@@ -40,7 +40,7 @@ export default function HeroPreview() {
           decimals={1}
         />
         <SensorGaugeCard
-          label="Kelembapan (VWC)"
+          label="Kelembapan"
           value={10}
           unit="%"
           min={0}

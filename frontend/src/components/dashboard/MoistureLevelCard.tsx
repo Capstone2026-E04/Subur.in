@@ -47,7 +47,7 @@ export default function MoistureLevelCard({
           {displayValue === null
             ? "--"
             : vwc
-              ? `${displayValue}% CC`
+              ? `${displayValue}%`
               : `${Math.round(displayValue)}%`}
         </p>
         {status && tone ? (
@@ -60,11 +60,6 @@ export default function MoistureLevelCard({
           <span className="text-xs text-neutral-400">Belum ada data</span>
         )}
       </div>
-      <p className="mt-1 h-4 text-[10px] text-neutral-500 sm:text-xs">
-        {vwc?.vwcPercent != null
-          ? `VWC ${vwc.vwcPercent.toFixed(1).replace(".", ",")}%`
-          : "Indeks kelembapan"}
-      </p>
       <div className="to-primary/10 relative mt-3 h-2 rounded-full bg-linear-to-r from-orange-500 via-yellow-200 sm:mt-6 sm:h-3.5">
         {displayValue !== null && (
           <span
@@ -83,11 +78,6 @@ export default function MoistureLevelCard({
         <span className="text-primary text-center">Optimal</span>
         <span className="text-right text-sky-700">Jenuh/basah</span>
       </div>
-      <p className="mt-1 min-h-6 text-[9px] text-neutral-400 sm:mt-2 sm:min-h-8 sm:text-xs">
-        {moistureType === "vwc_percent"
-          ? "Persentase kapasitas kontainer (% CC)"
-          : "Indeks kelembapan"}
-      </p>
     </Card>
   );
 }

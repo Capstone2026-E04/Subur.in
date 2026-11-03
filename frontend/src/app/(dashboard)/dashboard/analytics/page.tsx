@@ -125,7 +125,7 @@ export default function AnalyticsPage() {
                 </p>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-500">
                   <span>pH: {log.phValue}</span>
-                  <span>Kelembapan: {log.moistureValue}% VWC</span>
+                  <span>Kelembapan: {log.moistureValue}%</span>
                   <span>Air: {log.waterVolumeLiter} L</span>
                   {log.limeDosageGram > 0 && (
                     <span>Dolomit: {log.limeDosageGram} g</span>

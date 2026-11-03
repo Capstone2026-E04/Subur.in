@@ -15,7 +15,7 @@ const STEPS = [
   },
   {
     title: "Baca kondisi media",
-    body: "Sistem menilai pH dan kelembapan (VWC) memakai batas pH tiap tanaman dan kapasitas media polybag.",
+    body: "Sistem menilai pH dan kelembapan memakai batas pH tiap tanaman dan kapasitas media polybag.",
   },
   {
     title: "Ikuti rekomendasi",
@@ -143,7 +143,7 @@ export default function Home() {
               <span data-count="150">150</span> mL
             </p>
             <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-white/90">
-              Media 2 L dengan VWC 20% butuh sekitar 150 mL. Di atas 22% sistem
+              Media 2 L dengan kelembapan 20% butuh sekitar 150 mL. Di atas 22% sistem
               tidak menyarankan siram, karena kelembapan masih dalam batas yang
               wajar. Satu kali siram maksimal 200 mL.
             </p>
@@ -182,7 +182,7 @@ export default function Home() {
               ))}
             </dl>
             <p className="mt-4 text-xs leading-relaxed text-neutral-600">
-              Batas siram berupa persen kadar air volumetrik (VWC), sama untuk
+              Batas siram berupa persen kelembapan tanah, sama untuk
               semua tanaman.
             </p>
           </div>

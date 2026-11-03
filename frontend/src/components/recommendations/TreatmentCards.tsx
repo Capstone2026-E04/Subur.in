@@ -60,7 +60,7 @@ export default function TreatmentCards({
                 <p>
                   Kelembapan media{" "}
                   <strong className="mt-1 block text-base">
-                    {recommendation.moistureValue.toLocaleString("id-ID")} % VWC
+                    {recommendation.moistureValue.toLocaleString("id-ID")}%
                   </strong>
                 </p>
                 <p>
