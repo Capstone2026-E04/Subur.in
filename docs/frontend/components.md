@@ -40,7 +40,7 @@ UI manajemen device, semuanya didukung oleh [`useDevices`](../../frontend/src/ho
 | Component | Tujuan |
 |---|---|
 | `DeviceCard.tsx` | Satu baris tabel "Daftar Perangkat": nama, status, tanaman, terakhir aktif, tombol Edit dan Hapus |
-| `ConnectDeviceModal.tsx` | Alur klaim untuk device yang baru ditemukan (`POST /api/devices`) |
+| `ConnectDeviceModal.tsx` | Alur klaim untuk device yang baru ditemukan (`POST /api/devices`); device hanya dipilih dari daftar terdeteksi, tidak ada input ID manual |
 | `EditDeviceModal.tsx` | Edit label/plant/interval (`PATCH /api/devices/:id`); opsi interval sama dengan modal tambah (1 menit-12 jam) |
 | `DeleteConfirmDialog.tsx` | Dialog konfirmasi hapus generik, digunakan ulang untuk penghapusan device |
 

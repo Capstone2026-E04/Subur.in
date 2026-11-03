@@ -417,25 +417,6 @@ export default function ConnectDeviceModal({
                         <div className="flex flex-col gap-4 p-4">
                           <div className="flex flex-col gap-1.5">
                             <label
-                              htmlFor="manual-node-id"
-                              className="text-xs font-semibold text-neutral-600"
-                            >
-                              ID node / perangkat
-                            </label>
-                            <input
-                              id="manual-node-id"
-                              value={selectedDeviceId}
-                              onChange={(e) =>
-                                setSelectedDeviceId(e.target.value.trim())
-                              }
-                              maxLength={50}
-                              placeholder="Masukkan ID node atau pilih alat yang terdeteksi"
-                              required
-                              className="focus:border-primary w-full rounded-xl border border-black/10 px-3 py-2.5 text-sm outline-none"
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label
                               htmlFor="device-label-input"
                               className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600"
                             >
