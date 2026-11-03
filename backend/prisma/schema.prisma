@@ -56,7 +56,7 @@ model Device {
 }
 
 model RecommendationLog {
-  id       String @id @default(uuid()) @db.Uuid
+  id       Int    @id @default(autoincrement())
   deviceId String @map("device_id") @db.Uuid
 
   phValue       Float @map("ph_value")
