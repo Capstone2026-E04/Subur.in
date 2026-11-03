@@ -18,11 +18,10 @@ flowchart TD
     Dashboard --> Plants["/dashboard/plants"]
     Dashboard --> Recommendations["/dashboard/recommendations"]
     Dashboard --> Analytics["/dashboard/analytics"]
-    Dashboard --> Notifications["/dashboard/notifications"]
     Dashboard --> Settings["/dashboard/settings"]
-    Dashboard --> DevMode["/dashboard/dev-mode"]
     Dashboard --> Superadmin["/dashboard/superadmin (SUPERADMIN only)"]
-    Dashboard --> Profile["/dashboard/profile (hidden from nav)"]
+    Settings --> Notifications["/dashboard/settings/notifications"]
+    Settings --> Profile["/dashboard/settings/profile"]
 ```
 
 ## Halaman
@@ -36,10 +35,9 @@ flowchart TD
 | `/dashboard/plants` | `.../plants/page.tsx` | Penelusuran referensi tanaman |
 | `/dashboard/recommendations` | `.../recommendations/page.tsx` | Riwayat rekomendasi/simulasi |
 | `/dashboard/analytics` | `.../analytics/page.tsx` | Chart atas riwayat sensor |
-| `/dashboard/notifications` | `.../notifications/page.tsx` | Kotak masuk notifikasi |
-| `/dashboard/settings` | `.../settings/page.tsx` | Pengaturan aplikasi/akun |
-| `/dashboard/profile` | `.../profile/page.tsx` | Edit profil dan, bila `hasPassword` false, form buat password; dapat diakses tetapi disembunyikan dari nav (`hidden: true` di `navConfig.ts`) |
-| `/dashboard/dev-mode` | `.../dev-mode/page.tsx` | Menyalakan simulasi telemetri |
+| `/dashboard/settings/notifications` | `.../settings/notifications/page.tsx` | Kotak masuk notifikasi |
+| `/dashboard/settings` | `.../settings/page.tsx` | Pengaturan aplikasi/akun, termasuk kontrol Developer Mode (simulasi telemetri) |
+| `/dashboard/settings/profile` | `.../settings/profile/page.tsx` | Edit profil dan, bila `hasPassword` false, form buat password; dibuka dari avatar di Topbar, bukan dari menu |
 | `/dashboard/superadmin` | `.../superadmin/page.tsx` | Grafik sensor semua perangkat dan tabel seluruh data; hanya `SUPERADMIN` (lihat di bawah) |
 | `/api/nextauth/[...nextauth]` | `app/api/nextauth/[...nextauth]/route.ts` | Handler catch-all NextAuth v5 |
 

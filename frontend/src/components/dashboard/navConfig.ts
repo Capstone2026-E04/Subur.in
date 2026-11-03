@@ -3,11 +3,8 @@ import {
   MdOutlineSpa,
   MdBarChart,
   MdSettings,
-  MdNotifications,
-  MdAccountCircle,
   MdComputer,
   MdAutoAwesome,
-  MdDeveloperMode,
   MdAdminPanelSettings,
 } from "react-icons/md";
 import { IconType } from "react-icons";
@@ -47,33 +44,15 @@ export const NAV_ITEMS: NavItem[] = [
     icon: MdOutlineSpa,
   },
   {
-    label: "Notifikasi",
-    href: "/dashboard/notifications",
-    icon: MdNotifications,
-    hidden: true,
-  },
-  {
     label: "Pengaturan",
     href: "/dashboard/settings",
     icon: MdSettings,
-  },
-  {
-    label: "Dev Mode",
-    href: "/dashboard/dev-mode",
-    icon: MdDeveloperMode,
-    hidden: true,
   },
   {
     label: "Superadmin",
     href: "/dashboard/superadmin",
     icon: MdAdminPanelSettings,
     superadminOnly: true,
-    hidden: true,
-  },
-  {
-    label: "Profil",
-    href: "/dashboard/profile",
-    icon: MdAccountCircle,
     hidden: true,
   },
 ];

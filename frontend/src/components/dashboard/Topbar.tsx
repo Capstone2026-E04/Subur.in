@@ -168,14 +168,14 @@ export default function Topbar({ user, role }: TopbarProps) {
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-0.5">
             <Link
-              href="/dashboard/notifications"
+              href="/dashboard/settings/notifications"
               aria-label={
                 unreadCount > 0
                   ? `Notifikasi, ${unreadCount} belum dibaca`
                   : "Notifikasi"
               }
               aria-current={
-                pathname === "/dashboard/notifications" ? "page" : undefined
+                pathname === "/dashboard/settings/notifications" ? "page" : undefined
               }
               className="hover:bg-primary/5 relative flex h-11 w-11 items-center justify-center rounded-xl text-neutral-900 transition-colors"
             >
@@ -209,7 +209,7 @@ export default function Topbar({ user, role }: TopbarProps) {
             {deviceSelector("desktop-device-selector")}
           </div>
           <Link
-            href="/dashboard/notifications"
+            href="/dashboard/settings/notifications"
             aria-label="Notifikasi"
             className="relative flex h-11 w-11 items-center justify-center text-neutral-900"
           >
@@ -222,7 +222,7 @@ export default function Topbar({ user, role }: TopbarProps) {
             )}
           </Link>
           <Link
-            href="/dashboard/profile"
+            href="/dashboard/settings/profile"
             aria-label="Profil"
             className="flex items-center gap-3 text-neutral-900"
           >
