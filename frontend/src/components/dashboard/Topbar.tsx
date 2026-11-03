@@ -113,7 +113,6 @@ export default function Topbar({ user, role }: TopbarProps) {
 
   const selectedDevice =
     devices.find((device) => device.id === selectedDeviceId) ?? devices[0];
-  const plantName = selectedDevice?.plant?.name;
 
   const deviceSelector = (id: string) => (
     <div className="relative min-w-0">
@@ -195,7 +194,7 @@ export default function Topbar({ user, role }: TopbarProps) {
         <div className="hidden min-w-0 md:block">
           <h1 className="truncate text-2xl font-bold tracking-tight text-neutral-900">
             {pathname === "/dashboard"
-              ? `Halo, ${plantName ?? user?.name?.split(" ")[0] ?? "Pekebun"}`
+              ? `Halo, ${user?.name?.split(" ")[0] ?? "Pengguna"}`
               : breadcrumbs[breadcrumbs.length - 1]?.label}{" "}
             <MdOutlineSpa
               aria-hidden
