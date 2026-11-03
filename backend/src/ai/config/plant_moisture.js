@@ -14,8 +14,8 @@ const PLANT_MOISTURE = {
   bayam: buildMoisture({
     triggerFraction: 0.7,
     targetFraction: 0.85,
-    a: 0.531,
-    b: 0.864,
+    a: 0.4548211,
+    b: 0.7883566,
   }),
   selada: buildMoisture({
     triggerFraction: 0.65,
