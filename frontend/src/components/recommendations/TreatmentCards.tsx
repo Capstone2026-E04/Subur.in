@@ -1,3 +1,4 @@
+import { vwcToCc } from "@/components/dashboard/sensorStatus";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { categoryLabel } from "./categoryLabel";
 import ApplicationGuide from "./ApplicationGuide";
@@ -60,7 +61,7 @@ export default function TreatmentCards({
                 <p>
                   Kelembapan media{" "}
                   <strong className="mt-1 block text-base">
-                    {recommendation.moistureValue.toLocaleString("id-ID")}%
+                    {Math.round(vwcToCc(recommendation.moistureValue))}%
                   </strong>
                 </p>
                 <p>

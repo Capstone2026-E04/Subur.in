@@ -1,11 +1,9 @@
 import { MdWaterDrop } from "react-icons/md";
 import { Card } from "@/components/ui/card";
-import { TONES, classifyVwc, toVwcDisplay } from "./sensorStatus";
+import { TONES, toVwcDisplay } from "./sensorStatus";
 
 interface MoistureLevelCardProps {
   value: number | null;
-  vwcTrigger: number | null;
-  moistureType?: "legacy_index" | "vwc_percent";
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -21,20 +19,11 @@ const STATUS_LABELS: Record<string, string> = {
   Jenuh: "Jenuh/basah",
 };
 
-export default function MoistureLevelCard({
-  value,
-  vwcTrigger,
-  moistureType = "legacy_index",
-}: MoistureLevelCardProps) {
-  const vwc =
-    value !== null && moistureType === "vwc_percent"
-      ? toVwcDisplay(value)
-      : null;
-  const status =
-    vwc ?? (value === null ? null : classifyVwc(value, vwcTrigger));
+export default function MoistureLevelCard({ value }: MoistureLevelCardProps) {
+  const status = value === null ? null : toVwcDisplay(value);
   const tone = status ? TONES[status.tone] : null;
-  const displayValue = vwc ? vwc.mainPercent : value;
-  const position = Math.min(Math.max(vwc?.gaugeFill ?? value ?? 0, 2), 98);
+  const displayValue = status ? status.mainPercent : null;
+  const position = Math.min(Math.max(status?.gaugeFill ?? 0, 2), 98);
 
   return (
     <Card className="min-w-0 rounded-2xl border-white p-3 shadow-sm sm:rounded-3xl sm:p-6">
@@ -44,11 +33,7 @@ export default function MoistureLevelCard({
       </h3>
       <div className="mt-2 flex min-h-16 flex-col items-start justify-start gap-2 sm:mt-3 sm:min-h-28 xl:min-h-12 xl:flex-row xl:items-center xl:gap-4">
         <p className="text-2xl font-bold tracking-tight whitespace-nowrap text-neutral-900 tabular-nums sm:text-5xl">
-          {displayValue === null
-            ? "--"
-            : vwc
-              ? `${displayValue}%`
-              : `${Math.round(displayValue)}%`}
+          {displayValue === null ? "--" : `${displayValue}%`}
         </p>
         {status && tone ? (
           <span

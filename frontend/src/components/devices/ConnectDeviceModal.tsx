@@ -1,5 +1,6 @@
 "use client";
 
+import { vwcToCc } from "@/components/dashboard/sensorStatus";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -391,7 +392,10 @@ export default function ConnectDeviceModal({
                                       <span className="font-medium text-neutral-800">
                                         Kelembapan:
                                       </span>{" "}
-                                      {selectedDeviceInfo.moisture}
+                                      {Math.round(
+                                        vwcToCc(selectedDeviceInfo.moisture),
+                                      )}
+                                      %
                                     </span>
                                     <span className="text-xs text-neutral-400">
                                       {formatDiscoveredAge(

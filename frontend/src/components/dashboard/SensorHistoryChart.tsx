@@ -22,6 +22,7 @@ import { fetchSensorHistory } from "@/services/deviceService";
 import type { SensorHistoryItem } from "@/types/device";
 import { useSensorRealtime } from "@/hooks/useSensorRealtime";
 import { Card, CardHeader } from "@/components/ui/card";
+import { vwcToCc } from "./sensorStatus";
 
 interface SensorHistoryChartProps {
   deviceId: string;
@@ -160,6 +161,7 @@ export default function SensorHistoryChart({
 
   const formattedData = history.map((item) => ({
     ...item,
+    moisture: vwcToCc(item.moisture),
     timeLabel: formatChartTime(item.timestamp, hasRange),
   }));
 
@@ -353,7 +355,7 @@ export default function SensorHistoryChart({
                 {viewMode === "moisture" ? (
                   <YAxis
                     yAxisId="moisture-axis"
-                    domain={[0, 100]}
+                    domain={[0, 150]}
                     stroke="#94a3b8"
                     fontSize={10}
                     tickLine={false}
@@ -364,7 +366,7 @@ export default function SensorHistoryChart({
                   <YAxis
                     yAxisId="moisture-axis"
                     orientation="right"
-                    domain={[0, 100]}
+                    domain={[0, 150]}
                     stroke="#94a3b8"
                     fontSize={10}
                     tickLine={false}

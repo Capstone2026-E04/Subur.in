@@ -70,6 +70,11 @@ export function classifyPh(ph: number, range: { min: number; max: number }) {
 
 const THETA_CC_PERCENT = 32.98;
 
+// Sensor dan backend menyimpan kelembapan sebagai persen kadar air tanah;
+// dashboard selalu menampilkannya sebagai persen kapasitas media.
+export const vwcToCc = (vwcPercent: number) =>
+  (vwcPercent / THETA_CC_PERCENT) * 100;
+
 export function toVwcDisplay(vwcPercent: number) {
   if (vwcPercent <= 0) {
     return {

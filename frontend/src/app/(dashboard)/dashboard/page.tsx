@@ -140,7 +140,7 @@ export default function DashboardPage() {
 
   const devicePlant = plants.find((p) => p.id === selectedDevice?.plant?.id);
 
-  const { ph, moisture, moistureType, lastUpdated } = useSensorRealtime(
+  const { ph, moisture, lastUpdated } = useSensorRealtime(
     selectedDevice?.id || "",
     token,
   );
@@ -230,11 +230,7 @@ export default function DashboardPage() {
         />
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-5">
-        <MoistureLevelCard
-          value={currentMoisture}
-          moistureType={moistureType}
-          vwcTrigger={devicePlant?.vwcTrigger ?? null}
-        />
+        <MoistureLevelCard value={currentMoisture} />
         <PhLevelCard value={currentPh} range={phRange} />
       </div>
 

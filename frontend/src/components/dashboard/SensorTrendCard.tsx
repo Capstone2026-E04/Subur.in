@@ -14,6 +14,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { fetchSensorTrend } from "@/services/deviceService";
 import type { SensorTrendPoint } from "@/types/device";
+import { vwcToCc } from "./sensorStatus";
 
 interface SensorTrendCardProps {
   title: string;
@@ -72,7 +73,10 @@ function buildSeries(
 ) {
   const bucketOf = (t: number) => Math.floor((t + TZ_OFFSET_MS) / g.ms);
   const values = new Map(
-    points.map((p) => [bucketOf(new Date(p.timestamp).getTime()), p[metric]]),
+    points.map((p) => [
+      bucketOf(new Date(p.timestamp).getTime()),
+      metric === "moisture" ? vwcToCc(p.moisture) : p.ph,
+    ]),
   );
   const first = bucketOf(fromMs);
   const last = bucketOf(toMs);
@@ -177,7 +181,7 @@ export default function SensorTrendCard({
   const data = rangeError
     ? []
     : buildSeries(points, metric, granularity, fromMs, toMs);
-  const domain: [number, number] = metric === "ph" ? [0, 14] : [0, 100];
+  const domain: [number, number] = metric === "ph" ? [0, 14] : [0, 150];
   const formatValue = (v: number) =>
     metric === "ph" ? v.toFixed(1) : `${Math.round(v)}%`;
   const inputClass =
@@ -267,7 +271,7 @@ export default function SensorTrendCard({
               domain={domain}
               ticks={
                 metric === "moisture"
-                  ? [0, 25, 50, 75, 100]
+                  ? [0, 50, 100, 150]
                   : [0, 3.5, 7, 10.5, 14]
               }
               tickFormatter={formatValue}

@@ -1,5 +1,6 @@
 "use client";
 
+import { vwcToCc } from "@/components/dashboard/sensorStatus";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdOutlineSpa, MdOutlineInbox } from "react-icons/md";
@@ -142,11 +143,14 @@ export default function PlantsPage() {
                         </span>
                         <span className="mt-0.5 text-xs font-bold text-neutral-700">
                           {plant.vwcTrigger !== null
-                            ? `Trigger ${plant.vwcTrigger}`
+                            ? `Trigger ${Math.round(vwcToCc(plant.vwcTrigger))}%`
                             : "-"}
                         </span>
                         <span className="mt-0.5 text-[9px] font-semibold text-sky-700/80">
-                          Tgt: {plant.vwcTarget ?? "-"}
+                          Tgt:{" "}
+                          {plant.vwcTarget !== null
+                            ? `${Math.round(vwcToCc(plant.vwcTarget))}%`
+                            : "-"}
                         </span>
                       </div>
 
