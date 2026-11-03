@@ -26,15 +26,15 @@ Subur.in memantau pH dan kelembapan tanah secara real-time lewat sensor IoT, lal
 
 ## Tech Stack
 
-| Layer         | Teknologi                                                                   |
-| ------------- | --------------------------------------------------------------------------- |
-| Frontend      | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, NextAuth v5, Recharts, GSAP, Zustand |
-| Backend       | Node.js, Express.js, Prisma ORM                                             |
-| Database      | PostgreSQL (Supabase)                                                       |
-| Cache         | Redis (self-hosted): pembacaan terbaru, throttling, buffer ekspor CSV       |
-| Pesan IoT     | MQTT (EMQX Cloud, TLS)                                                      |
-| Realtime Web  | Server-Sent Events (SSE)                                                    |
-| Deployment    | Docker, GitHub Actions, GHCR, VPS                                           |
+| Layer        | Teknologi                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| Frontend     | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, NextAuth v5, Recharts, GSAP, Zustand |
+| Backend      | Node.js, Express.js, Prisma ORM                                                            |
+| Database     | PostgreSQL (Supabase)                                                                      |
+| Cache        | Redis (self-hosted): pembacaan terbaru, throttling, buffer ekspor CSV                      |
+| Pesan IoT    | MQTT (EMQX Cloud, TLS)                                                                     |
+| Realtime Web | Server-Sent Events (SSE)                                                                   |
+| Deployment   | Docker, GitHub Actions, GHCR, VPS                                                          |
 
 ## Arsitektur singkat
 
@@ -91,17 +91,17 @@ Setelah `prisma db push`, jalankan juga SQL di [`backend/prisma/manual/`](backen
 
 Dokumentasi lengkap ada di [`docs/`](docs/), terbagi per topik:
 
-| Topik                                | Deskripsi                                                                                                         |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| [`architecture/`](docs/architecture) | Desain sistem, struktur folder, skema database, alur API                                                          |
+| Topik                                | Deskripsi                                                                                                                     |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| [`architecture/`](docs/architecture) | Desain sistem, struktur folder, skema database, alur API                                                                      |
 | [`api/`](docs/api)                   | Referensi endpoint per resource (auth, users, superadmin, devices, plants, recommendations, sensors, notifications, telegram) |
-| [`setup/`](docs/setup)               | Instalasi, environment variable, deployment, troubleshooting                                                      |
-| [`firmware/`](docs/firmware)         | Kontrak MQTT, antrean offline, dan batas firmware ESP32                                                           |
-| [`frontend/`](docs/frontend)         | Design system, komponen, routing, state management                                                                |
-| [`backend/`](docs/backend)           | Coding standards, validasi, autentikasi, logging, testing                                                                  |
-| [`database/`](docs/database)         | Konvensi Prisma, migrasi, seeding                                                                                 |
-| [`decisions/`](docs/decisions)       | Catatan keputusan teknis (ADR)                                                                                    |
-| [`changelog.md`](docs/changelog.md)  | Riwayat perubahan                                                                                                 |
+| [`setup/`](docs/setup)               | Instalasi, environment variable, deployment, troubleshooting                                                                  |
+| [`firmware/`](docs/firmware)         | Kontrak MQTT, antrean offline, dan batas firmware ESP32                                                                       |
+| [`frontend/`](docs/frontend)         | Design system, komponen, routing, state management                                                                            |
+| [`backend/`](docs/backend)           | Coding standards, validasi, autentikasi, logging, testing                                                                     |
+| [`database/`](docs/database)         | Konvensi Prisma, migrasi, seeding                                                                                             |
+| [`decisions/`](docs/decisions)       | Catatan keputusan teknis (ADR)                                                                                                |
+| [`changelog.md`](docs/changelog.md)  | Riwayat perubahan                                                                                                             |
 
 ## Kontribusi
 
