@@ -4,6 +4,8 @@ Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk ri
 
 ## 2026-11-03
 
+- **refactor(devices):** Kolom "ID node / perangkat" dihapus dari form tambah perangkat; device hanya dipilih dari daftar yang terdeteksi.
+- **refactor(ai):** `ACTION_TEXT` (`ai/utils/interpreter.js`) dipersingkat; kode kategori C1-C9 tidak berubah.
 - **refactor(dashboard):** Folder `/dashboard` disesuaikan dengan menu (6 menu + `superadmin`). `dev-mode` dihapus (kontrolnya sudah ada di pengaturan); `notifications` dan `profile` dipindah ke `/dashboard/settings/notifications` dan `/dashboard/settings/profile`.
 - **refactor(firmware):** Sketch dipisah per node (`firmware/node_1/`, `firmware/node_2/`). Kredensial WiFi dan MQTT (termasuk host dan port) dipindah ke `secrets.h` (di-ignore git; contoh di `secrets.h.example`). Komentar dihapus; kontraknya didokumentasikan di `docs/firmware/README.md`.
 
