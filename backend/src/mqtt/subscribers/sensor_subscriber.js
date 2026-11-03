@@ -23,6 +23,7 @@ const { adcToVwc } = require("../../ai/core/vwc_calibration");
 const {
   recordMoisture,
   claimWaterDecision,
+  claimPhDecision,
 } = require("../../ai/services/water_schedule.service");
 const { getRedisClient } = require("../../database/connections/redis");
 const { notifyDevice } = require("../../services/notification.service");
@@ -239,12 +240,26 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
       try {
         const redis = getRedisClient();
 
-        const recommendation = await generateRecommendation({
+        let recommendation = await generateRecommendation({
           phValue: ph,
           moistureValue: decisionMoisture,
           plantIdOrName: device.plantId,
           safetyOverride,
         });
+
+        // Dosis pH hanya diberikan sekali per 7 hari (mode dev: tanpa batas).
+        if (
+          !isDev &&
+          (recommendation.limeDosageGram > 0 ||
+            recommendation.sulfurDosageGram > 0) &&
+          !(await claimPhDecision(deviceCode))
+        ) {
+          recommendation = {
+            ...recommendation,
+            limeDosageGram: 0,
+            sulfurDosageGram: 0,
+          };
+        }
 
         await prisma.recommendationLog.create({
           data: {

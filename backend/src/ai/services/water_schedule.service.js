@@ -4,10 +4,12 @@ const {
   WATER_WINDOW,
   WATER_MIN_READINGS,
   WATER_DECISION_SECONDS,
+  PH_DECISION_SECONDS,
 } = require("../config/treatment_constants");
 
 const WINDOW_KEY = (code) => `sensor:moisture_window:${code}`;
 const SLOT_KEY = (code) => `sensor:water_decision:${code}`;
+const PH_SLOT_KEY = (code) => `sensor:ph_decision:${code}`;
 
 async function readWindow(redis, deviceCode) {
   const raw = await redis.lrange(WINDOW_KEY(deviceCode), 0, WATER_WINDOW - 1);
@@ -34,9 +36,26 @@ async function claimWaterDecision(deviceCode) {
   return claimed ? median(readings) : null;
 }
 
+// Rekomendasi dosis pH (kapur/sulfur) hanya boleh keluar sekali per 7 hari.
+async function claimPhDecision(deviceCode) {
+  const claimed = await getRedisClient().set(
+    PH_SLOT_KEY(deviceCode),
+    "1",
+    "EX",
+    PH_DECISION_SECONDS,
+    "NX",
+  );
+  return Boolean(claimed);
+}
+
 async function getWindowMedian(deviceCode) {
   const readings = await readWindow(getRedisClient(), deviceCode);
   return readings.length >= WATER_MIN_READINGS ? median(readings) : null;
 }
 
-module.exports = { recordMoisture, claimWaterDecision, getWindowMedian };
+module.exports = {
+  recordMoisture,
+  claimWaterDecision,
+  claimPhDecision,
+  getWindowMedian,
+};

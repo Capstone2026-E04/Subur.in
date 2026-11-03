@@ -25,6 +25,7 @@ jest.mock("../../../ai/services/recommendation.service", () => ({
 jest.mock("../../../ai/services/water_schedule.service", () => ({
   recordMoisture: jest.fn(),
   claimWaterDecision: jest.fn(),
+  claimPhDecision: jest.fn(),
 }));
 jest.mock("../../../database/connections/redis", () => ({
   getRedisClient: jest.fn(),
@@ -53,6 +54,7 @@ const {
 const {
   recordMoisture,
   claimWaterDecision,
+  claimPhDecision,
 } = require("../../../ai/services/water_schedule.service");
 const { getRedisClient } = require("../../../database/connections/redis");
 const { notifyDevice } = require("../../../services/notification.service");
@@ -118,6 +120,7 @@ describe("handleSensorMessage", () => {
       lastMoisture = m;
     });
     claimWaterDecision.mockImplementation(async () => lastMoisture);
+    claimPhDecision.mockResolvedValue(true);
     shouldSaveToDatabase.mockResolvedValue(true);
   });
 
@@ -624,6 +627,25 @@ describe("handleSensorMessage", () => {
 
       await send({ ph: 5.4, soil_vwc_pct: 80 });
 
+      expect(notifyDevice).not.toHaveBeenCalled();
+    });
+
+    it("withholds the pH dosage when one was already given within 7 days", async () => {
+      claimPhDecision.mockResolvedValue(false);
+      generateRecommendation.mockResolvedValue({
+        ...idleRecommendation,
+        phAction: "LIME",
+        limeDosageGram: 2.86,
+      });
+
+      await send({ ph: 5.4, soil_vwc_pct: 80 });
+
+      expect(prisma.recommendationLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          limeDosageGram: 0,
+          sulfurDosageGram: 0,
+        }),
+      });
       expect(notifyDevice).not.toHaveBeenCalled();
     });
 
