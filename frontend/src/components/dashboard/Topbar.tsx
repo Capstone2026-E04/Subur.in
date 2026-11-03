@@ -175,7 +175,9 @@ export default function Topbar({ user, role }: TopbarProps) {
                   : "Notifikasi"
               }
               aria-current={
-                pathname === "/dashboard/settings/notifications" ? "page" : undefined
+                pathname === "/dashboard/settings/notifications"
+                  ? "page"
+                  : undefined
               }
               className="hover:bg-primary/5 relative flex h-11 w-11 items-center justify-center rounded-xl text-neutral-900 transition-colors"
             >
