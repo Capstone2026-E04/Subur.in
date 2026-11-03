@@ -1,6 +1,6 @@
 # Struktur folder
 
-Monorepo dengan dua aplikasi yang dapat dideploy secara independen, `backend/` dan `frontend/`, ditambah konfigurasi Docker/CI bersama di level root.
+Monorepo dengan dua aplikasi yang dapat dideploy secara independen, `backend/` dan `frontend/`, ditambah `firmware/` (sketch ESP32) dan konfigurasi Docker/CI bersama di level root.
 
 ```
 Subur.in/
@@ -52,13 +52,18 @@ Subur.in/
 │       │   └── telegram/            # session/, commands/, router.test.js - mencerminkan src/telegram/
 │       └── server.js            # Bootstrap aplikasi: Express, CORS, MQTT, Redis, inisialisasi cron
 │
+├── firmware/
+│   ├── node_1/                  # node_1.ino + secrets.h.example (secrets.h di-ignore git)
+│   ├── node_2/                  # node_2.ino + secrets.h.example
+│   └── README.md
+│
 ├── frontend/
 │   └── src/
 │       ├── app/
 │       │   ├── (auth)/              # Route group publik: login/ dan register/
 │       │   ├── (dashboard)/dashboard/ # Route group terproteksi: overview, devices, plants,
-│       │   │                          # recommendations, analytics, notifications, settings, dev-mode,
-│       │   │                          # profile, superadmin (khusus SUPERADMIN)
+│       │   │                          # recommendations, analytics, settings (+ settings/notifications,
+│       │   │                          # settings/profile), superadmin (khusus SUPERADMIN)
 │       │   ├── api/nextauth/[...nextauth]/route.ts  # Handler NextAuth v5
 │       │   ├── layout.tsx / page.tsx
 │       │   └── globals.css          # Token tema Tailwind v4 (warna, font)

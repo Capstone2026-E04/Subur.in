@@ -17,7 +17,7 @@ Aplikasi frontend client (web monitoring) untuk proyek **Subur.in** (Platform Mo
 - **Rekomendasi perawatan:** hasil fuzzy logic dari backend (dosis air, kapur, sulfur) dan panduan aplikasi.
 - **Manajemen perangkat dan tanaman:** hubungkan, ubah, dan hapus perangkat; pilih perangkat aktif di seluruh dashboard.
 - **Notifikasi dan Telegram:** daftar notifikasi serta penghubungan akun ke bot Telegram dari halaman pengaturan.
-- **Panel superadmin dan dev mode:** halaman khusus role tertentu, disaring lewat `visibleNavItems(role)`.
+- **Panel superadmin dan dev mode:** panel superadmin disaring lewat `visibleNavItems(role)`; kontrol Developer Mode ada di halaman pengaturan.
 - **Autentikasi:** login/registrasi email dan password, serta Google Sign-In.
 - **Desain organik:** palet bertema alam (hijau botani, krem `#FBF5DD`, font *Stack Sans Text*) yang dikonfigurasi lewat Tailwind CSS v4 `@theme` di `globals.css`.
 
@@ -50,7 +50,7 @@ Aplikasi frontend client (web monitoring) untuk proyek **Subur.in** (Platform Mo
 | Folder                    | Isi                                                                                   |
 | ------------------------- | ------------------------------------------------------------------------------------- |
 | `src/app/(auth)/`         | Halaman `login` dan `register`                                                        |
-| `src/app/(dashboard)/dashboard/` | `page` (ringkasan), `analytics`, `devices`, `plants`, `recommendations`, `notifications`, `profile`, `settings`, `dev-mode`, `superadmin` |
+| `src/app/(dashboard)/dashboard/` | `page` (ringkasan), `analytics`, `devices`, `plants`, `recommendations`, `settings` (termasuk `notifications` dan `profile`), `superadmin` |
 | `src/app/api/nextauth/`   | Route handler NextAuth                                                                |
 | `src/components/`         | Komponen per fitur: `dashboard`, `devices`, `recommendations`, `superadmin`, `auth`, `landing`, `ui` |
 | `src/hooks/`              | `useDevices`, `usePlants`, `useSensorRealtime`                                        |

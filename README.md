@@ -58,6 +58,7 @@ Detail lengkap ada di [`docs/architecture/system-design.md`](docs/architecture/s
 Subur.in/
 ├── backend/     # API Express + mesin fuzzy logic + integrasi MQTT/Redis
 ├── frontend/    # Dashboard Next.js
+├── firmware/    # Sketch ESP32 per node (node_1, node_2)
 ├── docs/        # Dokumentasi lengkap (lihat di bawah)
 └── docker-compose.yml
 ```
@@ -95,6 +96,7 @@ Dokumentasi lengkap ada di [`docs/`](docs/), terbagi per topik:
 | [`architecture/`](docs/architecture) | Desain sistem, struktur folder, skema database, alur API                                                          |
 | [`api/`](docs/api)                   | Referensi endpoint per resource (auth, users, superadmin, devices, plants, recommendations, sensors, notifications, telegram) |
 | [`setup/`](docs/setup)               | Instalasi, environment variable, deployment, troubleshooting                                                      |
+| [`firmware/`](docs/firmware)         | Kontrak MQTT, antrean offline, dan batas firmware ESP32                                                           |
 | [`frontend/`](docs/frontend)         | Design system, komponen, routing, state management                                                                |
 | [`backend/`](docs/backend)           | Coding standards, validasi, autentikasi, logging, testing                                                                  |
 | [`database/`](docs/database)         | Konvensi Prisma, migrasi, seeding                                                                                 |

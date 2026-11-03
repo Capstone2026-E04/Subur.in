@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-11-03
+
+- **refactor(dashboard):** Folder `/dashboard` disesuaikan dengan menu (6 menu + `superadmin`). `dev-mode` dihapus (kontrolnya sudah ada di pengaturan); `notifications` dan `profile` dipindah ke `/dashboard/settings/notifications` dan `/dashboard/settings/profile`.
+- **refactor(firmware):** Sketch dipisah per node (`firmware/node_1/`, `firmware/node_2/`). Kredensial WiFi dan MQTT (termasuk host dan port) dipindah ke `secrets.h` (di-ignore git; contoh di `secrets.h.example`). Komentar dihapus; kontraknya didokumentasikan di `docs/firmware/README.md`.
+
 ## 2026-10-29
 
 - **feat(dashboard):** Grafik tren pH dan kelembapan memakai pemilih tanggal dan pukul "Mulai" serta "Akhir" sebagai ganti dropdown granularitas dan "n terakhir". Granularitas ditentukan otomatis dari panjang rentang (maks. 72 titik). `GET /api/sensors/:deviceId/history` menerima `bucketSeconds` (dengan `from` dan `to`) untuk rata-rata per bucket di server, sehingga rentang panjang tidak terpotong 500 data. Lihat [api/sensors.md](api/sensors.md).
