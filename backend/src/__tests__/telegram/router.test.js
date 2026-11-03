@@ -82,6 +82,23 @@ describe("router handleUpdate", () => {
     );
   });
 
+  it('treats a plain "Sudah" message as the /sudah command', async () => {
+    await handleUpdate({
+      message: {
+        chat: { id: FAKE_CHAT_ID, type: "private" },
+        from: { id: FAKE_USER_ID },
+        text: "Sudah",
+      },
+    });
+
+    expect(telegramApi.sendMessage).toHaveBeenCalledWith(
+      FAKE_CHAT_ID,
+      expect.stringContaining("/link"),
+      undefined,
+      undefined,
+    );
+  });
+
   it("answers an unrecognized callback_query domain without replying", async () => {
     await handleUpdate({
       callback_query: {

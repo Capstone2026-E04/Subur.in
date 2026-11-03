@@ -9,6 +9,7 @@ import {
 import { Card } from "@/components/ui/card";
 import type { DeviceRecommendation } from "@/types/device";
 import { formatTimestamp } from "./sensorStatus";
+import ConfirmRecommendationButton from "@/components/recommendations/ConfirmRecommendationButton";
 
 interface RecommendationSummaryCardProps {
   recommendation: DeviceRecommendation | null;
@@ -16,6 +17,9 @@ interface RecommendationSummaryCardProps {
   updatedAt: string | null;
   message?: string;
   error?: string | null;
+  token: string | null;
+  deviceId: string;
+  onConfirmed: () => void;
 }
 
 export default function RecommendationSummaryCard({
@@ -24,6 +28,9 @@ export default function RecommendationSummaryCard({
   updatedAt,
   message,
   error,
+  token,
+  deviceId,
+  onConfirmed,
 }: RecommendationSummaryCardProps) {
   const treatments = recommendation
     ? [
@@ -151,6 +158,16 @@ export default function RecommendationSummaryCard({
                   ? "Belum diperlukan treatment tambahan. Lanjutkan pemantauan kondisi tanaman."
                   : "Tidak ada dosis tambahan pada respons ini. Periksa status pemantauan sebelum melakukan treatment."}
               </p>
+            )}
+            {treatments.length > 0 && (
+              <div className="mt-4">
+                <ConfirmRecommendationButton
+                  token={token}
+                  deviceId={deviceId}
+                  confirmedAt={recommendation.confirmedAt}
+                  onConfirmed={onConfirmed}
+                />
+              </div>
             )}
             <p className="mt-4 text-[10px] text-neutral-500 sm:text-xs">
               Diperbarui {formatTimestamp(updatedAt)}

@@ -94,6 +94,7 @@ export interface DeviceRecommendation {
   decisionSource?: "fuzzy" | "safety_override";
   overrideReason?: string | null;
   timestamp?: string;
+  confirmedAt?: string | null;
 }
 
 export interface RecommendationLogItem {
@@ -109,6 +110,7 @@ export interface RecommendationLogItem {
   limeDosageGram: number;
   sulfurDosageGram: number;
   reduceWatering: boolean;
+  confirmedAt?: string | null;
   createdAt: string;
   device?: {
     id: string;

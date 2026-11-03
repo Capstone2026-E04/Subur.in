@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { categoryLabel } from "./categoryLabel";
 import ApplicationGuide from "./ApplicationGuide";
+import ConfirmRecommendationButton from "./ConfirmRecommendationButton";
 import type { DeviceRecommendation } from "@/types/device";
 
 export default function TreatmentCards({
@@ -9,6 +10,8 @@ export default function TreatmentCards({
   message,
   error,
   deviceName,
+  deviceId,
+  token,
   onRefresh,
 }: {
   recommendation: DeviceRecommendation | null;
@@ -16,6 +19,8 @@ export default function TreatmentCards({
   message: string;
   error: string | null;
   deviceName: string;
+  deviceId?: string;
+  token: string | null;
   onRefresh: () => void;
 }) {
   return (
@@ -71,6 +76,18 @@ export default function TreatmentCards({
               <p className="text-sm leading-relaxed text-neutral-600">
                 {recommendation.actionText}
               </p>
+              {deviceId &&
+                (recommendation.waterVolumeLiter > 0 ||
+                  recommendation.limeDosageGram > 0 ||
+                  recommendation.sulfurDosageGram > 0 ||
+                  recommendation.reduceWatering) && (
+                  <ConfirmRecommendationButton
+                    token={token}
+                    deviceId={deviceId}
+                    confirmedAt={recommendation.confirmedAt}
+                    onConfirmed={onRefresh}
+                  />
+                )}
               {recommendation.timestamp && (
                 <p className="text-xs text-neutral-400">
                   Diperbarui{" "}

@@ -63,6 +63,8 @@ export default function RecommendationsPage() {
         }
         error={error}
         deviceName={device?.label ?? "Belum ada perangkat"}
+        deviceId={device?.id}
+        token={token}
         onRefresh={refresh}
       />
     </div>

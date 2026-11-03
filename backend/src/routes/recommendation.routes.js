@@ -9,5 +9,10 @@ router.get(
   authMiddleware,
   recommendationController.getRecommendationHistory,
 );
+router.post(
+  "/confirm",
+  authMiddleware,
+  recommendationController.confirmRecommendation,
+);
 
 module.exports = router;

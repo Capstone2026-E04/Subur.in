@@ -358,9 +358,16 @@ exports.getDeviceRecommendation = async (req, res, next) => {
       plantIdOrName: device.plantId,
     });
 
+    const latestLog = await prisma.recommendationLog.findFirst({
+      where: { deviceId: id },
+      orderBy: { createdAt: "desc" },
+      select: { confirmedAt: true },
+    });
+
     return sendSuccess(res, 200, "Rekomendasi Fuzzy Logic berhasil dibuat.", {
       ...recommendation,
       timestamp: sensorData.timestamp,
+      confirmedAt: latestLog?.confirmedAt ?? null,
     });
   } catch (error) {
     console.error("[DeviceController] Gagal menghasilkan rekomendasi device:", {

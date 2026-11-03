@@ -9,7 +9,7 @@ jest.mock("../../database/connections/prisma_client", () => ({
     delete: jest.fn(),
   },
   rawSensorLog: { deleteMany: jest.fn() },
-  recommendationLog: { create: jest.fn() },
+  recommendationLog: { create: jest.fn(), findFirst: jest.fn() },
   $transaction: jest.fn(),
 }));
 
@@ -207,6 +207,7 @@ describe("getDeviceRecommendation", () => {
     expect(res.json.mock.calls[0][0].data).toEqual({
       ...recommendation,
       timestamp,
+      confirmedAt: null,
     });
     expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
   });
@@ -283,6 +284,7 @@ describe("getDeviceRecommendation", () => {
     expect(fresh.json.mock.calls[0][0].data).toEqual({
       ...recommendation,
       timestamp,
+      confirmedAt: null,
     });
 
     jest.clearAllMocks();

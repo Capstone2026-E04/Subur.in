@@ -11,6 +11,7 @@ const tanaman = require("./tanaman.command");
 const notifikasi = require("./notifikasi.command");
 const help = require("./help.command");
 const laporan = require("./laporan.command");
+const sudah = require("./sudah.command");
 
 const commandList = [
   start,
@@ -24,6 +25,7 @@ const commandList = [
   notifikasi,
   help,
   laporan,
+  sudah,
 ];
 
 const commandMap = {};

@@ -224,6 +224,9 @@ export default function DashboardPage() {
           message={recommendationMessage}
           error={recommendationError}
           updatedAt={lastUpdated ?? recommendation?.timestamp ?? null}
+          token={token}
+          deviceId={selectedDevice.id}
+          onConfirmed={() => loadRecommendation(true)}
         />
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-5">

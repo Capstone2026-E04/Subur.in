@@ -66,7 +66,9 @@ function buildCtx({
 async function handleMessage(message) {
   const chatId = message.chat?.id;
   const telegramUserId = message.from?.id;
-  const text = (message.text || "").trim();
+  const rawText = (message.text || "").trim();
+  // Balasan "sudah" tanpa garis miring diperlakukan sebagai /sudah.
+  const text = /^sudah$/i.test(rawText) ? "/sudah" : rawText;
 
   if (!chatId || !text) return;
   if (!text.startsWith("/")) {

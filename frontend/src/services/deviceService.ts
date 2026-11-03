@@ -205,6 +205,18 @@ export async function fetchDeviceRecommendationResult(
   };
 }
 
+export async function confirmRecommendation(
+  token: string,
+  deviceId: string,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/recommendations/confirm`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify({ deviceId }),
+  });
+  await handleResponse<{ success: boolean }>(res);
+}
+
 export async function fetchRecommendationHistory(
   token: string,
   deviceId?: string,

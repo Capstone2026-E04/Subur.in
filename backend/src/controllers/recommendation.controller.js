@@ -2,6 +2,9 @@ const prisma = require("../database/connections/prisma_client");
 const {
   generateRecommendation,
 } = require("../ai/services/recommendation.service");
+const {
+  confirmLatestRecommendation,
+} = require("../services/recommendation_confirmation.service");
 const { sendSuccess, sendError } = require("../utils/response");
 
 exports.simulateRecommendation = async (req, res, next) => {
@@ -132,6 +135,43 @@ exports.getRecommendationHistory = async (req, res, next) => {
         userId: req.user?.id,
       },
     );
+    return next(error);
+  }
+};
+
+exports.confirmRecommendation = async (req, res, next) => {
+  try {
+    const { deviceId } = req.body;
+    if (!deviceId) {
+      return sendError(res, 400, "Parameter deviceId wajib dikirimkan!");
+    }
+
+    const device = await prisma.device.findFirst({
+      where: { id: deviceId, userId: req.user.id },
+      select: { id: true },
+    });
+    if (!device) {
+      return sendError(
+        res,
+        404,
+        "Device tidak ditemukan atau Anda tidak memiliki akses.",
+      );
+    }
+
+    const result = await confirmLatestRecommendation(device.id);
+    if (result.status === "none") {
+      return sendError(res, 404, "Belum ada rekomendasi untuk dikonfirmasi.");
+    }
+
+    return sendSuccess(res, 200, "Konfirmasi rekomendasi berhasil dicatat.", {
+      confirmedAt: result.log.confirmedAt,
+    });
+  } catch (error) {
+    console.error("[RecommendationController] Gagal konfirmasi rekomendasi:", {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
     return next(error);
   }
 };
