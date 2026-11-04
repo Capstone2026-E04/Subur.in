@@ -4,23 +4,23 @@ Didefinisikan melalui directive `@theme` Tailwind CSS v4 di [`src/app/globals.cs
 
 ## Palet Warna
 
-| Token | Nilai | Penggunaan |
-|---|---|---|
-| `--color-primary` | `#0D530E` | Hijau brand utama: tombol, nav aktif, heading |
-| `--color-primary-light` | `#306D29` | Hijau sekunder/hover |
-| `--color-background` | `#FBF5DD` | Background aplikasi (krem lembut) |
-| Teks body | `#1c2d1b` | Diset langsung pada `body`, bukan theme token |
+| Token                   | Nilai     | Penggunaan                                    |
+| ----------------------- | --------- | --------------------------------------------- |
+| `--color-primary`       | `#0D530E` | Hijau brand utama: tombol, nav aktif, heading |
+| `--color-primary-light` | `#306D29` | Hijau sekunder/hover                          |
+| `--color-background`    | `#FBF5DD` | Background aplikasi (krem lembut)             |
+| Teks body               | `#1c2d1b` | Diset langsung pada `body`, bukan theme token |
 
 Digunakan sebagai utility Tailwind: `bg-primary`, `text-primary-light`, `bg-background`, dsb.
 
 ## Tipografi
 
-| Token | Nilai |
-|---|---|
-| `--font-sans` | `var(--font-stack-sans), sans-serif` (Stack Sans Text dimuat lewat `next/font/google` di `layout.tsx`, bukan lagi `@import` CSS) |
-| `--font-size-xs` | `0.85rem` |
-| `--font-size-sm` | `0.95rem` |
-| `--font-size-base` | `1.05rem` |
+| Token              | Nilai                                                                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `--font-sans`      | `var(--font-stack-sans), sans-serif` (Stack Sans Text dimuat lewat `next/font/google` di `layout.tsx`, bukan lagi `@import` CSS) |
+| `--font-size-xs`   | `0.85rem`                                                                                                                        |
+| `--font-size-sm`   | `0.95rem`                                                                                                                        |
+| `--font-size-base` | `1.05rem`                                                                                                                        |
 
 Ukuran font dasar sengaja dinaikkan sedikit di atas default Tailwind `1rem` demi keterbacaan pada tampilan data dashboard.
 
