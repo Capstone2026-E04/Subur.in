@@ -66,11 +66,14 @@ export default function RecommendationSummaryCard({
     recommendation.phCorrection.status === "NONE" &&
     recommendation.decisionSource !== "safety_override" &&
     treatments.length === 0;
-  const title = isOptimal
-    ? "Kondisi tanaman sudah optimal"
-    : actions.length > 0
-      ? actions.join(" dan ").replace(/^./, (letter) => letter.toUpperCase())
-      : "Status pemantauan tanaman";
+  const done = Boolean(recommendation?.confirmedAt) && treatments.length > 0;
+  const title = done
+    ? "Rekomendasi sudah dilaksanakan"
+    : isOptimal
+      ? "Kondisi tanaman sudah optimal"
+      : actions.length > 0
+        ? actions.join(" dan ").replace(/^./, (letter) => letter.toUpperCase())
+        : "Status pemantauan tanaman";
 
   return (
     <Card className="relative isolate overflow-hidden rounded-2xl border-0 bg-[#edf4ed] p-4 shadow-none sm:rounded-3xl sm:p-8 lg:p-10">
@@ -112,10 +115,12 @@ export default function RecommendationSummaryCard({
             <h2 className="mt-3 max-w-xl text-xl leading-tight font-bold tracking-tight text-neutral-900 sm:text-3xl lg:text-4xl">
               {title}
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-neutral-600 sm:text-base">
-              {recommendation.actionText}
-            </p>
-            {treatments.length > 0 ? (
+            {!done && (
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-neutral-600 sm:text-base">
+                {recommendation.actionText}
+              </p>
+            )}
+            {done ? null : treatments.length > 0 ? (
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {treatments.map((item) => (
                   <Link
