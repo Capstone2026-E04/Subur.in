@@ -32,7 +32,7 @@ async function generateRecommendation({
     throw new AppError("plantIdOrName wajib diisi.", 400);
   }
 
-  let plant = null;
+  let plant;
 
   try {
     const isUuid =
