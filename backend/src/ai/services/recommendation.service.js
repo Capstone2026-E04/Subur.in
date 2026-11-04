@@ -6,10 +6,7 @@ const { calculateWaterVolume } = require("../dosage/water_calculator");
 const { calculateLimeDosage } = require("../dosage/lime_calculator");
 const { calculateSulfurDosage } = require("../dosage/sulfur_calculator");
 const POLYBAG = require("../config/polybag");
-const {
-  THETA_FILL,
-  THETA_TRIGGER,
-} = require("../config/treatment_constants");
+const { THETA_FILL, THETA_TRIGGER } = require("../config/treatment_constants");
 const { checkPhCorrection } = require("../core/safety_gate");
 
 async function generateRecommendation({
