@@ -54,7 +54,7 @@ function actionStrength(activeRules, key, action) {
 function runInference(
   ph,
   theta,
-  { minPh, maxPh, override = false, moistureParams },
+  { minPh, maxPh, override = false },
 ) {
   if (typeof ph !== "number" || typeof theta !== "number") {
     throw new TypeError("Input pH dan VWC harus berupa angka.");
@@ -62,9 +62,7 @@ function runInference(
 
   const membership = {
     ph: fuzzifyPh(ph, minPh, maxPh),
-    moisture: override
-      ? OVERRIDE_MOISTURE
-      : fuzzifyMoisture(theta, moistureParams),
+    moisture: override ? OVERRIDE_MOISTURE : fuzzifyMoisture(theta),
   };
   const activeRules = evaluateRules(membership);
   const centroids = {

@@ -1,9 +1,4 @@
-import {
-  MdCheckCircleOutline,
-  MdScience,
-  MdSchedule,
-  MdSensors,
-} from "react-icons/md";
+import { MdCheckCircleOutline, MdScience, MdSchedule } from "react-icons/md";
 import type { PhAction, PhCorrection } from "@/types/device";
 
 const ACTION_LABEL: Record<PhAction, string> = {
@@ -24,12 +19,6 @@ const STATUS_STYLE = {
     icon: MdSchedule,
     iconClass: "text-amber-600",
     title: "Koreksi pH ditunda",
-  },
-  NEEDS_CONFIRMATION: {
-    box: "border-primary/20 bg-primary/5 text-primary",
-    icon: MdSensors,
-    iconClass: "text-primary-light",
-    title: "Konfirmasi pengukuran pH dahulu",
   },
 } as const;
 

@@ -27,34 +27,14 @@ describe("getAllPlants", () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  it("adds the VWC trigger and target of a supported plant", async () => {
+  it("adds the shared VWC trigger (66.9% CC) and refill target (78% CC)", async () => {
     prisma.plant.findMany.mockResolvedValue([plantRow("Selada")]);
     const res = mockRes();
 
     await getAllPlants({}, res, jest.fn());
 
     const { data } = res.json.mock.calls[0][0];
-    expect(data[0]).toMatchObject({ vwcTrigger: 21.44, vwcTarget: 26.38 });
-  });
-
-  it("matches the plant name without case or surrounding spaces", async () => {
-    prisma.plant.findMany.mockResolvedValue([plantRow(" pakcoy ")]);
-    const res = mockRes();
-
-    await getAllPlants({}, res, jest.fn());
-
-    const { data } = res.json.mock.calls[0][0];
-    expect(data[0]).toMatchObject({ vwcTrigger: 19.79, vwcTarget: 26.38 });
-  });
-
-  it("returns null VWC values for a plant without parameters", async () => {
-    prisma.plant.findMany.mockResolvedValue([plantRow("Kangkung")]);
-    const res = mockRes();
-
-    await getAllPlants({}, res, jest.fn());
-
-    const { data } = res.json.mock.calls[0][0];
-    expect(data[0]).toMatchObject({ vwcTrigger: null, vwcTarget: null });
+    expect(data[0]).toMatchObject({ vwcTrigger: 22.07, vwcTarget: 25.72 });
   });
 
   it("forwards a database failure to the error handler", async () => {

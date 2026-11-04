@@ -70,8 +70,7 @@ export interface SensorTrendPoint {
 
 export type WaterAction = "STOP" | "NONE" | "IRRIGATE";
 export type PhAction = "NONE" | "LIME" | "SULFUR";
-export type PhCorrectionStatus =
-  "NONE" | "READY" | "DEFERRED" | "NEEDS_CONFIRMATION";
+export type PhCorrectionStatus = "NONE" | "READY" | "DEFERRED";
 
 export interface PhCorrection {
   status: PhCorrectionStatus;

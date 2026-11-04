@@ -53,10 +53,8 @@ describe("centroid values (Bagian 4.9)", () => {
 describe("software oracle (Bagian 4.11)", () => {
   it.each([
     [0.1, 6.5, "C2", 0.2, 0, 0],
-    [0.2, 6.5, "C2", 0.1607, 0, 0],
-    [0.22, 6.5, "C1", 0, 0, 0],
-    [0.2208, 6.5, "C1", 0, 0, 0],
-    [0.231, 6.5, "C1", 0, 0, 0],
+    [0.2, 6.5, "C2", 0.1144, 0, 0],
+    [0.22, 6.5, "C2", 0.0744, 0, 0],
     [0.221, 6.5, "C1", 0, 0, 0],
     [0.25, 6.5, "C1", 0, 0, 0],
     [0.3298, 6.5, "C1", 0, 0, 0],
@@ -101,14 +99,14 @@ describe("software oracle (Bagian 4.11)", () => {
   );
 });
 
-describe("per-plant water thresholds", () => {
+describe("water threshold and refill target (Bagian 4.8, 4.13)", () => {
   it.each([
-    ["bayam", 0.2055, "C2"],
-    ["bayam", 0.2065, "C1"],
-    ["selada", 0.214, "C2"],
-    ["selada", 0.215, "C1"],
-    ["pakcoy", 0.1975, "C2"],
-    ["pakcoy", 0.1985, "C1"],
+    ["bayam", 0.2205, "C2"],
+    ["bayam", 0.2215, "C1"],
+    ["selada", 0.2205, "C2"],
+    ["selada", 0.2215, "C1"],
+    ["pakcoy", 0.2205, "C2"],
+    ["pakcoy", 0.2215, "C1"],
   ])("%s at theta %s -> %s", async (plantKey, theta, category) => {
     const r = await recommend(6.5, theta, {}, plantKey);
 
@@ -118,11 +116,11 @@ describe("per-plant water thresholds", () => {
   });
 
   it.each([
-    ["bayam", 0.2, 0.1607],
-    ["selada", 0.2, 0.1277],
-    ["pakcoy", 0.19, 0.1476],
-  ])("%s at theta %s irrigates %s L", async (plantKey, theta, liter) => {
-    const r = await recommend(6.5, theta, {}, plantKey);
+    [0.1, 0.2],
+    [0.2, 0.1144],
+    [0.22, 0.0744],
+  ])("irrigates up to 78%% CC from theta %s -> %s L", async (theta, liter) => {
+    const r = await recommend(6.5, theta);
 
     expect(r.waterVolumeLiter).toBeCloseTo(liter, 3);
   });

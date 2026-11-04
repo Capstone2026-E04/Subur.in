@@ -29,21 +29,6 @@ describe("checkPhCorrection (C501 Step 11 section 4)", () => {
     expect(result.status).toBe("DEFERRED");
   });
 
-  it("asks for confirmation at the lower probe limit of pH 3.5", () => {
-    const result = checkPhCorrection({ ...limeInput, ph: 3.5 });
-
-    expect(result.status).toBe("NEEDS_CONFIRMATION");
-  });
-
-  it("asks for confirmation at the upper probe limit of pH 8.0", () => {
-    const result = checkPhCorrection({
-      ...sulfurInput,
-      ph: 8.0,
-    });
-
-    expect(result.status).toBe("NEEDS_CONFIRMATION");
-  });
-
   it("reports no correction when the pH action is NONE", () => {
     const result = checkPhCorrection({ ...limeInput, phAction: "NONE" });
 

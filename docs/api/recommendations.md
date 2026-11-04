@@ -51,18 +51,18 @@ Menjalankan fuzzy inference + kalkulator dosis dengan input bebas, tanpa menyent
       "volumeLiterUsed": 5,
       "plantUsed": "Pakcoy (Brassica rapa subsp. chinensis)",
       "phTarget": 6.8,
-      "vwcTriggerPct": 19.79,
-      "vwcTargetPct": 26.38
+      "vwcTriggerPct": 22.07,
+      "vwcTargetPct": 25.72
     }
   }
 }
 ```
 
-`moistureValue` adalah VWC dalam persen (0-100). Response memuat `decisionSource` (`fuzzy` atau `safety_override`). `fuzzyIndex` adalah kekuatan aturan terlemah dari kedua keputusan final (0-1). `phCorrection.status` bernilai `NONE`, `READY`, `DEFERRED`, atau `NEEDS_CONFIRMATION`; dosis kapur/sulfur hanya terisi saat `READY`. Tanaman selain Selada/Bayam/Pakcoy ditolak `422`.
+`moistureValue` adalah VWC dalam persen (0-100). Response memuat `decisionSource` (`fuzzy` atau `safety_override`). `fuzzyIndex` adalah kekuatan aturan terlemah dari kedua keputusan final (0-1). `phCorrection.status` bernilai `NONE`, `READY` atau `DEFERRED`; dosis kapur/sulfur hanya terisi saat `READY`.
 
 `_debug` mengekspos state fuzzy inference antara (derajat keanggotaan, rule aktif, agregasi per kategori) dan dimaksudkan untuk pemeriksaan developer/QA, bukan untuk ditampilkan ke end user.
 
-**Response error:** `400` (input tidak ada/tidak valid), `404` (tanaman tidak ditemukan), `422` (tanaman tanpa parameter kelembapan), `500`.
+**Response error:** `400` (input tidak ada/tidak valid), `404` (tanaman tidak ditemukan), `500`.
 
 ## `GET /api/recommendations`
 

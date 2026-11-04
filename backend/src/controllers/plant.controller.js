@@ -1,6 +1,9 @@
 const prisma = require("../database/connections/prisma_client");
 const { sendSuccess } = require("../utils/response");
-const PLANT_MOISTURE = require("../ai/config/plant_moisture");
+const {
+  THETA_FILL,
+  THETA_TRIGGER,
+} = require("../ai/config/treatment_constants");
 
 exports.getAllPlants = async (req, res, next) => {
   try {
@@ -8,14 +11,11 @@ exports.getAllPlants = async (req, res, next) => {
       orderBy: { name: "asc" },
     });
 
-    const data = plants.map((plant) => {
-      const moisture = PLANT_MOISTURE[plant.name.trim().toLowerCase()];
-      return {
-        ...plant,
-        vwcTrigger: moisture?.trigger ?? null,
-        vwcTarget: moisture?.target ?? null,
-      };
-    });
+    const data = plants.map((plant) => ({
+      ...plant,
+      vwcTrigger: THETA_TRIGGER * 100,
+      vwcTarget: parseFloat((THETA_FILL * 100).toFixed(2)),
+    }));
 
     return sendSuccess(res, 200, "Daftar tanaman berhasil diambil.", data);
   } catch (error) {

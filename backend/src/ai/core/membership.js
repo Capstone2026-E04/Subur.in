@@ -21,15 +21,12 @@ function fuzzifyPh(p, minPh, maxPh) {
   };
 }
 
-function fuzzifyMoisture(
-  theta,
-  { pointA = MOISTURE_A, pointB = MOISTURE_B } = {},
-) {
+function fuzzifyMoisture(theta) {
   return {
-    kering: clamp01((pointB - theta) / (pointB - pointA)),
+    kering: clamp01((MOISTURE_B - theta) / (MOISTURE_B - MOISTURE_A)),
     lembap: clamp01(
       Math.min(
-        (theta - pointA) / (pointB - pointA),
+        (theta - MOISTURE_A) / (MOISTURE_B - MOISTURE_A),
         (MOISTURE_E - theta) / (MOISTURE_E - MOISTURE_D),
       ),
     ),

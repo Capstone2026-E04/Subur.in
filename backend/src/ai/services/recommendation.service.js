@@ -6,7 +6,10 @@ const { calculateWaterVolume } = require("../dosage/water_calculator");
 const { calculateLimeDosage } = require("../dosage/lime_calculator");
 const { calculateSulfurDosage } = require("../dosage/sulfur_calculator");
 const POLYBAG = require("../config/polybag");
-const PLANT_MOISTURE = require("../config/plant_moisture");
+const {
+  THETA_FILL,
+  THETA_TRIGGER,
+} = require("../config/treatment_constants");
 const { checkPhCorrection } = require("../core/safety_gate");
 
 async function generateRecommendation({
@@ -69,21 +72,12 @@ async function generateRecommendation({
     );
   }
 
-  const moistureParams = PLANT_MOISTURE[plant.name.trim().toLowerCase()];
-  if (!moistureParams) {
-    throw new AppError(
-      `Tanaman "${plant.name}" belum memiliki parameter kelembapan (didukung: ${Object.keys(PLANT_MOISTURE).join(", ")}).`,
-      422,
-    );
-  }
-
   const { minPh, maxPh, phTarget } = plant;
   const theta = moistureValue / 100;
   const inference = runInference(phValue, theta, {
     minPh,
     maxPh,
     override: Boolean(safetyOverride),
-    moistureParams,
   });
   const interpretation = interpretCategory(inference.categoryCode);
   const { waterAction, phAction } = inference;
@@ -91,20 +85,13 @@ async function generateRecommendation({
   const phCorrection = checkPhCorrection({
     phAction,
     waterAction,
-    ph: phValue,
-    minPh,
-    maxPh,
     consistentReadings,
   });
   const correctionReady = phCorrection.status === "READY";
 
   const waterDetail =
     waterAction === "IRRIGATE"
-      ? calculateWaterVolume(
-          theta,
-          moistureParams.thetaFill,
-          POLYBAG.volumeLiter,
-        )
+      ? calculateWaterVolume(theta, THETA_FILL, POLYBAG.volumeLiter)
       : null;
   const limeDetail =
     phAction === "LIME"
@@ -142,8 +129,8 @@ async function generateRecommendation({
       volumeLiterUsed: POLYBAG.volumeLiter,
       plantUsed: `${plant.name} (${plant.scientificName || "n/a"})`,
       phTarget: parseFloat(phTarget.toFixed(3)),
-      vwcTriggerPct: moistureParams.trigger,
-      vwcTargetPct: moistureParams.target,
+      vwcTriggerPct: THETA_TRIGGER * 100,
+      vwcTargetPct: parseFloat((THETA_FILL * 100).toFixed(2)),
       waterDetail,
       limeDetail,
       sulfurDetail,

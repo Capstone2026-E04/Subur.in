@@ -88,16 +88,5 @@ describe("generateRecommendation", () => {
         statusCode: 404,
       });
     });
-
-    it("rejects a plant without moisture parameters", async () => {
-      prisma.plant.findUnique.mockResolvedValue({
-        ...plantFixture,
-        name: "Kangkung",
-      });
-
-      await expect(generateRecommendation(request())).rejects.toMatchObject({
-        statusCode: 422,
-      });
-    });
   });
 });
