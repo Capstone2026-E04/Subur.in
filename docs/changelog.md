@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-11-05
+
+- **feat(dashboard):** Kartu rekomendasi menyembunyikan teks aksi dan tile dosis setelah ditandai sudah dilaksanakan; yang tersisa judul "Rekomendasi sudah dilaksanakan" dan waktu pelaksanaannya. Muncul lagi saat `RecommendationLog` baru dibuat.
+- **docs:** Jadwal pembuatan `RecommendationLog` (maks. sekali per 4 jam per device, kecuali `safetyOverride`) dan endpoint `POST /api/recommendations/confirm` didokumentasikan.
+
 ## 2026-11-03
 
 - **refactor(devices):** Kolom "ID node / perangkat" dihapus dari form tambah perangkat; device hanya dipilih dari daftar yang terdeteksi.

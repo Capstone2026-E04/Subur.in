@@ -107,3 +107,18 @@ Menampilkan riwayat rekomendasi milik user yang terautentikasi, terbaru lebih du
 ```
 
 **Response error:** `404` (`deviceId` diberikan tapi bukan milik pemanggil), `401`, `500`.
+
+## `POST /api/recommendations/confirm`
+
+**Perlu autentikasi:** Ya (`Authorization: Bearer <jwt>`)
+
+Menandai rekomendasi terbaru sebuah device sebagai sudah dilaksanakan (mengisi `confirmedAt` pada `RecommendationLog` terbaru). Idempoten: bila sudah dikonfirmasi, mengembalikan `confirmedAt` yang ada.
+
+**Body:** `{ "deviceId": "<uuid>" }`
+
+**Response sukses `200`:**
+```json
+{ "success": true, "message": "Konfirmasi rekomendasi berhasil dicatat.", "data": { "confirmedAt": "2026-11-05T08:00:00.000Z" } }
+```
+
+**Response error:** `400` (`deviceId` kosong), `404` (device bukan milik pemanggil atau belum ada rekomendasi), `401`, `500`.

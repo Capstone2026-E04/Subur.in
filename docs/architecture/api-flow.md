@@ -154,7 +154,7 @@ sequenceDiagram
     end
 ```
 
-Tanpa ACK, ESP32 mengirim ulang record tertua tiap 30 detik. `measured_at = null` berarti jam belum sinkron NTP (`time_synced=false`). Bila penyimpanan gagal, ACK tidak dikirim. Rekomendasi hanya dihitung untuk `moisture_type = legacy_index`; data `vwc_percent` disimpan dan di-broadcast tanpa rekomendasi sampai ambang VWC dikalibrasi. Detail keputusan: [ADR-011](../decisions/adr-011-offline-queue-ack-and-export-buffer.md).
+Tanpa ACK, ESP32 mengirim ulang record tertua tiap 30 detik. `measured_at = null` berarti jam belum sinkron NTP (`time_synced=false`). Bila penyimpanan gagal, ACK tidak dikirim. Rekomendasi hanya dihitung untuk `moisture_type = vwc_percent`; data `legacy_index` tetap disimpan dan di-broadcast, tetapi tidak menghasilkan rekomendasi. Detail keputusan: [ADR-011](../decisions/adr-011-offline-queue-ack-and-export-buffer.md).
 
 ### Ekspor CSV
 
@@ -186,6 +186,6 @@ sequenceDiagram
     Controller-->>Client: 200 { data: recommendation }
 ```
 
-Endpoint ini read-only: tidak menulis ke database. `recommendation_logs` hanya ditulis oleh subscriber MQTT (`mqtt/subscribers/sensor_subscriber.js`) untuk setiap pesan sensor yang valid.
+Endpoint ini read-only: tidak menulis ke database. `recommendation_logs` hanya ditulis oleh subscriber MQTT (`mqtt/subscribers/sensor_subscriber.js`), paling sering sekali per 4 jam per device (`WATER_DECISION_SECONDS`, slot Redis `NX`), berapa pun interval pengambilan datanya; nilai kelembapannya median dari maksimal 4 pembacaan terakhir. Pengecualian: pembacaan dengan `safetyOverride` melewati slot ini. Dashboard memanggil endpoint di atas, yang menghitung ulang dari sensor terbaru dan hanya membaca `confirmedAt` dari log terbaru.
 
 Lihat [error-response.md](../api/error-response.md) untuk format error bersama dan [authentication.md](../api/authentication.md) untuk detail token.
