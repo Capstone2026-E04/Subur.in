@@ -28,6 +28,7 @@ const STATUS_LABELS: Record<string, string> = {
 const toPct = (cc: number) => (cc / CC_GAUGE_MAX) * 100;
 const OPTIMAL_START = toPct(CC_OPTIMAL_MIN);
 const OPTIMAL_END = toPct(CC_OPTIMAL_MAX);
+const GAUGE_GRADIENT = `linear-gradient(to right, #fdba74 ${OPTIMAL_START / 2}%, #6ee7b7 ${(OPTIMAL_START + OPTIMAL_END) / 2}%, #c4b5fd ${(OPTIMAL_END + 100) / 2}%)`;
 
 export default function MoistureLevelCard({ value }: MoistureLevelCardProps) {
   const status = value === null ? null : toVwcDisplay(value);
@@ -55,14 +56,10 @@ export default function MoistureLevelCard({ value }: MoistureLevelCardProps) {
           <span className="text-xs text-neutral-400">Belum ada data</span>
         )}
       </div>
-      <div className="relative mt-3 flex h-2 overflow-hidden rounded-full sm:mt-6 sm:h-3.5">
-        <div className="bg-orange-300" style={{ width: `${OPTIMAL_START}%` }} />
-        <div
-          className="bg-emerald-300"
-          style={{ width: `${OPTIMAL_END - OPTIMAL_START}%` }}
-        />
-        <div className="flex-1 bg-violet-300" />
-      </div>
+      <div
+        className="mt-3 h-2 overflow-hidden rounded-full sm:mt-6 sm:h-3.5"
+        style={{ background: GAUGE_GRADIENT }}
+      />
       {displayValue !== null && (
         <div className="relative h-0">
           <span
