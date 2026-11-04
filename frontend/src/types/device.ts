@@ -16,9 +16,11 @@ export interface RegisteredDevice {
 
 export interface DiscoveredDevice {
   deviceCode: string;
-  ph: number;
-  moisture: number;
+  ph: number | null;
+  moisture: number | null;
   timestamp: string;
+  sensorStatus?: "ok" | "sensor_invalid";
+  sensorIssue?: string | null;
 }
 
 export interface PlantOption {

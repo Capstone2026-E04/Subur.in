@@ -13,6 +13,7 @@ import {
   MdSignalWifiOff,
   MdLinkOff,
   MdAccessTime,
+  MdWarningAmber,
 } from "react-icons/md";
 import type { DiscoveredDevice, PlantOption } from "@/types/device";
 import { fetchDiscoveredDevices, fetchPlants } from "@/services/deviceService";
@@ -149,6 +150,7 @@ export default function ConnectDeviceModal({
   const selectedDeviceInfo = discovered.find(
     (d) => d.deviceCode === selectedDeviceId,
   );
+  const sensorInvalid = selectedDeviceInfo?.sensorStatus === "sensor_invalid";
 
   return (
     <AnimatePresence>
@@ -366,6 +368,8 @@ export default function ConnectDeviceModal({
                                   >
                                     {d.deviceCode} ·{" "}
                                     {formatDiscoveredAge(d.timestamp)}
+                                    {d.sensorStatus === "sensor_invalid" &&
+                                      " · ⚠ sensor bermasalah"}
                                   </option>
                                 ))}
                               </select>
@@ -375,27 +379,46 @@ export default function ConnectDeviceModal({
                                   key={selectedDeviceId}
                                   initial={{ opacity: 0, height: 0 }}
                                   animate={{ opacity: 1, height: "auto" }}
-                                  className="flex gap-3 rounded-xl border border-emerald-200/60 bg-emerald-50/70 px-3 py-2.5"
+                                  className={`flex gap-3 rounded-xl border px-3 py-2.5 ${
+                                    sensorInvalid
+                                      ? "border-amber-200/70 bg-amber-50/80"
+                                      : "border-emerald-200/60 bg-emerald-50/70"
+                                  }`}
                                 >
-                                  <MdOutlineDeviceHub
-                                    size={16}
-                                    className="mt-0.5 shrink-0 text-emerald-600"
-                                  />
+                                  {sensorInvalid ? (
+                                    <MdWarningAmber
+                                      size={16}
+                                      className="mt-0.5 shrink-0 text-amber-600"
+                                    />
+                                  ) : (
+                                    <MdOutlineDeviceHub
+                                      size={16}
+                                      className="mt-0.5 shrink-0 text-emerald-600"
+                                    />
+                                  )}
                                   <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                    {sensorInvalid && (
+                                      <p className="w-full text-xs font-semibold text-amber-700">
+                                        Sensor bermasalah. Alat online tetapi
+                                        pembacaan tidak valid. Periksa probe,
+                                        kabel, dan daya.
+                                      </p>
+                                    )}
                                     <span className="text-xs text-neutral-600">
                                       <span className="font-medium text-neutral-800">
                                         pH:
                                       </span>{" "}
-                                      {selectedDeviceInfo.ph.toFixed(1)}
+                                      {selectedDeviceInfo.ph != null
+                                        ? selectedDeviceInfo.ph.toFixed(1)
+                                        : "—"}
                                     </span>
                                     <span className="text-xs text-neutral-600">
                                       <span className="font-medium text-neutral-800">
                                         Kelembapan:
                                       </span>{" "}
-                                      {Math.round(
-                                        vwcToCc(selectedDeviceInfo.moisture),
-                                      )}
-                                      %
+                                      {selectedDeviceInfo.moisture != null
+                                        ? `${Math.round(vwcToCc(selectedDeviceInfo.moisture))}%`
+                                        : "—"}
                                     </span>
                                     <span className="text-xs text-neutral-400">
                                       {formatDiscoveredAge(
