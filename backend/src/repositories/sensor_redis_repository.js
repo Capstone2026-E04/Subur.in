@@ -5,6 +5,8 @@ const { getRedisClient } = require("../database/connections/redis");
 const SENSOR_TTL_SECONDS = 300;
 const THROTTLE_KEY_PREFIX = "sensor:throttle:";
 const LATEST_KEY_PREFIX = "sensor:latest:";
+const SEEN_KEY_PREFIX = "sensor:seen:";
+const SEEN_TTL_SECONDS = 13 * 3600;
 const EXPORT_KEY_PREFIX = "sensor:export:";
 const EXPORT_MAX_ENTRIES = 10000;
 const EXPORT_TTL_SECONDS = 30 * 24 * 3600;
@@ -35,6 +37,30 @@ async function setLatestSensorData(
         deviceCode,
       },
     );
+  }
+}
+
+async function setSeenSensorNode(deviceCode, { status, soilStatus, recordId }) {
+  try {
+    const redis = getRedisClient();
+    await redis.set(
+      `${SEEN_KEY_PREFIX}${deviceCode}`,
+      JSON.stringify({
+        deviceCode,
+        status,
+        soilStatus: soilStatus ?? null,
+        recordId: recordId ?? null,
+        lastSeenAt: new Date().toISOString(),
+      }),
+      "EX",
+      SEEN_TTL_SECONDS,
+    );
+  } catch (err) {
+    console.error("[SensorRedisRepository] Gagal setSeenSensorNode:", {
+      message: err.message,
+      stack: err.stack,
+      deviceCode,
+    });
   }
 }
 
@@ -106,6 +132,7 @@ module.exports = {
   pushSensorExport,
   getSensorExport,
   setLatestSensorData,
+  setSeenSensorNode,
   getLatestSensorData,
   shouldSaveToDatabase,
 };

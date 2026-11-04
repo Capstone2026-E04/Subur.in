@@ -10,6 +10,7 @@ const { publishRecordAck } = require("../publishers/ack_publisher");
 
 const {
   setLatestSensorData,
+  setSeenSensorNode,
   shouldSaveToDatabase,
   pushSensorExport,
 } = require("../../repositories/sensor_redis_repository");
@@ -91,6 +92,12 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
   const phValid = isValidSensorValue(ph, "ph");
   const moistureValid = isValidSensorValue(moisture, "moisture");
 
+  await setSeenSensorNode(deviceCode, {
+    status: phValid && moistureValid ? "ok" : "sensor_invalid",
+    soilStatus: data.soil_status,
+    recordId,
+  });
+
   if (!phValid || !moistureValid) {
     console.warn(
       `[MQTT Subscriber] ️  Nilai sensor tidak valid dari device "${deviceCode}":`,
@@ -132,6 +139,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         if (device) {
           const reason = `invalid: ${[!phValid && "ph", !moistureValid && "moisture"].filter(Boolean).join(",")}`;
           await saveRejectedSensorRecord(device.id, recordId, data, reason);
+          await updateDeviceLastSeen(device.id);
           await publishRecordAck(deviceCode, recordId);
         }
       } catch (err) {

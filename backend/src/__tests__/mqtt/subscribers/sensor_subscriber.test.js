@@ -11,6 +11,7 @@ jest.mock("../../../mqtt/publishers/ack_publisher", () => ({
 }));
 jest.mock("../../../repositories/sensor_redis_repository", () => ({
   setLatestSensorData: jest.fn(),
+  setSeenSensorNode: jest.fn(),
   shouldSaveToDatabase: jest.fn(),
   pushSensorExport: jest.fn(),
 }));
@@ -43,6 +44,7 @@ const {
 const { publishRecordAck } = require("../../../mqtt/publishers/ack_publisher");
 const {
   setLatestSensorData,
+  setSeenSensorNode,
   shouldSaveToDatabase,
   pushSensorExport,
 } = require("../../../repositories/sensor_redis_repository");
@@ -414,6 +416,12 @@ describe("handleSensorMessage", () => {
       );
       expect(publishRecordAck).toHaveBeenCalledWith(DEVICE_CODE, RECORD_ID);
       expect(saveBufferedSensorLog).not.toHaveBeenCalled();
+      expect(updateDeviceLastSeen).toHaveBeenCalledWith("device-1");
+      expect(setSeenSensorNode).toHaveBeenCalledWith(
+        DEVICE_CODE,
+        expect.objectContaining({ status: "sensor_invalid" }),
+      );
+      expect(setLatestSensorData).not.toHaveBeenCalled();
     });
 
     it("does not ACK an invalid record when storing it fails", async () => {

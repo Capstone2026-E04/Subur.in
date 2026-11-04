@@ -14,34 +14,59 @@ const { sendSuccess, sendError } = require("../utils/response");
 const isValidInterval = (v) =>
   Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 720;
 
+async function scanKeys(redis, match) {
+  const found = new Set();
+  for await (const batch of redis.scanStream({ match, count: 100 })) {
+    batch.forEach((k) => found.add(k));
+  }
+  return [...found];
+}
+
 exports.getDiscoveredDevices = async (req, res, next) => {
   try {
     const redis = getRedisClient();
 
-    const keySet = new Set();
-    for await (const batch of redis.scanStream({
-      match: "sensor:latest:*",
-      count: 100,
-    })) {
-      batch.forEach((k) => keySet.add(k));
-    }
-    const keys = [...keySet];
+    const [seenKeys, latestKeys] = await Promise.all([
+      scanKeys(redis, "sensor:seen:*"),
+      scanKeys(redis, "sensor:latest:*"),
+    ]);
 
-    if (keys.length === 0) {
+    const byCode = new Map();
+    for (const key of seenKeys) {
+      const raw = await redis.get(key);
+      if (!raw) continue;
+      const seen = JSON.parse(raw);
+      byCode.set(seen.deviceCode, {
+        deviceCode: seen.deviceCode,
+        ph: null,
+        moisture: null,
+        moistureType: null,
+        timestamp: seen.lastSeenAt,
+        sensorStatus: seen.status,
+        sensorIssue: seen.soilStatus,
+      });
+    }
+    for (const key of latestKeys) {
+      const raw = await redis.get(key);
+      if (!raw) continue;
+      const latest = JSON.parse(raw);
+      const previous = byCode.get(latest.deviceCode);
+      byCode.set(latest.deviceCode, {
+        ...previous,
+        ...latest,
+        sensorStatus: previous?.sensorStatus ?? "ok",
+      });
+    }
+
+    const activeDevices = [...byCode.values()];
+
+    if (activeDevices.length === 0) {
       return sendSuccess(
         res,
         200,
         "Tidak ada device aktif baru yang terdeteksi.",
         { devices: [] },
       );
-    }
-
-    const activeDevices = [];
-    for (const key of keys) {
-      const rawData = await redis.get(key);
-      if (rawData) {
-        activeDevices.push(JSON.parse(rawData));
-      }
     }
 
     const activeDeviceCodes = activeDevices.map((d) => d.deviceCode);
