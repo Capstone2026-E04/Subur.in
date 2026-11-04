@@ -1,6 +1,12 @@
 import { MdWaterDrop } from "react-icons/md";
 import { Card } from "@/components/ui/card";
-import { TONES, toVwcDisplay } from "./sensorStatus";
+import {
+  CC_GAUGE_MAX,
+  CC_OPTIMAL_MAX,
+  CC_OPTIMAL_MIN,
+  TONES,
+  toVwcDisplay,
+} from "./sensorStatus";
 
 interface MoistureLevelCardProps {
   value: number | null;
@@ -18,6 +24,10 @@ const STATUS_LABELS: Record<string, string> = {
   Basah: "Jenuh/basah",
   Jenuh: "Jenuh/basah",
 };
+
+const toPct = (cc: number) => (cc / CC_GAUGE_MAX) * 100;
+const OPTIMAL_START = toPct(CC_OPTIMAL_MIN);
+const OPTIMAL_END = toPct(CC_OPTIMAL_MAX);
 
 export default function MoistureLevelCard({ value }: MoistureLevelCardProps) {
   const status = value === null ? null : toVwcDisplay(value);
@@ -45,23 +55,52 @@ export default function MoistureLevelCard({ value }: MoistureLevelCardProps) {
           <span className="text-xs text-neutral-400">Belum ada data</span>
         )}
       </div>
-      <div className="to-primary/10 relative mt-3 h-2 rounded-full bg-linear-to-r from-orange-500 via-yellow-200 sm:mt-6 sm:h-3.5">
-        {displayValue !== null && (
+      <div className="relative mt-3 flex h-2 overflow-hidden rounded-full sm:mt-6 sm:h-3.5">
+        <div className="bg-orange-300" style={{ width: `${OPTIMAL_START}%` }} />
+        <div
+          className="bg-emerald-300"
+          style={{ width: `${OPTIMAL_END - OPTIMAL_START}%` }}
+        />
+        <div className="flex-1 bg-violet-300" />
+      </div>
+      {displayValue !== null && (
+        <div className="relative h-0">
           <span
-            className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-orange-400 shadow-md sm:h-5 sm:w-5"
+            className="absolute -top-3 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white bg-neutral-800 shadow-md sm:-top-4 sm:h-5 sm:w-5"
             style={{ left: `${position}%` }}
           />
-        )}
-      </div>
-      <div className="mt-2 flex justify-between text-[9px] text-neutral-500 sm:mt-3 sm:text-xs">
-        {[0, 25, 50, 75, 100].map((tick) => (
-          <span key={tick}>{tick}</span>
+        </div>
+      )}
+      <div className="relative mt-2 h-3 text-[9px] text-neutral-500 sm:mt-3 sm:text-xs">
+        <span className="absolute left-0">0</span>
+        {[CC_OPTIMAL_MIN, CC_OPTIMAL_MAX].map((cc) => (
+          <span
+            key={cc}
+            className="absolute -translate-x-1/2"
+            style={{ left: `${toPct(cc)}%` }}
+          >
+            {Math.round(cc)}
+          </span>
         ))}
       </div>
-      <div className="mt-2 grid min-h-5 grid-cols-3 items-start gap-1 text-[9px] leading-tight font-medium sm:mt-3 sm:min-h-8 sm:text-xs">
-        <span className="text-left text-orange-600">Kering</span>
-        <span className="text-primary text-center">Optimal</span>
-        <span className="text-right text-sky-700">Jenuh/basah</span>
+      <div className="relative mt-1 h-6 text-[9px] leading-tight font-medium sm:h-5 sm:text-xs">
+        <span
+          className="absolute -translate-x-1/2 text-orange-600"
+          style={{ left: `${OPTIMAL_START / 2}%` }}
+        >
+          Kering
+        </span>
+        <span
+          className="text-primary absolute -translate-x-1/2"
+          style={{ left: `${(OPTIMAL_START + OPTIMAL_END) / 2}%` }}
+        >
+          Optimal
+        </span>
+        <span className="absolute right-0 text-right text-violet-700">
+          Jenuh/
+          <br className="sm:hidden" />
+          basah
+        </span>
       </div>
     </Card>
   );

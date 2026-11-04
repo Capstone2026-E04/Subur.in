@@ -67,6 +67,10 @@ export function classifyPh(ph: number, range: { min: number; max: number }) {
 
 const THETA_CC_PERCENT = 32.98;
 
+export const CC_OPTIMAL_MIN = 66.9;
+export const CC_OPTIMAL_MAX = 116.7;
+export const CC_GAUGE_MAX = 133.3;
+
 // Sensor dan backend menyimpan kelembapan sebagai persen kadar air tanah;
 // dashboard selalu menampilkannya sebagai persen kapasitas media.
 export const vwcToCc = (vwcPercent: number) =>
@@ -86,14 +90,14 @@ export function toVwcDisplay(vwcPercent: number) {
   let label = "Sangat kering";
   let tone: Tone = "red";
   if (rwc >= 50) [label, tone] = ["Kering", "orange"];
-  if (rwc >= 66.9) [label, tone] = ["Lembap", "sky"];
+  if (rwc >= CC_OPTIMAL_MIN) [label, tone] = ["Lembap", "sky"];
   if (rwc >= 90) [label, tone] = ["Lembap penuh", "green"];
   if (rwc >= 100) [label, tone] = ["Penuh", "green"];
-  if (rwc >= 116.7) [label, tone] = ["Jenuh", "violet"];
+  if (rwc >= CC_OPTIMAL_MAX) [label, tone] = ["Jenuh", "violet"];
   return {
     mainPercent: Math.round(rwc),
     vwcPercent,
-    gaugeFill: Math.min(rwc, 100),
+    gaugeFill: Math.min((rwc / CC_GAUGE_MAX) * 100, 100),
     label,
     tone,
   };
