@@ -13,7 +13,10 @@ const {
   claimEmergency,
   confirmWaterAction,
 } = require("../../../ai/services/water_schedule.service");
-const { classifyEmergency } = require("../../../ai/core/water_schedule");
+const {
+  classifyEmergency,
+  isRecovered,
+} = require("../../../ai/core/water_schedule");
 
 describe("classifyEmergency (newest first, VWC %)", () => {
   it.each([
@@ -29,11 +32,26 @@ describe("classifyEmergency (newest first, VWC %)", () => {
   });
 });
 
+describe("isRecovered", () => {
+  it.each([
+    [[22.07, 25], true],
+    [[22.06, 25], false],
+    [[30], false],
+  ])("%j -> %s", (readings, expected) => {
+    expect(isRecovered(readings)).toBe(expected);
+  });
+});
+
 describe("claimEmergency", () => {
   let redis;
   beforeEach(() => {
     jest.resetAllMocks();
-    redis = { lrange: jest.fn(), set: jest.fn(), del: jest.fn() };
+    redis = {
+      lrange: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+      exists: jest.fn().mockResolvedValue(0),
+    };
     getRedisClient.mockReturnValue(redis);
     redis.set.mockResolvedValue("OK");
     prisma.recommendationLog.findFirst.mockResolvedValue(null);
@@ -43,10 +61,8 @@ describe("claimEmergency", () => {
     redis.lrange.mockResolvedValue(["10", "12"]);
     expect(await claimEmergency("D", "id")).toBe("dry_critical");
     expect(redis.set).toHaveBeenCalledWith(
-      "sensor:emergency:D",
-      "dry_critical",
-      "EX",
-      4 * 3600,
+      "sensor:emergency:D:dry_critical",
+      "1",
       "NX",
     );
     expect(redis.set).toHaveBeenCalledWith(
@@ -71,14 +87,34 @@ describe("claimEmergency", () => {
     expect(redis.set).not.toHaveBeenCalled();
   });
 
-  it("claims an unexplained wet surge", async () => {
+  it("claims an unexplained wet surge with a 4-hour latch", async () => {
     redis.lrange.mockResolvedValue(["32", "20"]);
     expect(await claimEmergency("D", "id")).toBe("wet_surge");
+    expect(redis.set).toHaveBeenCalledWith(
+      "sensor:emergency:D:wet_surge",
+      "1",
+      "EX",
+      4 * 3600,
+      "NX",
+    );
+  });
+
+  it("skips emergency checks during the settling window", async () => {
+    redis.lrange.mockResolvedValue(["10", "12"]);
+    redis.exists.mockResolvedValue(1);
+    expect(await claimEmergency("D", "id")).toBeNull();
+    expect(redis.set).not.toHaveBeenCalled();
+  });
+
+  it("clears the dry latch once readings recover twice in a row", async () => {
+    redis.lrange.mockResolvedValue(["23", "22.5"]);
+    expect(await claimEmergency("D", "id")).toBeNull();
+    expect(redis.del).toHaveBeenCalledWith("sensor:emergency:D:dry_critical");
   });
 });
 
 describe("confirmWaterAction", () => {
-  it("restarts the slot and frees the emergency claim", async () => {
+  it("restarts the slot, clears emergencies and opens a 2-hour settling window", async () => {
     jest.resetAllMocks();
     const redis = { set: jest.fn(), del: jest.fn() };
     getRedisClient.mockReturnValue(redis);
@@ -89,6 +125,15 @@ describe("confirmWaterAction", () => {
       "EX",
       4 * 3600,
     );
-    expect(redis.del).toHaveBeenCalledWith("sensor:emergency:D");
+    expect(redis.del).toHaveBeenCalledWith(
+      "sensor:emergency:D:dry_critical",
+      "sensor:emergency:D:wet_surge",
+    );
+    expect(redis.set).toHaveBeenCalledWith(
+      "sensor:emergency_settle:D",
+      "1",
+      "EX",
+      2 * 3600,
+    );
   });
 });

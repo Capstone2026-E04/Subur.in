@@ -1,17 +1,23 @@
 const { getRedisClient } = require("../../database/connections/redis");
 const prisma = require("../../database/connections/prisma_client");
-const { median, classifyEmergency } = require("../core/water_schedule");
+const {
+  median,
+  classifyEmergency,
+  isRecovered,
+} = require("../core/water_schedule");
 const {
   WATER_WINDOW,
   WATER_MIN_READINGS,
   WATER_DECISION_SECONDS,
   PH_DECISION_SECONDS,
+  EMERGENCY_SETTLE_SECONDS,
 } = require("../config/treatment_constants");
 
 const WINDOW_KEY = (code) => `sensor:moisture_window:${code}`;
 const SLOT_KEY = (code) => `sensor:water_decision:${code}`;
 const PH_SLOT_KEY = (code) => `sensor:ph_decision:${code}`;
-const EMERGENCY_KEY = (code) => `sensor:emergency:${code}`;
+const EMERGENCY_KEY = (code, type) => `sensor:emergency:${code}:${type}`;
+const SETTLE_KEY = (code) => `sensor:emergency_settle:${code}`;
 
 async function readWindow(redis, deviceCode) {
   const raw = await redis.lrange(WINDOW_KEY(deviceCode), 0, WATER_WINDOW - 1);
@@ -38,13 +44,24 @@ async function claimWaterDecision(deviceCode) {
   return claimed ? median(readings) : null;
 }
 
-// Dipanggil setelah recordMoisture. Mengembalikan "dry_critical" / "wet_surge"
-// bila ada kondisi darurat yang boleh dikeluarkan sekarang, selain itu null.
-// Satu darurat per 4 jam (atau sampai user konfirmasi); saat keluar, slot
-// rekomendasi biasa dimulai ulang 4 jam dari sekarang.
+// Dipanggil setelah recordMoisture, memakai bacaan mentah (bukan median).
+// Mengembalikan "dry_critical" / "wet_surge" bila darurat baru boleh keluar
+// sekarang, selain itu null.
+// - Satu jenis darurat tidak diulang sebelum padam. dry_critical padam saat
+//   bacaan pulih >= batas pemicu siram atau user konfirmasi; wet_surge padam
+//   setelah 4 jam atau saat user konfirmasi.
+// - Selama masa tenang setelah konfirmasi, sensor masih menyusul air yang baru
+//   ditambahkan, jadi darurat tidak dinilai.
+// - Saat darurat keluar, slot rekomendasi biasa dimulai ulang 4 jam dari sekarang;
+//   rekomendasi biasa yang jatuh tempo selama darurat aktif tetap terbit.
 async function claimEmergency(deviceCode, deviceId) {
   const redis = getRedisClient();
-  const type = classifyEmergency(await readWindow(redis, deviceCode));
+  const readings = await readWindow(redis, deviceCode);
+  if (isRecovered(readings))
+    await redis.del(EMERGENCY_KEY(deviceCode, "dry_critical"));
+  if (await redis.exists(SETTLE_KEY(deviceCode))) return null;
+
+  const type = classifyEmergency(readings);
   if (!type) return null;
 
   // Lonjakan basah yang didahului konfirmasi siram adalah penyiraman, bukan darurat.
@@ -61,13 +78,11 @@ async function claimEmergency(deviceCode, deviceId) {
     if (confirmed) return null;
   }
 
-  const claimed = await redis.set(
-    EMERGENCY_KEY(deviceCode),
-    type,
-    "EX",
-    WATER_DECISION_SECONDS,
-    "NX",
-  );
+  const key = EMERGENCY_KEY(deviceCode, type);
+  const claimed =
+    type === "wet_surge"
+      ? await redis.set(key, "1", "EX", WATER_DECISION_SECONDS, "NX")
+      : await redis.set(key, "1", "NX");
   if (!claimed) return null;
   await restartWaterDecision(deviceCode);
   return type;
@@ -84,10 +99,16 @@ async function restartWaterDecision(deviceCode) {
   );
 }
 
-// Konfirmasi user: slot 4 jam diulang dan darurat berikutnya boleh keluar lagi.
+// Konfirmasi user: slot 4 jam diulang, darurat padam, dan darurat baru baru
+// dinilai lagi setelah masa tenang (sensor menyusul air yang baru ditambahkan).
 async function confirmWaterAction(deviceCode) {
+  const redis = getRedisClient();
   await restartWaterDecision(deviceCode);
-  await getRedisClient().del(EMERGENCY_KEY(deviceCode));
+  await redis.del(
+    EMERGENCY_KEY(deviceCode, "dry_critical"),
+    EMERGENCY_KEY(deviceCode, "wet_surge"),
+  );
+  await redis.set(SETTLE_KEY(deviceCode), "1", "EX", EMERGENCY_SETTLE_SECONDS);
 }
 
 // Rekomendasi dosis pH (kapur/sulfur) hanya boleh keluar sekali per 7 hari.

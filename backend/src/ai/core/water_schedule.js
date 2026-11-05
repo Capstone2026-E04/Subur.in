@@ -2,6 +2,7 @@ const {
   EMERGENCY_READINGS,
   EMERGENCY_DRY_THETA,
   EMERGENCY_SURGE_THETA,
+  EMERGENCY_RECOVER_THETA,
 } = require("../config/treatment_constants");
 
 function median(values) {
@@ -26,4 +27,14 @@ function classifyEmergency(readings) {
   return null;
 }
 
-module.exports = { median, classifyEmergency };
+// Darurat kering padam bila EMERGENCY_READINGS bacaan terakhir >= batas pemicu siram.
+function isRecovered(readings) {
+  return (
+    readings.length >= EMERGENCY_READINGS &&
+    readings
+      .slice(0, EMERGENCY_READINGS)
+      .every((r) => r / 100 >= EMERGENCY_RECOVER_THETA)
+  );
+}
+
+module.exports = { median, classifyEmergency, isRecovered };

@@ -1,9 +1,7 @@
 "use strict";
 
 const prisma = require("../database/connections/prisma_client");
-const {
-  confirmWaterAction,
-} = require("../ai/services/water_schedule.service");
+const { confirmWaterAction } = require("../ai/services/water_schedule.service");
 
 // Konfirmasi hanya berlaku untuk log rekomendasi terbaru milik device.
 // Mengembalikan "none" (belum ada log), "already" (sudah dikonfirmasi), atau "confirmed".
