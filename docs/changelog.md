@@ -4,6 +4,8 @@ Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk ri
 
 ## 2026-11-05
 
+- **feat(recommendation):** Rekomendasi darurat, dinilai pada setiap bacaan mentah dan boleh keluar sebelum 4 jam. `dry_critical`: θ̂ ≤ 0,1649 (50% θ_CC) pada 2 bacaan berturut-turut, fuzzy biasa dengan air maks. 200 mL, dosis pH ditunda. `wet_surge`: θ̂ naik ≥ 0,08 dari bacaan sebelumnya tanpa konfirmasi siram dalam 4 jam terakhir, memaksa STOP dan cek drainase (versi θ̂ ≥ θ_CC ditunda sampai ADC saat CC konsisten). Satu darurat per 4 jam sampai user konfirmasi; saat darurat keluar, rekomendasi biasa berikutnya 4 jam kemudian. Kolom baru `recommendation_logs.emergency_reason` (migrasi `017`), dan dashboard membaca rekomendasi dari log terbaru.
+- **fix(recommendation):** Konfirmasi "sudah dilaksanakan" memulai ulang jadwal 4 jam; dashboard menampilkan log terbaru sehingga dosis tidak berubah sebelum 4 jam.
 - **feat(dashboard):** Kartu rekomendasi menyembunyikan teks aksi dan tile dosis setelah ditandai sudah dilaksanakan; yang tersisa judul "Rekomendasi sudah dilaksanakan" dan waktu pelaksanaannya. Muncul lagi saat `RecommendationLog` baru dibuat.
 - **docs:** Jadwal pembuatan `RecommendationLog` (maks. sekali per 4 jam per device, kecuali `safetyOverride`) dan endpoint `POST /api/recommendations/confirm` didokumentasikan.
 

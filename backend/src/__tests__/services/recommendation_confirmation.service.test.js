@@ -4,7 +4,14 @@ jest.mock("../../database/connections/prisma_client", () => ({
   recommendationLog: { findFirst: jest.fn(), updateMany: jest.fn() },
 }));
 
+jest.mock("../../ai/services/water_schedule.service", () => ({
+  confirmWaterAction: jest.fn(),
+}));
+
 const prisma = require("../../database/connections/prisma_client");
+const {
+  confirmWaterAction,
+} = require("../../ai/services/water_schedule.service");
 const {
   confirmLatestRecommendation,
 } = require("../../services/recommendation_confirmation.service");
@@ -32,8 +39,9 @@ describe("confirmLatestRecommendation", () => {
       confirmedAt: null,
     });
     prisma.recommendationLog.updateMany.mockResolvedValue({ count: 1 });
-    const result = await confirmLatestRecommendation("d1");
+    const result = await confirmLatestRecommendation("d1", "DEV-1");
     expect(result.status).toBe("confirmed");
+    expect(confirmWaterAction).toHaveBeenCalledWith("DEV-1");
     expect(prisma.recommendationLog.updateMany).toHaveBeenCalledWith({
       where: { id: "l1", confirmedAt: null },
       data: { confirmedAt: expect.any(Date) },
@@ -47,5 +55,6 @@ describe("confirmLatestRecommendation", () => {
     });
     prisma.recommendationLog.updateMany.mockResolvedValue({ count: 0 });
     expect((await confirmLatestRecommendation("d1")).status).toBe("already");
+    expect(confirmWaterAction).not.toHaveBeenCalled();
   });
 });

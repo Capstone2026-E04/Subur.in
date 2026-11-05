@@ -148,7 +148,7 @@ exports.confirmRecommendation = async (req, res, next) => {
 
     const device = await prisma.device.findFirst({
       where: { id: deviceId, userId: req.user.id },
-      select: { id: true },
+      select: { id: true, deviceCode: true },
     });
     if (!device) {
       return sendError(
@@ -158,7 +158,10 @@ exports.confirmRecommendation = async (req, res, next) => {
       );
     }
 
-    const result = await confirmLatestRecommendation(device.id);
+    const result = await confirmLatestRecommendation(
+      device.id,
+      device.deviceCode,
+    );
     if (result.status === "none") {
       return sendError(res, 404, "Belum ada rekomendasi untuk dikonfirmasi.");
     }

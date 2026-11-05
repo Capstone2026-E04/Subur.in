@@ -18,7 +18,10 @@ async function baseHandler(ctx) {
     return;
   }
 
-  const { status } = await confirmLatestRecommendation(device.id);
+  const { status } = await confirmLatestRecommendation(
+    device.id,
+    device.deviceCode,
+  );
   const label = formatDeviceLabel(device);
   const replies = {
     none: `Belum ada rekomendasi tercatat untuk ${label}.`,

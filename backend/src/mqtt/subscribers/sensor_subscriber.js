@@ -24,6 +24,7 @@ const { adcToVwc } = require("../../ai/core/vwc_calibration");
 const {
   recordMoisture,
   claimWaterDecision,
+  claimEmergency,
   claimPhDecision,
 } = require("../../ai/services/water_schedule.service");
 const { getRedisClient } = require("../../database/connections/redis");
@@ -224,13 +225,17 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
     broadcastToDevice(device.id, sensorPayload);
 
     let decisionMoisture = null;
+    let emergency = null;
     if (moistureType === "vwc_percent") {
       try {
         if (safetyOverride) {
           decisionMoisture = moisture;
         } else {
           await recordMoisture(deviceCode, moisture);
-          decisionMoisture = await claimWaterDecision(deviceCode);
+          emergency = await claimEmergency(deviceCode, device.id);
+          decisionMoisture = emergency
+            ? moisture
+            : await claimWaterDecision(deviceCode);
         }
       } catch (err) {
         console.error(
@@ -252,11 +257,21 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
           phValue: ph,
           moistureValue: decisionMoisture,
           plantIdOrName: device.plantId,
-          safetyOverride,
+          // Hanya kondisi yang memaksa STOP yang mengubah inferensi; kering kritis
+          // tetap memakai fuzzy biasa (air bertahap maks. 200 mL).
+          safetyOverride:
+            safetyOverride ?? (emergency === "wet_surge" ? emergency : null),
         });
 
-        // Dosis pH hanya diberikan sekali per 7 hari (mode dev: tanpa batas).
-        if (
+        // Darurat kering hanya soal air; dosis pH menunggu siklus biasa.
+        if (emergency === "dry_critical") {
+          recommendation = {
+            ...recommendation,
+            limeDosageGram: 0,
+            sulfurDosageGram: 0,
+          };
+        } else if (
+          // Dosis pH hanya diberikan sekali per 7 hari (mode dev: tanpa batas).
           !isDev &&
           (recommendation.limeDosageGram > 0 ||
             recommendation.sulfurDosageGram > 0) &&
@@ -281,12 +296,28 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
             limeDosageGram: recommendation.limeDosageGram,
             sulfurDosageGram: recommendation.sulfurDosageGram,
             reduceWatering: recommendation.reduceWatering,
+            emergencyReason: safetyOverride ?? emergency,
             isDev,
           },
         });
         console.log(
           `[MQTT Subscriber]  Recommendation log disimpan ke Postgres | Device: ${deviceCode}`,
         );
+
+        if (emergency === "dry_critical") {
+          await notifyDevice(device.id, {
+            title: "DARURAT: Media Sangat Kering",
+            message: `Media sangat kering. Siram sekarang sekitar ${Math.round(recommendation.waterVolumeLiter * 1000)} mL, lalu tandai sudah dilaksanakan.`,
+            type: "warning",
+          });
+        } else if (emergency === "wet_surge") {
+          await notifyDevice(device.id, {
+            title: "DARURAT: Lonjakan Kelembapan",
+            message:
+              "Kelembapan melonjak tanpa penyiraman tercatat. Hentikan penyiraman dan cek drainase.",
+            type: "warning",
+          });
+        }
 
         const dryKey = `sensor:consecutive_dry:${deviceCode}`;
         const wetKey = `sensor:consecutive_wet:${deviceCode}`;
@@ -301,7 +332,11 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         if (recommendation.waterAction === "IRRIGATE") {
           const dryCount = await redis.incr(dryKey);
           await redis.del(wetKey);
-          if (dryCount === 2 && recommendation.waterVolumeLiter > 0) {
+          if (
+            !emergency &&
+            dryCount === 2 &&
+            recommendation.waterVolumeLiter > 0
+          ) {
             await notifyDevice(device.id, {
               title: "Media Kering",
               message: `Media kering. Siram sekitar ${Math.round(recommendation.waterVolumeLiter * 1000)} mL.`,
@@ -311,7 +346,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         } else if (recommendation.waterAction === "STOP") {
           const wetCount = await redis.incr(wetKey);
           await redis.del(dryKey);
-          if (wetCount === 2) {
+          if (!emergency && wetCount === 2) {
             await notifyDevice(device.id, {
               title: "Media Terlalu Basah",
               message:

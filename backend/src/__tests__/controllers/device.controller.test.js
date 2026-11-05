@@ -16,9 +16,6 @@ jest.mock("../../database/connections/prisma_client", () => ({
 jest.mock("../../database/connections/redis", () => ({
   getRedisClient: jest.fn(),
 }));
-jest.mock("../../ai/services/water_schedule.service", () => ({
-  getWindowMedian: jest.fn().mockResolvedValue(null),
-}));
 jest.mock("../../ai/services/recommendation.service", () => ({
   generateRecommendation: jest.fn(),
 }));
@@ -181,35 +178,103 @@ describe("getDeviceRecommendation", () => {
     fuzzyIndex: 3,
     categoryCode: "C3",
     actionText: "Siram",
+    limeDosageGram: 99,
+  };
+  const logCreatedAt = new Date("2026-01-01T00:00:00Z");
+  const log = {
+    emergencyReason: null,
+    phValue: 6.1,
+    moistureValue: 22,
+    fuzzyIndex: 3,
+    categoryCode: "C3",
+    actionText: "Siram",
+    waterVolumeLiter: 0.5,
+    limeDosageGram: 0,
+    sulfurDosageGram: 0,
+    reduceWatering: false,
+    confirmedAt: null,
+    createdAt: logCreatedAt,
+  };
+  const expected = {
+    ...recommendation,
+    waterVolumeLiter: 0.5,
+    limeDosageGram: 0,
+    sulfurDosageGram: 0,
+    reduceWatering: false,
+    emergencyReason: null,
+    timestamp: logCreatedAt,
+    confirmedAt: null,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    prisma.recommendationLog.findFirst.mockResolvedValue(log);
     prisma.device.findFirst.mockResolvedValue(device);
     getLatestSensorData.mockResolvedValue(null);
     getLatestSensorLog.mockResolvedValue(null);
     generateRecommendation.mockResolvedValue(recommendation);
   });
 
-  it("returns the recommendation for fresh data without writing a log", async () => {
-    const timestamp = new Date(Date.now() - 30 * 1000).toISOString();
+  it("builds the recommendation from the latest log, keeping its stored dose", async () => {
     getLatestSensorData.mockResolvedValue({
       ph: 6.5,
       moisture: 25,
       moistureType: "vwc_percent",
-      timestamp,
+      timestamp: new Date(Date.now() - 30 * 1000).toISOString(),
     });
     const res = makeRes();
 
     await getDeviceRecommendation(req, res, jest.fn());
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json.mock.calls[0][0].data).toEqual({
-      ...recommendation,
-      timestamp,
-      confirmedAt: null,
+    expect(generateRecommendation).toHaveBeenCalledWith({
+      phValue: 6.1,
+      moistureValue: 22,
+      plantIdOrName: "p",
+      safetyOverride: null,
     });
+    expect(res.json.mock.calls[0][0].data).toEqual(expected);
     expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["wet_surge", "wet_surge"],
+    ["dry_critical", null],
+  ])("replays emergency %s with override %s", async (reason, override) => {
+    prisma.recommendationLog.findFirst.mockResolvedValue({
+      ...log,
+      emergencyReason: reason,
+    });
+    getLatestSensorData.mockResolvedValue({
+      ph: 6.5,
+      moisture: 25,
+      moistureType: "vwc_percent",
+      timestamp: new Date(Date.now() - 30 * 1000).toISOString(),
+    });
+    const res = makeRes();
+
+    await getDeviceRecommendation(req, res, jest.fn());
+
+    expect(generateRecommendation).toHaveBeenCalledWith(
+      expect.objectContaining({ safetyOverride: override }),
+    );
+    expect(res.json.mock.calls[0][0].data.emergencyReason).toBe(reason);
+  });
+
+  it("returns null data when no log exists yet", async () => {
+    prisma.recommendationLog.findFirst.mockResolvedValue(null);
+    getLatestSensorData.mockResolvedValue({
+      ph: 6.5,
+      moisture: 25,
+      moistureType: "vwc_percent",
+      timestamp: new Date(Date.now() - 30 * 1000).toISOString(),
+    });
+    const res = makeRes();
+
+    await getDeviceRecommendation(req, res, jest.fn());
+
+    expect(res.json.mock.calls[0][0].data).toBeNull();
+    expect(generateRecommendation).not.toHaveBeenCalled();
   });
 
   it("returns null data for stale data without computing or writing", async () => {
@@ -281,11 +346,7 @@ describe("getDeviceRecommendation", () => {
     });
     const fresh = makeRes();
     await getDeviceRecommendation(req, fresh, jest.fn());
-    expect(fresh.json.mock.calls[0][0].data).toEqual({
-      ...recommendation,
-      timestamp,
-      confirmedAt: null,
-    });
+    expect(fresh.json.mock.calls[0][0].data).toEqual(expected);
 
     jest.clearAllMocks();
     prisma.device.findFirst.mockResolvedValue(device);

@@ -1,10 +1,14 @@
 "use strict";
 
 const prisma = require("../database/connections/prisma_client");
+const {
+  confirmWaterAction,
+} = require("../ai/services/water_schedule.service");
 
 // Konfirmasi hanya berlaku untuk log rekomendasi terbaru milik device.
 // Mengembalikan "none" (belum ada log), "already" (sudah dikonfirmasi), atau "confirmed".
-async function confirmLatestRecommendation(deviceId) {
+// Saat "confirmed", jadwal rekomendasi berikutnya dimulai ulang (4 jam dari sekarang).
+async function confirmLatestRecommendation(deviceId, deviceCode) {
   const latest = await prisma.recommendationLog.findFirst({
     where: { deviceId },
     orderBy: { createdAt: "desc" },
@@ -18,9 +22,10 @@ async function confirmLatestRecommendation(deviceId) {
     where: { id: latest.id, confirmedAt: null },
     data: { confirmedAt },
   });
-  return count === 0
-    ? { status: "already", log: latest }
-    : { status: "confirmed", log: { id: latest.id, confirmedAt } };
+  if (count === 0) return { status: "already", log: latest };
+
+  await confirmWaterAction(deviceCode);
+  return { status: "confirmed", log: { id: latest.id, confirmedAt } };
 }
 
 module.exports = { confirmLatestRecommendation };

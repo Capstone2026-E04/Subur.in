@@ -26,6 +26,7 @@ jest.mock("../../../ai/services/recommendation.service", () => ({
 jest.mock("../../../ai/services/water_schedule.service", () => ({
   recordMoisture: jest.fn(),
   claimWaterDecision: jest.fn(),
+  claimEmergency: jest.fn(),
   claimPhDecision: jest.fn(),
 }));
 jest.mock("../../../database/connections/redis", () => ({
@@ -56,6 +57,7 @@ const {
 const {
   recordMoisture,
   claimWaterDecision,
+  claimEmergency,
   claimPhDecision,
 } = require("../../../ai/services/water_schedule.service");
 const { getRedisClient } = require("../../../database/connections/redis");
@@ -123,6 +125,7 @@ describe("handleSensorMessage", () => {
     });
     claimWaterDecision.mockImplementation(async () => lastMoisture);
     claimPhDecision.mockResolvedValue(true);
+    claimEmergency.mockResolvedValue(null);
     shouldSaveToDatabase.mockResolvedValue(true);
   });
 
@@ -534,6 +537,66 @@ describe("handleSensorMessage", () => {
           safetyOverride: "sensor_out_of_range",
         }),
       );
+    });
+  });
+
+  describe("emergency recommendations", () => {
+    it("dry_critical bypasses the 4-hour slot, uses the raw reading, defers the pH dose and notifies", async () => {
+      claimEmergency.mockResolvedValue("dry_critical");
+      claimWaterDecision.mockResolvedValue(null);
+      generateRecommendation.mockResolvedValue({
+        ...idleRecommendation,
+        waterAction: "IRRIGATE",
+        waterVolumeLiter: 0.2,
+        limeDosageGram: 1.5,
+      });
+
+      await send({ ph: 5.0, soil_vwc_pct: 12 });
+
+      expect(claimWaterDecision).not.toHaveBeenCalled();
+      expect(claimPhDecision).not.toHaveBeenCalled();
+      expect(generateRecommendation).toHaveBeenCalledWith(
+        expect.objectContaining({ moistureValue: 12, safetyOverride: null }),
+      );
+      expect(prisma.recommendationLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          emergencyReason: "dry_critical",
+          limeDosageGram: 0,
+        }),
+      });
+      expect(notifyDevice).toHaveBeenCalledTimes(1);
+      expect(notifyDevice).toHaveBeenCalledWith(
+        "device-1",
+        expect.objectContaining({
+          title: "DARURAT: Media Sangat Kering",
+          message: expect.stringContaining("200 mL"),
+        }),
+      );
+    });
+
+    it("wet_surge forces STOP and notifies drainage check", async () => {
+      claimEmergency.mockResolvedValue("wet_surge");
+
+      await send({ ph: 6.5, soil_vwc_pct: 40 });
+
+      expect(generateRecommendation).toHaveBeenCalledWith(
+        expect.objectContaining({ safetyOverride: "wet_surge" }),
+      );
+      expect(prisma.recommendationLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ emergencyReason: "wet_surge" }),
+      });
+      expect(notifyDevice).toHaveBeenCalledWith(
+        "device-1",
+        expect.objectContaining({ title: "DARURAT: Lonjakan Kelembapan" }),
+      );
+    });
+
+    it("stores no emergency reason for a regular decision", async () => {
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
+
+      expect(prisma.recommendationLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ emergencyReason: null }),
+      });
     });
   });
 

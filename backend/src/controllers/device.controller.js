@@ -3,7 +3,6 @@ const { getRedisClient } = require("../database/connections/redis");
 const {
   generateRecommendation,
 } = require("../ai/services/recommendation.service");
-const { getWindowMedian } = require("../ai/services/water_schedule.service");
 const {
   getLatestSensorData,
 } = require("../repositories/sensor_redis_repository");
@@ -376,23 +375,44 @@ exports.getDeviceRecommendation = async (req, res, next) => {
       );
     }
 
-    const recommendation = await generateRecommendation({
-      phValue: sensorData.ph,
-      moistureValue:
-        (await getWindowMedian(device.deviceCode)) ?? sensorData.moisture,
-      plantIdOrName: device.plantId,
-    });
-
+    // Rekomendasi hanya berubah saat log baru dibuat (tiap 4 jam / setelah
+    // konfirmasi), jadi tampilan dibangun dari log terbaru, bukan data live.
     const latestLog = await prisma.recommendationLog.findFirst({
       where: { deviceId: id },
       orderBy: { createdAt: "desc" },
-      select: { confirmedAt: true },
+    });
+    if (!latestLog) {
+      return sendSuccess(
+        res,
+        200,
+        "Rekomendasi pertama belum tersedia. Menunggu data sensor cukup.",
+        null,
+      );
+    }
+
+    const recommendation = await generateRecommendation({
+      phValue: latestLog.phValue,
+      moistureValue: latestLog.moistureValue,
+      plantIdOrName: device.plantId,
+      // Kering kritis memakai fuzzy biasa; alasan lain memaksa STOP.
+      safetyOverride:
+        latestLog.emergencyReason === "dry_critical"
+          ? null
+          : latestLog.emergencyReason,
     });
 
     return sendSuccess(res, 200, "Rekomendasi Fuzzy Logic berhasil dibuat.", {
       ...recommendation,
-      timestamp: sensorData.timestamp,
-      confirmedAt: latestLog?.confirmedAt ?? null,
+      emergencyReason: latestLog.emergencyReason,
+      fuzzyIndex: latestLog.fuzzyIndex,
+      categoryCode: latestLog.categoryCode,
+      actionText: latestLog.actionText,
+      waterVolumeLiter: latestLog.waterVolumeLiter,
+      limeDosageGram: latestLog.limeDosageGram,
+      sulfurDosageGram: latestLog.sulfurDosageGram,
+      reduceWatering: latestLog.reduceWatering,
+      timestamp: latestLog.createdAt,
+      confirmedAt: latestLog.confirmedAt,
     });
   } catch (error) {
     console.error("[DeviceController] Gagal menghasilkan rekomendasi device:", {

@@ -72,6 +72,9 @@ model RecommendationLog {
   reduceWatering   Boolean @default(false) @map("reduce_watering")
   isDev            Boolean @default(false) @map("is_dev")
 
+  // NULL = rekomendasi biasa; selain itu: sensor_out_of_range | dry_critical | wet_surge.
+  emergencyReason String? @map("emergency_reason") @db.VarChar(30)
+
   confirmedAt DateTime? @db.Timestamptz(6) @map("confirmed_at")
   createdAt   DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
 
