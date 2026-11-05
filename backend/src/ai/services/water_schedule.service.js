@@ -19,20 +19,27 @@ const PH_SLOT_KEY = (code) => `sensor:ph_decision:${code}`;
 const EMERGENCY_KEY = (code, type) => `sensor:emergency:${code}:${type}`;
 const SETTLE_KEY = (code) => `sensor:emergency_settle:${code}`;
 
-async function readWindow(redis, deviceCode) {
+// Jendela menyimpan "<epoch ms>:<VWC %>", terbaru dulu. Bacaan yang lebih tua dari
+// WATER_WINDOW x interval sensor dibuang agar data lama (misal setelah alat mati)
+// tidak ikut menentukan median. Entri format lama (tanpa waktu) dianggap kedaluwarsa.
+async function readWindow(redis, deviceCode, sensorIntervalMin) {
   const raw = await redis.lrange(WINDOW_KEY(deviceCode), 0, WATER_WINDOW - 1);
-  return raw.map(Number);
+  const oldest = Date.now() - WATER_WINDOW * sensorIntervalMin * 60 * 1000;
+  return raw
+    .map((entry) => entry.split(":").map(Number))
+    .filter(([at, value]) => at >= oldest && Number.isFinite(value))
+    .map(([, value]) => value);
 }
 
 async function recordMoisture(deviceCode, moisture) {
   const redis = getRedisClient();
-  await redis.lpush(WINDOW_KEY(deviceCode), moisture);
+  await redis.lpush(WINDOW_KEY(deviceCode), `${Date.now()}:${moisture}`);
   await redis.ltrim(WINDOW_KEY(deviceCode), 0, WATER_WINDOW - 1);
 }
 
-async function claimWaterDecision(deviceCode) {
+async function claimWaterDecision(deviceCode, sensorIntervalMin) {
   const redis = getRedisClient();
-  const readings = await readWindow(redis, deviceCode);
+  const readings = await readWindow(redis, deviceCode, sensorIntervalMin);
   if (readings.length < WATER_MIN_READINGS) return null;
   const claimed = await redis.set(
     SLOT_KEY(deviceCode),
@@ -54,9 +61,9 @@ async function claimWaterDecision(deviceCode) {
 //   ditambahkan, jadi darurat tidak dinilai.
 // - Saat darurat keluar, slot rekomendasi biasa dimulai ulang 4 jam dari sekarang;
 //   rekomendasi biasa yang jatuh tempo selama darurat aktif tetap terbit.
-async function claimEmergency(deviceCode, deviceId) {
+async function claimEmergency(deviceCode, deviceId, sensorIntervalMin) {
   const redis = getRedisClient();
-  const readings = await readWindow(redis, deviceCode);
+  const readings = await readWindow(redis, deviceCode, sensorIntervalMin);
   if (isRecovered(readings))
     await redis.del(EMERGENCY_KEY(deviceCode, "dry_critical"));
   if (await redis.exists(SETTLE_KEY(deviceCode))) return null;

@@ -232,10 +232,14 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
           decisionMoisture = moisture;
         } else {
           await recordMoisture(deviceCode, moisture);
-          emergency = await claimEmergency(deviceCode, device.id);
+          emergency = await claimEmergency(
+            deviceCode,
+            device.id,
+            device.sensorInterval,
+          );
           decisionMoisture = emergency
             ? moisture
-            : await claimWaterDecision(deviceCode);
+            : await claimWaterDecision(deviceCode, device.sensorInterval);
         }
       } catch (err) {
         console.error(
