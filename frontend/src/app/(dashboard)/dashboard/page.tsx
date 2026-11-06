@@ -211,6 +211,7 @@ export default function DashboardPage() {
 
   const currentPh = ph ?? recommendation?.phValue ?? null;
   const currentMoisture = moisture ?? recommendation?.moistureValue ?? null;
+  const measuredAt = lastUpdated ?? recommendation?.timestamp ?? null;
   const phRange = devicePlant
     ? { min: devicePlant.minPh, max: devicePlant.maxPh }
     : DEFAULT_PH_RANGE;
@@ -230,8 +231,12 @@ export default function DashboardPage() {
         />
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-5">
-        <MoistureLevelCard value={currentMoisture} />
-        <PhLevelCard value={currentPh} range={phRange} />
+        <MoistureLevelCard value={currentMoisture} measuredAt={measuredAt} />
+        <PhLevelCard
+          value={currentPh}
+          range={phRange}
+          measuredAt={measuredAt}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5">

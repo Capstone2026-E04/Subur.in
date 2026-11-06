@@ -15,6 +15,24 @@ export function formatTimestamp(ts: string | null): string {
   }
 }
 
+export function formatMeasuredAt(ts: string | null): string | null {
+  if (!ts) return null;
+  const date = new Date(ts);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+    timeZone: "Asia/Jakarta",
+  }).formatToParts(date);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value;
+  return `Data tercatat pada ${get("day")} ${get("month")} ${get("year")}, ${get("hour")}:${get("minute")}:${get("second")}`;
+}
+
 export const TONES = {
   red: {
     badge: "text-red-700",

@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { MdScience } from "react-icons/md";
 import { Card } from "@/components/ui/card";
-import { TONES, classifyPh } from "./sensorStatus";
+import { TONES, classifyPh, formatMeasuredAt } from "./sensorStatus";
 
 interface PhLevelCardProps {
   value: number | null;
   range: { min: number; max: number };
+  measuredAt?: string | null;
 }
 
-export default function PhLevelCard({ value, range }: PhLevelCardProps) {
+export default function PhLevelCard({
+  value,
+  range,
+  measuredAt: measuredAtIso = null,
+}: PhLevelCardProps) {
+  const measuredAt = value === null ? null : formatMeasuredAt(measuredAtIso);
   const axisMin = 4;
   const axisMax = 10;
   const toPosition = (ph: number) =>
@@ -85,6 +91,11 @@ export default function PhLevelCard({ value, range }: PhLevelCardProps) {
         <p className="mt-1 min-h-6 text-[9px] text-neutral-400 sm:mt-2 sm:min-h-8 sm:text-xs">
           Skala tampilan pH 4-10
         </p>
+        {measuredAt && (
+          <p className="mt-2 text-[9px] text-neutral-400 sm:mt-3 sm:text-xs">
+            {measuredAt}
+          </p>
+        )}
       </Card>
     </Link>
   );

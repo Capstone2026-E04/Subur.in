@@ -5,11 +5,13 @@ import {
   CC_OPTIMAL_MAX,
   CC_OPTIMAL_MIN,
   TONES,
+  formatMeasuredAt,
   toVwcDisplay,
 } from "./sensorStatus";
 
 interface MoistureLevelCardProps {
   value: number | null;
+  measuredAt?: string | null;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -30,7 +32,11 @@ const OPTIMAL_START = toPct(CC_OPTIMAL_MIN);
 const OPTIMAL_END = toPct(CC_OPTIMAL_MAX);
 const GAUGE_GRADIENT = `linear-gradient(to right, #fdba74 ${OPTIMAL_START / 2}%, #6ee7b7 ${(OPTIMAL_START + OPTIMAL_END) / 2}%, #c4b5fd ${(OPTIMAL_END + 100) / 2}%)`;
 
-export default function MoistureLevelCard({ value }: MoistureLevelCardProps) {
+export default function MoistureLevelCard({
+  value,
+  measuredAt: measuredAtIso = null,
+}: MoistureLevelCardProps) {
+  const measuredAt = value === null ? null : formatMeasuredAt(measuredAtIso);
   const status = value === null ? null : toVwcDisplay(value);
   const tone = status ? TONES[status.tone] : null;
   const displayValue = status ? status.mainPercent : null;
@@ -99,6 +105,11 @@ export default function MoistureLevelCard({ value }: MoistureLevelCardProps) {
           basah
         </span>
       </div>
+      {measuredAt && (
+        <p className="mt-2 text-[9px] text-neutral-400 sm:mt-3 sm:text-xs">
+          {measuredAt}
+        </p>
+      )}
     </Card>
   );
 }
