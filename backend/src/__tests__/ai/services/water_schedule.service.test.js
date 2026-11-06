@@ -125,7 +125,7 @@ describe("stale readings", () => {
     getRedisClient.mockReturnValue(redis);
   });
 
-  it("drops readings older than 4 sensor intervals before taking the median", async () => {
+  it("drops readings older than 4 hours before taking the median", async () => {
     const day = 24 * 3600 * 1000;
     redis.lrange.mockResolvedValue([
       `${Date.now()}:13.81`,
@@ -135,6 +135,21 @@ describe("stale readings", () => {
     ]);
     expect(await claimWaterDecision("D", 60)).toBeNull();
     expect(redis.set).not.toHaveBeenCalled();
+  });
+
+  it("medians every reading inside the 4-hour window, not just the last 4", async () => {
+    redis.lrange.mockResolvedValue(fresh([30, 30, 30, 30, 10, 10, 10, 10, 10]));
+    expect(await claimWaterDecision("D", 60)).toBe(10);
+  });
+
+  it("widens the window to 2 intervals when the interval exceeds 2 hours", async () => {
+    const h = 3600 * 1000;
+    redis.lrange.mockResolvedValue([
+      `${Date.now()}:10`,
+      `${Date.now() - 8 * h}:14`,
+    ]);
+    expect(await claimWaterDecision("D", 360)).toBe(12);
+    expect(await claimWaterDecision("D", 60)).toBeNull();
   });
 
   it("medians fresh readings and ignores legacy entries without a timestamp", async () => {

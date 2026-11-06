@@ -6,7 +6,6 @@ const {
   isRecovered,
 } = require("../core/water_schedule");
 const {
-  WATER_WINDOW,
   WATER_MIN_READINGS,
   WATER_DECISION_SECONDS,
   PH_DECISION_SECONDS,
@@ -19,22 +18,31 @@ const PH_SLOT_KEY = (code) => `sensor:ph_decision:${code}`;
 const EMERGENCY_KEY = (code, type) => `sensor:emergency:${code}:${type}`;
 const SETTLE_KEY = (code) => `sensor:emergency_settle:${code}`;
 
-// Jendela menyimpan "<epoch ms>:<VWC %>", terbaru dulu. Bacaan yang lebih tua dari
-// WATER_WINDOW x interval sensor dibuang agar data lama (misal setelah alat mati)
-// tidak ikut menentukan median. Entri format lama (tanpa waktu) dianggap kedaluwarsa.
-async function readWindow(redis, deviceCode, sensorIntervalMin) {
-  const raw = await redis.lrange(WINDOW_KEY(deviceCode), 0, WATER_WINDOW - 1);
-  const oldest = Date.now() - WATER_WINDOW * sensorIntervalMin * 60 * 1000;
+// Jendela menyimpan "<epoch ms>:<VWC %>", terbaru dulu, berisi semua bacaan dalam
+// max(WATER_DECISION_SECONDS, 2 x interval sensor) terakhir (berdasarkan waktu,
+// bukan jumlah; 2 x interval menjamin interval panjang tetap punya >= 2 bacaan).
+// Entri format lama (tanpa waktu) dianggap kedaluwarsa.
+function parseWindow(raw, sensorIntervalMin) {
+  const spanMs =
+    Math.max(WATER_DECISION_SECONDS, 2 * sensorIntervalMin * 60) * 1000;
+  const oldest = Date.now() - spanMs;
   return raw
     .map((entry) => entry.split(":").map(Number))
     .filter(([at, value]) => at >= oldest && Number.isFinite(value))
     .map(([, value]) => value);
 }
 
-async function recordMoisture(deviceCode, moisture) {
+async function readWindow(redis, deviceCode, sensorIntervalMin) {
+  const raw = await redis.lrange(WINDOW_KEY(deviceCode), 0, -1);
+  return parseWindow(raw, sensorIntervalMin);
+}
+
+async function recordMoisture(deviceCode, moisture, sensorIntervalMin) {
   const redis = getRedisClient();
   await redis.lpush(WINDOW_KEY(deviceCode), `${Date.now()}:${moisture}`);
-  await redis.ltrim(WINDOW_KEY(deviceCode), 0, WATER_WINDOW - 1);
+  // Buang bacaan yang sudah keluar dari jendela (daftar terurut terbaru dulu).
+  const kept = await readWindow(redis, deviceCode, sensorIntervalMin);
+  await redis.ltrim(WINDOW_KEY(deviceCode), 0, kept.length - 1);
 }
 
 async function claimWaterDecision(deviceCode, sensorIntervalMin) {

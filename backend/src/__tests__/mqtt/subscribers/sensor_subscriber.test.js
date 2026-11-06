@@ -497,7 +497,7 @@ describe("handleSensorMessage", () => {
 
       await send({ ph: 6.5, soil_vwc_pct: 50 });
 
-      expect(recordMoisture).toHaveBeenCalledWith(DEVICE_CODE, 50);
+      expect(recordMoisture).toHaveBeenCalledWith(DEVICE_CODE, 50, 15);
       expect(generateRecommendation).not.toHaveBeenCalled();
       expect(prisma.recommendationLog.create).not.toHaveBeenCalled();
     });

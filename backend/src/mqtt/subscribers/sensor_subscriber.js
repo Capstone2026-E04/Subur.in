@@ -231,7 +231,7 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         if (safetyOverride) {
           decisionMoisture = moisture;
         } else {
-          await recordMoisture(deviceCode, moisture);
+          await recordMoisture(deviceCode, moisture, device.sensorInterval);
           emergency = await claimEmergency(
             deviceCode,
             device.id,
