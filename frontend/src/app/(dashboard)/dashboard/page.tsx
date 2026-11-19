@@ -140,10 +140,8 @@ export default function DashboardPage() {
 
   const devicePlant = plants.find((p) => p.id === selectedDevice?.plant?.id);
 
-  const { ph, moisture, lastUpdated } = useSensorRealtime(
-    selectedDevice?.id || "",
-    token,
-  );
+  const { ph, moisture, lastUpdated, recommendationVersion } =
+    useSensorRealtime(selectedDevice?.id || "", token);
 
   const loadVersion = useRef(0);
   const invalidateLoad = useCallback(() => {
@@ -191,6 +189,11 @@ export default function DashboardPage() {
       loadRecommendation(true);
     }
   }, [lastUpdated, loadRecommendation]);
+  useEffect(() => {
+    if (recommendationVersion > 0) {
+      loadRecommendation(true);
+    }
+  }, [recommendationVersion, loadRecommendation]);
 
   if (isLoading) {
     return <DashboardSkeleton />;

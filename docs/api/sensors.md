@@ -16,10 +16,14 @@ data: {"connected":true,"deviceId":"3c1b6a52-9d3e-4f0a-8a47-2b5d7e9f1a10"}
 
 data: {"ph":6.1,"moisture":42.3,"timestamp":"2026-09-03T10:05:00.000Z"}
 
+data: {"type":"recommendation","deviceId":"3c1b6a52-9d3e-4f0a-8a47-2b5d7e9f1a10"}
+
 : keepalive
 ```
 
 Komentar `: keepalive` dikirim setiap 20 detik untuk menjaga koneksi tetap hidup melewati proxy. Broadcast notifikasi datang dalam bentuk `{ "notification": { "title": ..., "message": ... } }`.
+
+Event `{"type":"recommendation"}` dikirim sekali setelah `RecommendationLog` baru tersimpan, yaitu setelah event pembacaan untuk bacaan yang sama (event pembacaan terkirim lebih dulu dan tidak membawa `type`). Dashboard mengambil ulang `GET /api/devices/:id/recommendation` saat event ini tiba, karena endpoint itu membaca log terbaru. Event ini tidak dikirim bila bacaan tidak menghasilkan log (gate belum lolos atau terjadi error). Klien yang tidak mengenal `type` dapat mengabaikannya.
 
 ## `GET /api/sensors/:deviceId/latest`
 

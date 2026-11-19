@@ -12,6 +12,8 @@ export interface SensorData {
   moisture: number | null;
   moistureType: MoistureType;
   lastUpdated: string | null;
+  // Bertambah tiap backend mengumumkan rekomendasi baru sudah tersimpan.
+  recommendationVersion: number;
   connectionStatus: ConnectionStatus;
 }
 
@@ -26,6 +28,7 @@ export function useSensorRealtime(
   const [moistureType, setMoistureType] =
     useState<MoistureType>("legacy_index");
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [recommendationVersion, setRecommendationVersion] = useState(0);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("connecting");
 
@@ -92,6 +95,11 @@ export function useSensorRealtime(
           return;
         }
 
+        if (payload?.type === "recommendation") {
+          setRecommendationVersion((v) => v + 1);
+          return;
+        }
+
         if (payload?.ph !== undefined || payload?.moisture !== undefined)
           setDataDeviceId(deviceId);
         if (payload?.ph !== undefined) setPh(payload.ph);
@@ -148,6 +156,7 @@ export function useSensorRealtime(
     moisture: dataDeviceId === deviceId ? moisture : null,
     moistureType,
     lastUpdated: dataDeviceId === deviceId ? lastUpdated : null,
+    recommendationVersion,
     connectionStatus,
   };
 }

@@ -234,6 +234,36 @@ describe("handleSensorMessage", () => {
       });
     });
 
+    it("announces the new recommendation only after the log is saved", async () => {
+      const order = [];
+      prisma.recommendationLog.create.mockImplementation(async () => {
+        order.push("saved");
+        return {};
+      });
+      broadcastToDevice.mockImplementation((_id, payload) =>
+        order.push(payload.type ?? "sensor"),
+      );
+
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
+
+      expect(order).toEqual(["sensor", "saved", "recommendation"]);
+      expect(broadcastToDevice).toHaveBeenCalledWith("device-1", {
+        type: "recommendation",
+        deviceId: "device-1",
+      });
+    });
+
+    it("does not announce a recommendation when no log is created", async () => {
+      claimWaterDecision.mockResolvedValue(null);
+
+      await send({ ph: 6.5, soil_vwc_pct: 50 });
+
+      expect(broadcastToDevice).not.toHaveBeenCalledWith(
+        "device-1",
+        expect.objectContaining({ type: "recommendation" }),
+      );
+    });
+
     it("flags the recommendation log as dev data in dev mode", async () => {
       await send({ ph: 6.5, soil_vwc_pct: 80 }, { isDev: true });
 

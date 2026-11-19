@@ -121,8 +121,16 @@ sequenceDiagram
         Subscriber->>Postgres: updateDeviceLastSeen
         Subscriber->>SSE: broadcastToDevice(deviceId, reading)
         SSE-->>Dashboard: text/event-stream update
+        opt bacaan VWC dan gate rekomendasi lolos
+            Subscriber->>Postgres: create RecommendationLog
+            Subscriber->>SSE: broadcastToDevice(deviceId, {type: recommendation})
+            SSE-->>Dashboard: event recommendation
+            Note over Dashboard: GET /api/devices/{id}/recommendation
+        end
     end
 ```
+
+Event `recommendation` sengaja dikirim terpisah dan sesudah log tersimpan: `GET /api/devices/:id/recommendation` membaca log terbaru, jadi fetch yang dipicu event pembacaan (yang terkirim lebih awal) bisa menerima rekomendasi lama. Latensi tiap segmen alur ini diukur di [backend/response-time-testing.md](../backend/response-time-testing.md).
 
 ### Antrean offline ESP32 (record bernomor + ACK)
 

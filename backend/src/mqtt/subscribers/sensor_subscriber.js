@@ -307,6 +307,12 @@ async function handleSensorMessage(topic, payload, { isDev = false } = {}) {
         console.log(
           `[MQTT Subscriber]  Recommendation log disimpan ke Postgres | Device: ${deviceCode}`,
         );
+        // Event sensor di atas terkirim sebelum log ini ada; beri tahu dashboard
+        // agar mengambil rekomendasi terbaru setelah log benar-benar tersimpan.
+        broadcastToDevice(device.id, {
+          type: "recommendation",
+          deviceId: device.id,
+        });
 
         if (emergency === "dry_critical") {
           await notifyDevice(device.id, {

@@ -23,7 +23,7 @@ Setiap resource backend yang membutuhkan interaktivitas sisi client mendapatkan 
 | `useDeviceStatus` | Status online/offline per-device |
 | `usePlants` | Daftar referensi tanaman |
 | `useSelectedDeviceStore` | Perangkat yang dipilih di topbar, dibagi ke semua halaman dashboard (store Zustand, bukan hook data) |
-| `useSensorRealtime` | pH/kelembapan live melalui SSE (`EventSource` terhadap `/api/sensors/:id/stream`), dengan fallback REST (`/latest`) saat stream error dan auto-reconnect setelah 5 detik |
+| `useSensorRealtime` | pH/kelembapan live melalui SSE (`EventSource` terhadap `/api/sensors/:id/stream`), dengan fallback REST (`/latest`) saat stream error dan auto-reconnect setelah 5 detik. Mengembalikan juga `recommendationVersion`, penghitung yang naik tiap event `{ type: "recommendation" }` tiba; dashboard memakainya untuk mengambil ulang rekomendasi |
 
 Ini menjaga komponen tetap sederhana (memanggil hook, merender state-nya) tanpa global store; setiap hook memiliki slice server state-nya sendiri dan melakukan fetch ulang/refresh secara independen.
 
