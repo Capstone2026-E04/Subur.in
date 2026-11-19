@@ -98,6 +98,10 @@ Controller dipanggil langsung dengan `req`/`res` palsu (`res.status` dan `res.js
 
 Setelah mengubah kode, sebuah cara cepat memeriksa test benar-benar menjaga perilaku: longgarkan satu ambang atau kondisi di kode sumber, jalankan test terkait, dan pastikan ada yang gagal; kembalikan perubahannya.
 
+## Pengujian response time
+
+Latensi dari data masuk ke broker sampai rekomendasi tampil di dashboard diukur terpisah dengan `backend/scripts/response_time.js` (bukan bagian `npm test`; butuh database, Redis, broker, backend, dan frontend sungguhan). Cara kerja, skenario, perintah, dan hasil: [response-time-testing.md](response-time-testing.md).
+
 ## Batasan saat ini
 
 - Belum ada test integrasi (Supertest ke database uji) dan belum ada workflow CI yang menjalankan `npm test`.

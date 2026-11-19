@@ -2,6 +2,11 @@
 
 Ringkasan perubahan penting secara kronologis terbalik. Lihat `git log` untuk riwayat lengkap.
 
+## 2026-11-19
+
+- **fix(dashboard):** Backend mengirim event SSE `{ type: "recommendation", deviceId }` setelah `RecommendationLog` tersimpan, dan dashboard mengambil ulang rekomendasi saat event itu tiba (`recommendationVersion` di `useSensorRealtime`). Sebelumnya fetch yang dipicu event pembacaan bisa mendahului penyimpanan log dan menampilkan rekomendasi lama sampai event berikutnya (4 dari 90 sampel pada pengujian). Lihat [api/sensors.md](api/sensors.md) dan [ADR-005](decisions/adr-005-sse-for-realtime-sensor-data.md).
+- **test(backend):** `scripts/response_time.js` mengukur latensi per segmen (broker -> backend, fuzzy + simpan DB, API, tampil di dashboard lewat Playwright) dengan skenario `normal`, `kategori`, dan `emergency`. `playwright` menjadi devDependency. Lihat [backend/response-time-testing.md](backend/response-time-testing.md).
+
 ## 2026-11-05
 
 - **feat(recommendation):** Rekomendasi darurat, dinilai pada setiap bacaan mentah dan boleh keluar sebelum 4 jam. `dry_critical`: θ̂ ≤ 0,1649 (50% θ_CC) pada 2 bacaan berturut-turut, fuzzy biasa dengan air maks. 200 mL, dosis pH ditunda. `wet_surge`: θ̂ naik ≥ 0,08 dari bacaan sebelumnya tanpa konfirmasi siram dalam 4 jam terakhir, memaksa STOP dan cek drainase (versi θ̂ ≥ θ_CC ditunda sampai ADC saat CC konsisten). Satu jenis darurat tidak diulang sebelum padam: `dry_critical` padam saat θ̂ ≥ 0,2207 dua bacaan berturut-turut atau user konfirmasi, `wet_surge` padam setelah 4 jam atau konfirmasi. Setelah konfirmasi ada masa tenang 2 jam tanpa penilaian darurat (sensor masih menyusul air yang baru ditambahkan). Saat darurat keluar, rekomendasi biasa berikutnya 4 jam kemudian; rekomendasi biasa yang jatuh tempo selama darurat aktif tetap terbit (median semua bacaan dalam 4 jam terakhir, darurat memakai bacaan mentah). Kolom baru `recommendation_logs.emergency_reason` (migrasi `017`), dan dashboard membaca rekomendasi dari log terbaru.

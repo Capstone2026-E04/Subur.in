@@ -41,6 +41,18 @@ Backend service untuk proyek **Subur.in** (Platform Monitoring & Rekomendasi Tan
 | `npm run format`        | Format kode dengan Prettier                 |
 | `npm run format:check`  | Cek format tanpa mengubah berkas            |
 
+### Uji response time
+
+`scripts/response_time.js` mengukur latensi broker -> backend -> API -> dashboard (T4 lewat Playwright). Tidak ikut `npm test`: ia memakai database, Redis, broker, dan backend sungguhan, serta menulis rekomendasi dan mengosongkan gate Redis device yang diuji, jadi pakai device uji khusus.
+
+```bash
+API_URL=https://<domain> FRONTEND_URL=https://<domain> \
+TEST_EMAIL=<akun-pemilik-device> TEST_PASSWORD=<password> \
+node scripts/response_time.js --device <deviceCode> --scenario normal --runs 30
+```
+
+Skenario `normal`, `kategori`, atau `emergency`; tanpa `TEST_EMAIL`/`TEST_PASSWORD` T4 dilewati. Hasil CSV ditulis ke folder kerja. Detail: [docs/backend/response-time-testing.md](../docs/backend/response-time-testing.md).
+
 ## Struktur `src/`
 
 | Folder          | Isi                                                                         |

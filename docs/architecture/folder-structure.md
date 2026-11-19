@@ -9,6 +9,8 @@ Subur.in/
 │   │   ├── schema.prisma        # Model data (lihat database-schema.md)
 │   │   ├── seed.js              # Mengisi data awal plants
 │   │   └── manual/              # SQL manual 001-009 (CHECK, RLS, migrasi data, role, password, antrean sensor) + rollback/
+│   ├── scripts/
+│   │   └── response_time.js     # Uji response time broker -> backend -> dashboard (lihat backend/response-time-testing.md)
 │   └── src/
 │       ├── ai/                  # Mesin rekomendasi fuzzy logic (logika murni, tanpa I/O)
 │       │   ├── config/          # Parameter fuzzy set, preset fisik, konstanta treatment

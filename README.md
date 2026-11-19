@@ -98,7 +98,7 @@ Dokumentasi lengkap ada di [`docs/`](docs/), terbagi per topik:
 | [`setup/`](docs/setup)               | Instalasi, environment variable, deployment, troubleshooting                                                                  |
 | [`firmware/`](docs/firmware)         | Kontrak MQTT, antrean offline, dan batas firmware ESP32                                                                       |
 | [`frontend/`](docs/frontend)         | Design system, komponen, routing, state management                                                                            |
-| [`backend/`](docs/backend)           | Coding standards, validasi, autentikasi, logging, testing                                                                     |
+| [`backend/`](docs/backend)           | Coding standards, validasi, autentikasi, logging, testing, uji response time                                                  |
 | [`database/`](docs/database)         | Konvensi Prisma, migrasi, seeding                                                                                             |
 | [`decisions/`](docs/decisions)       | Catatan keputusan teknis (ADR)                                                                                                |
 | [`changelog.md`](docs/changelog.md)  | Riwayat perubahan                                                                                                             |
