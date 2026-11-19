@@ -34,7 +34,7 @@ Pengujian dimulai saat data dipublish ke broker MQTT (T0). Segmen sebelum titik 
 
 ## 2. Pipeline yang diukur
 
-```
+```text
 [Pengirim data uji]                   T0  mqtt.publish
       │  (MQTT QoS 1, topic suburin/devices/<deviceCode>/telemetry)
       ▼
@@ -92,7 +92,7 @@ T3 dan T4 **tidak dijumlahkan**. T3 adalah request terpisah dari script. T4 bera
 
 Banyak pembacaan dikirim dalam satu uji, jadi tiap sampel harus bisa dikenali di SSE, di database, dan di respons API. Script memberi tiap sampel nilai pH unik:
 
-```
+```text
 runTag = detik_epoch mod 10000          (berbeda tiap eksekusi script)
 ph     = basePh + (runTag × 100 + nomorSampel) × 1e-8     dibulatkan 8 desimal
 ```
@@ -126,7 +126,7 @@ Dengan cara ini, yang diukur adalah waktu pemrosesan sistem, bukan jeda terjadwa
 
 ## 6. Langkah satu sampel secara berurutan
 
-```
+```text
 1. Hitung ph unik dan ambil titik (basePh, kelembapan) sesuai skenario.
 2. Reset gate Redis dan tanam bacaan awal (bagian 5).
 3. Daftarkan penunggu SSE untuk ph ini.
@@ -208,7 +208,7 @@ Fetch yang dipicu SSE sensor bisa mengambil log **sebelum** log baru tersimpan d
 
 ### 9.3 Cara mengukur dampaknya
 
-Pengujian mencatat jumlah sampel "tampil otomatis" (`Tampil otomatis di dashboard: x/y`). Hasil yang diambil **sebelum** perbaikan dibuat dari backend yang belum diperbarui dan menjadi data pembanding. Setelah backend dan frontend yang diperbaiki dideploy, uji ulang dengan perintah yang sama dan bandingkan jumlah sampel tampil serta T0→T4. Sebelum perbaikan, 4 dari 90 sampel (4,4%) tidak tampil otomatis dalam 10 detik: 1/30 pada `normal`, 2/30 pada `kategori`, dan 1/30 pada `emergency`. Jadi race ini nyata, meski jarang. Angka ini menjadi pembanding untuk pengujian ulang setelah perbaikan dideploy.
+Pengujian mencatat jumlah sampel "tampil otomatis" (`Tampil otomatis di dashboard: x/y`). Hasil yang diambil **sebelum** perbaikan dibuat dari backend yang belum diperbarui dan menjadi data pembanding. Setelah backend dan frontend yang diperbaiki dideploy, uji ulang dengan perintah yang sama dan bandingkan jumlah sampel tampil serta T0→T4. Sebelum perbaikan, 4 dari 90 sampel (4,4%) tidak tampil otomatis dalam 10 detik: 1/30 pada `normal`, 2/30 pada `kategori`, dan 1/30 pada `emergency`. Jadi race ini nyata, meski jarang. Setelah perbaikan dideploy (commit `16891c4`), semua 90 sampel tampil otomatis; perbandingannya ada di bagian 13.4.
 
 ---
 
@@ -340,7 +340,7 @@ Target latensi ditetapkan sendiri dan dijelaskan alasannya, tanpa angka dari lit
 
 Data diambil terhadap VPS (`https://suburin.duckdns.org`) sebelum perbaikan bagian 9 dideploy, dari laptop penguji, dengan device uji `node_test` (interval sensor 60 menit), 30 ulangan per skenario. Semua sampel berhasil (0 gagal). Satuan milidetik. Data mentah per sampel berupa CSV yang tidak ikut repositori.
 
-### 13.1 Skenario `normal` (n = 30, tampil di dashboard 29/30)
+### 13.1 Sebelum perbaikan: skenario `normal` (n = 30, tampil di dashboard 29/30)
 
 | Segmen                              | Min  | Mean | Median | P95  | Max  | SD  |
 | ----------------------------------- | ---- | ---- | ------ | ---- | ---- | --- |
@@ -349,7 +349,7 @@ Data diambil terhadap VPS (`https://suburin.duckdns.org`) sebelum perbaikan bagi
 | API rekomendasi (T2→T3)             | 1647 | 1915 | 1724   | 2257 | 5568 | 695 |
 | Dashboard tampil (T0→T4, 29 sampel) | 2416 | 2688 | 2575   | 3186 | 4406 | 382 |
 
-### 13.2 Skenario `kategori` (n = 30, tampil di dashboard 28/30)
+### 13.2 Sebelum perbaikan: skenario `kategori` (n = 30, tampil di dashboard 28/30)
 
 | Segmen                              | Min  | Mean | Median | P95  | Max  | SD  |
 | ----------------------------------- | ---- | ---- | ------ | ---- | ---- | --- |
@@ -358,7 +358,7 @@ Data diambil terhadap VPS (`https://suburin.duckdns.org`) sebelum perbaikan bagi
 | API rekomendasi (T2→T3)             | 1657 | 1847 | 1811   | 2111 | 2525 | 172 |
 | Dashboard tampil (T0→T4, 28 sampel) | 2433 | 2612 | 2580   | 2880 | 2896 | 137 |
 
-### 13.3 Skenario `emergency` (n = 30, tampil di dashboard 29/30)
+### 13.3 Sebelum perbaikan: skenario `emergency` (n = 30, tampil di dashboard 29/30)
 
 | Segmen                              | Min  | Mean | Median | P95  | Max  | SD  |
 | ----------------------------------- | ---- | ---- | ------ | ---- | ---- | --- |
@@ -369,10 +369,25 @@ Data diambil terhadap VPS (`https://suburin.duckdns.org`) sebelum perbaikan bagi
 
 \* Diukur dari klien MQTT di laptop → broker → backend → SSE ke laptop.
 
-### 13.4 Pembacaan hasil
+### 13.4 Setelah perbaikan (commit `16891c4`, 30 ulangan per skenario, 0 gagal, tampil di dashboard 90/90)
+
+Diambil dengan perintah dan device uji yang sama setelah backend dan frontend yang diperbaiki dideploy (`/api/version` mengembalikan `16891c4`).
+
+| Segmen (median / P95)        | `normal`    | `kategori`  | `emergency` |
+| ---------------------------- | ----------- | ----------- | ----------- |
+| Broker → Backend (T0→T1)\*   | 772 / 844   | 802 / 1100  | 769 / 964   |
+| Fuzzy + simpan DB (T1→T2)    | 1550 / 1941 | 1610 / 2027 | 1605 / 1687 |
+| API rekomendasi (T2→T3)      | 1855 / 2224 | 1948 / 3220 | 1883 / 2248 |
+| Dashboard tampil (T0→T4)     | 2663 / 4098 | 2666 / 3604 | 2640 / 2889 |
+| Tampil otomatis di dashboard | 30/30       | 30/30       | 30/30       |
+
+Rata-rata dan nilai lengkap (min, mean, max, SD) ada di CSV mentah. Sebagai contoh, T0→T4 pada `normal` memiliki mean 2856, max 4563, SD 514.
+
+### 13.5 Pembacaan hasil
 
 - **Hasil antar skenario hampir sama.** Median T0→T4 berkisar 2575–2580 ms pada ketiganya, dan jalur darurat tidak lebih lambat dari jalur normal. Pada `normal`, ekor P95 dan max lebih besar (T1→T2 sampai 5608 ms, T2→T3 sampai 5568 ms), kemungkinan lonjakan jaringan sesaat; dengan 30 sampel, satu atau dua pencilan sudah menentukan P95 dan SD.
 - **Waktu tunggu terbesar bukan di firmware atau fuzzy saja.** Median segmen: T0→T1 sekitar 0,75 detik, T1→T2 sekitar 1,3–1,6 detik, dan T2→T3 sekitar 1,7–1,8 detik. T1→T2 mencakup pemrosesan Redis, fuzzy, penyimpanan log, serta latensi polling laptop→Supabase (bagian 3). T2→T3 hanya satu request API, sebagian besar adalah perjalanan jaringan dan handshake TLS baru. Memisahkan kontribusi masing-masing butuh stempel waktu di sisi backend, yang belum dipasang.
 - **End-to-end ke dashboard sekitar 2,6 detik (median), dan P95 sekitar 2,9–3,2 detik.** Jangan menjumlahkan T3 dengan T4 (bagian 3).
-- **Race dashboard nyata.** 4 dari 90 sampel (4,4%) tidak tampil otomatis dalam 10 detik (bagian 9). Statistik T4 dihitung hanya dari sampel yang tampil, jadi tidak mencerminkan sampel yang gagal tampil.
+- **Race dashboard nyata, dan perbaikannya tampak bekerja.** Sebelum perbaikan, 4 dari 90 sampel (4,4%) tidak tampil otomatis dalam 10 detik (bagian 9). Setelah perbaikan, 0 dari 90. Dengan jumlah sampel sekecil ini selisih itu belum konklusif secara statistik (uji Fisher satu arah p ≈ 0,06), jadi dasar yang lebih kuat adalah mekanismenya: fetch ulang kini dipicu event yang dikirim sesudah log tersimpan. Statistik T4 dihitung hanya dari sampel yang tampil.
+- **Median T0→T4 naik sedikit (sekitar 2575 menjadi 2640–2666 ms).** Kenaikan sekitar 60–90 ms searah dengan desain baru, karena dashboard kini menunggu event kedua sesudah log tersimpan. Selisih sekecil itu masih dalam rentang variasi antar-eksekusi (bandingkan `normal` yang P95-nya melonjak dari 3186 ke 4098 ms), jadi jangan dibaca sebagai kemunduran yang pasti.
 - **Cakupan.** Pengujian ini hanya satu klien, satu lokasi, saat tidak ada pengguna lain, dan tanpa kategori C3, C6, C8, C9 (bagian 8, 12.1).
